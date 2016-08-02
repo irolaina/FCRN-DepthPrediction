@@ -59,7 +59,7 @@ In the following tables, we report the results that should be obtained after eva
 | State of the art on Make3D  |  rel  |  rms  | log10 |
 |-----------------------------|:-----:|:-----:|:-----:|
 | [Liu et al.](https://bitbucket.org/fayao/dcnf-fcsp) (_CVPR 2015_)      | 0.314 |  8.60 | 0.119 |
-| [Li et al.](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Li_Depth_and_Surface_2015_CVPR_paper.pdf) (_CVPR 2015_)      | 0.278 | 0.719 | 0.092 |
+| [Li et al.](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Li_Depth_and_Surface_2015_CVPR_paper.pdf) (_CVPR 2015_)      | 0.278 | 7.19 | 0.092 |
 | **Ours**                        | **0.175** |  **4.45** | **0.072** |
 
 - Qualitative results:
