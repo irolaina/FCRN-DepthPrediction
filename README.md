@@ -14,7 +14,7 @@ By [Iro Laina](http://campar.in.tum.de/Main/IroLaina), [Christian Rupprecht](htt
 
 ## Introduction
 
-This repository contains the CNN models trained for depth prediction from a single RGB image, as described in the arXiv paper "[Deeper Depth Prediction with Fully Convolutional Residual Networks](https://arxiv.org/abs/1606.00373)". The provided models are those that were used to obtain the results reported on the paper relatively to the benchmark datasets NYU Depth v2 and Make3D for indoor and outdoor scenes respectively. Moreover, the provided code can be used for inference on arbitrary images. 
+This repository contains the CNN models trained for depth prediction from a single RGB image, as described in the paper "[Deeper Depth Prediction with Fully Convolutional Residual Networks](https://arxiv.org/abs/1606.00373)". The provided models are those that were used to obtain the results reported on the paper relatively to the benchmark datasets NYU Depth v2 and Make3D for indoor and outdoor scenes respectively. Moreover, the provided code can be used for inference on arbitrary images. 
 
 
 ## Quick Guide
@@ -45,7 +45,7 @@ The trained models - namely **ResNet-UpProj** in the report - can also be downlo
 
 ## Results
 
-In the following tables, we report the results that should be obtained after evaluation - the errors are slightly lower than those in the arXiv report - and also compare to other (most recent) methods on depth prediction from a single image. 
+In the following tables, we report the results that should be obtained after evaluation and also compare to other (most recent) methods on depth prediction from a single image. 
 - Error metrics on NYU Depth v2:
 
 | State of the art on NYU     |  rel  |  rms  | log10 |
@@ -69,12 +69,13 @@ In the following tables, we report the results that should be obtained after eva
 
 If you use this method in your research, please cite:
 
-     @article{laina2016deeper,  
-              title = {Deeper Depth Prediction with Fully Convolutional Residual Networks},
-              author = {Laina, Iro and Rupprecht, Christian and Belagiannis, Vasileios and Tombari, Federico and Navab, Nassir},
-              journal = {arXiv preprint arXiv:1606.00373},
-              year = {2016}
-     }
+ 	@inproceedings{laina2016deeper,  
+          	title = {Deeper Depth Prediction with Fully Convolutional Residual Networks},
+          	author = {Laina, Iro and Rupprecht, Christian and Belagiannis, Vasileios and Tombari, Federico and Navab, Nassir},
+          	booktitle = {2016 International Conference on 3D Vision, 3DV 2016, Stanford, California, USA},
+         	year = {2016}
+         	organization={{IEEE} Computer Society}
+ 	}
 
 ## License
 
