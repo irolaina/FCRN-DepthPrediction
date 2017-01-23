@@ -341,9 +341,9 @@ class Network(object):
 
         # Interleaving elements of the four feature maps
         # --------------------------------------------------
-        left = interleave([outputA, outputB], axis=1)  # columns
-        right = interleave([outputC, outputD], axis=1)  # columns
-        Y = interleave([left, right], axis=2)  # rows
+        left = interleave([outputA, outputB], axis=1)  # interleave A and B along height axis
+        right = interleave([outputC, outputD], axis=1)  # interleave C and D along height axis
+        Y = interleave([left, right], axis=2)  # interleave result along width axis
         
         if BN:
             layerName = "layer%s_BN" % (id)
