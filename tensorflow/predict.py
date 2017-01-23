@@ -1,19 +1,28 @@
 import argparse
+import os
 import numpy as np
 import tensorflow as tf
-import os.path as osp
 from matplotlib import pyplot as plt
 from PIL import Image
 
 import models
 
 def predict(model_data_path, image_path):
-   
-    print('Loading the model')
 
-    # Create a placeholder for the input image
-    input_node = tf.placeholder(tf.float32, shape=(None, 228, 304, 3))
+    # Default input size
+    height = 228
+    width = 304
+    channels = 3
     batch_size = 1
+    
+    # Read image
+    img = Image.open(image_path)
+    img = img.resize([width,height], Image.ANTIALIAS)
+    img = np.array(img).astype('float32')
+    img = np.expand_dims(np.asarray(img), axis = 0)
+   
+    # Create a placeholder for the input image
+    input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
     
     # Construct the network
     net = models.ResNet50UpProj({'data': input_node}, batch_size)
@@ -33,12 +42,6 @@ def predict(model_data_path, image_path):
 
         init_new_vars_op = tf.variables_initializer(uninitialized_vars)
         sess.run(init_new_vars_op)
-        
-        # Read image
-        img = Image.open(image_path)
-        img.show
-        img = np.array(img).astype('float32')
-        img = np.expand_dims(np.asarray(img), axis = 0)
         
         # Evalute the network for the given image
         pred = sess.run(net.get_output(), feed_dict={input_node: img})
@@ -60,7 +63,9 @@ def main():
     args = parser.parse_args()
 
     # Predict the image
-    predict(args.model_path, args.image_paths)
+    pred = predict(args.model_path, args.image_paths)
+    
+    os._exit(0)
 
 if __name__ == '__main__':
     main()
