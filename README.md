@@ -23,10 +23,12 @@ The trained models are currently provided in two frameworks, MatConvNet and Tens
 ### MatConvNet
 
 **Prerequisites**
+
 The code provided in the *matlab* folder requires the [MatConvNet toolbox](http://www.vlfeat.org/matconvnet/) for CNNs. It is required that a version of the library equal or newer than the 1.0-beta20 is successfully compiled either with or without GPU support. 
 Furthermore, the user should modify  ``` matconvnet_path = '../matconvnet-1.0-beta20' ``` within `evaluateNYU.m` and `evaluateMake3D.m` so that it points to the correct path, where the library is stored. 
 
 **How-to** 
+
 For acquiring the predicted depth maps and evaluation on NYU or Make3D *test sets*, the user can simply run  `evaluateNYU.m` or `evaluateMake3D.m` respectively. Please note that all required data and models will be then automatically downloaded (if they do not already exist) and no further user intervention is needed, except for setting the options `opts` and `netOpts` as preferred. Make sure that you have enough free disk space (up to 5 GB). The predictions will be eventually saved in a .mat file in the specified directory.  
 
 Alternatively, one could run `DepthMapPrediction.m` in order to manually use a trained model in test mode to predict the depth maps of arbitrary images. 
@@ -40,7 +42,7 @@ The model's graph is constructed in ```fcrn.py``` and the corresponding weights 
 
 The models are fully convolutional and use the residual learning idea also for upsampling CNN layers. Here we provide the fastest variant in which interleaving of feature maps is used for upsampling. For this reason, a custom layer `+dagnn/Combine.m` is provided.
 
-The trained models - namely **ResNet-UpProj** in the report - can also be downloaded here:
+The trained models - namely **ResNet-UpProj** in the paper - can also be downloaded here:
 
 - NYU Depth v2: [MatConvNet model](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_ResNet-UpProj.zip), [TensorFlow model](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_ResNet-UpProj.npy)
 - Make3D: [MatConvNet model](http://campar.in.tum.de/files/rupprecht/depthpred/Make3D_ResNet-UpProj.zip), TensorFlow model (soon)
