@@ -44,7 +44,7 @@ The models are fully convolutional and use the residual learning idea also for u
 
 The trained models - namely **ResNet-UpProj** in the paper - can also be downloaded here:
 
-- NYU Depth v2: [MatConvNet model](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_ResNet-UpProj.zip), [TensorFlow model](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_ResNet-UpProj.npy)
+- NYU Depth v2: [MatConvNet model](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_ResNet-UpProj.zip), [TensorFlow model (.npy)](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_ResNet-UpProj.npy), [TensorFlow model (.ckpt)](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_FCRN-checkpoint.zip)
 - Make3D: [MatConvNet model](http://campar.in.tum.de/files/rupprecht/depthpred/Make3D_ResNet-UpProj.zip), TensorFlow model (soon)
 
 
