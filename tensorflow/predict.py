@@ -9,12 +9,13 @@ import models
 
 def predict(model_data_path, image_path):
 
+    
     # Default input size
     height = 228
     width = 304
     channels = 3
     batch_size = 1
-    
+   
     # Read image
     img = Image.open(image_path)
     img = img.resize([width,height], Image.ANTIALIAS)
@@ -23,26 +24,22 @@ def predict(model_data_path, image_path):
    
     # Create a placeholder for the input image
     input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
-    
+
     # Construct the network
-    net = models.ResNet50UpProj({'data': input_node}, batch_size)
+    net = models.ResNet50UpProj({'data': input_node}, batch_size, 1, False)
         
     with tf.Session() as sess:
 
         # Load the converted parameters
         print('Loading the model')
-        net.load(model_data_path, sess)      
-        
-        uninitialized_vars = []
-        for var in tf.global_variables():
-            try:
-                sess.run(var)
-            except tf.errors.FailedPreconditionError:               
-                uninitialized_vars.append(var)
 
-        init_new_vars_op = tf.variables_initializer(uninitialized_vars)
-        sess.run(init_new_vars_op)
-        
+        # Use to load from ckpt file
+        saver = tf.train.Saver()     
+        saver.restore(sess, model_data_path)
+
+        # Use to load from npy file
+        #net.load(model_data_path, sess) 
+
         # Evalute the network for the given image
         pred = sess.run(net.get_output(), feed_dict={input_node: img})
         
@@ -51,7 +48,7 @@ def predict(model_data_path, image_path):
         ii = plt.imshow(pred[0,:,:,0], interpolation='nearest')
         fig.colorbar(ii)
         plt.show()
-
+        
         return pred
         
                 
