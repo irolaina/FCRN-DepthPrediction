@@ -20,6 +20,11 @@ This repository contains the CNN models trained for depth prediction from a sing
 
 The trained models are currently provided in two frameworks, MatConvNet and TensorFlow. Please read below for more information on how to get started.
 
+### TensorFlow
+The code provided in the *tensorflow* folder requires accordingly a successful installation of the [TensorFlow](https://www.tensorflow.org/) library (any platform). 
+The model's graph is constructed in ```fcrn.py``` and the corresponding weights can be downloaded using the link below. The implementation is based on [ethereon's](https://github.com/ethereon/caffe-tensorflow) Caffe-to-TensorFlow conversion tool. 
+```predict.py``` provides sample code for using the network to predict the depth map of an input image.
+
 ### MatConvNet
 
 **Prerequisites**
@@ -32,11 +37,6 @@ Furthermore, the user should modify  ``` matconvnet_path = '../matconvnet-1.0-be
 For acquiring the predicted depth maps and evaluation on NYU or Make3D *test sets*, the user can simply run  `evaluateNYU.m` or `evaluateMake3D.m` respectively. Please note that all required data and models will be then automatically downloaded (if they do not already exist) and no further user intervention is needed, except for setting the options `opts` and `netOpts` as preferred. Make sure that you have enough free disk space (up to 5 GB). The predictions will be eventually saved in a .mat file in the specified directory.  
 
 Alternatively, one could run `DepthMapPrediction.m` in order to manually use a trained model in test mode to predict the depth maps of arbitrary images. 
-	
-### TensorFlow
-The code provided in the *tensorflow* folder requires accordingly a successful installation of the [TensorFlow](https://www.tensorflow.org/) library (any platform). 
-The model's graph is constructed in ```fcrn.py``` and the corresponding weights can be downloaded using the link below. The implementation is based on [ethereon's](https://github.com/ethereon/caffe-tensorflow) Caffe-to-TensorFlow conversion tool. 
-```predict.py``` provides sample code for using the network to predict the depth map of an input image.
 
 ## Models
 
