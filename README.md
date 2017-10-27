@@ -23,7 +23,7 @@ The trained models are currently provided in two frameworks, MatConvNet and Tens
 ### TensorFlow
 The code provided in the *tensorflow* folder requires accordingly a successful installation of the [TensorFlow](https://www.tensorflow.org/) library (any platform). 
 The model's graph is constructed in ```fcrn.py``` and the corresponding weights can be downloaded using the link below. The implementation is based on [ethereon's](https://github.com/ethereon/caffe-tensorflow) Caffe-to-TensorFlow conversion tool. 
-```predict.py``` provides sample code for using the network to predict the depth map of an input image.
+```predict.py``` provides sample code for using the network to predict the depth map of an input image. Use ```python predict.py NYU_FCRN.ckpt yourimage.jpg``` to try the code.
 
 ### MatConvNet
 
