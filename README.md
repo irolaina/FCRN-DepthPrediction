@@ -50,6 +50,8 @@ The trained models - namely **ResNet-UpProj** in the paper - can also be downloa
 
 ## Results
 
+**NEW!** The predictions for the validation set of NYU-Depth-v2 dataset can also be downloaded [here](http://campar.in.tum.de/files/rupprecht/depthpred/predictions_NYUval.mat) (.mat). 
+
 In the following tables, we report the results that should be obtained after evaluation and also compare to other (most recent) methods on depth prediction from a single image. 
 - Error metrics on NYU Depth v2:
 
