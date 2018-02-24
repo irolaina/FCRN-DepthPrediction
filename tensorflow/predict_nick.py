@@ -30,7 +30,7 @@ appName = 'monodeep'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 
 ENABLE_EARLY_STOP = True
-SAVE_TRAINED_MODEL = True
+SAVE_TRAINED_MODEL = False # TODO: mudar pra true antes de fazer uma simulacao
 ENABLE_TENSORBOARD = True
 SAVE_TEST_DISPARITIES = True
 APPLY_BILINEAR_OUTPUT = False
@@ -688,10 +688,14 @@ class Kitti(object):
         self.imageInputSize = [376, 1241]
         self.depthInputSize = [376, 1226]
 
-        self.imageNetworkInputSize = [172, 576]
-        self.depthNetworkOutputSize = [43, 144]
+        # Monodeep
+        # self.imageNetworkInputSize = [172, 576]
+        # self.depthNetworkOutputSize = [43, 144]
+        # self.depthBilinearOutputSize = [172, 576]
 
-        self.depthBilinearOutputSize = [172, 576]
+        # FCRN
+        self.imageNetworkInputSize = [228, 304]
+        self.depthNetworkOutputSize = [128, 160]
 
         print("[monodeep/Dataloader] Kitti object created.")
 
@@ -767,10 +771,6 @@ def train(args):
                    'l2norm': args.l2norm,
                    'full_summary': args.full_summary}
 
-    params['inputSize'] = [228, 304, 3] # Original
-    # params['inputSize'] = [172, 576, 3] # Original
-    params['outputSize'] = [96, 288, 1]
-
 
     graph = tf.Graph()
     with graph.as_default():
@@ -778,55 +778,49 @@ def train(args):
         batch_size = 1
 
         # Create a placeholder for the input image
-        tf_image = tf.placeholder(tf.float32, shape=(None, params['inputSize'][0], params['inputSize'][1], params['inputSize'][2]))
-
         dataloader = MonodeepDataloader(args.data_path, params, args.dataset, args.mode)
+        params['inputSize'] = dataloader.inputSize
+        params['outputSize'] = dataloader.outputSize
+
+        # print(params['inputSize'],params['outputSize'])
+        tf_image = tf.placeholder(tf.float32,
+                                  shape=(None, params['inputSize'][1], params['inputSize'][2], params['inputSize'][3]))
+
         net = models.ResNet50UpProj({'data': tf_image}, params['batch_size'], 1, False)
 
-        # # Tensorflow Variables
-        # tf_labels = tf.placeholder(tf.float32,
-        #                                 shape=(None, params['outputSize'][0], params['outputSize'][1]),
-        #                                 name='labels')  # (?, 96, 288)
-        #
-        # LOSS_LOG_INITIAL_VALUE = 0.1
-        # tf_log_labels = tf.log(tf_labels + LOSS_LOG_INITIAL_VALUE,
-        #                             name='log_labels')  # Just for displaying Image
-        #
-        # tf_learningRate = params['learning_rate']
-        # tf_global_step = tf.Variable(0, trainable=False,
-        #                                   name='global_step')  # Count the number of steps taken.
-        #
-        # def tf_MSE(tf_y, tf_log_y_):
-        #     loss_name = 'MSE'
-        #
-        #     tf_npixels_valid = tf.cast(tf.size(tf_log_y_), tf.float32)  # (batchSize*height*width)
-        #
-        #     return loss_name, (tf.reduce_sum(tf.pow(tf_log_y_ - tf_y, 2)) / tf_npixels_valid)
-        #
-        # _, tf_lossF = tf_MSE(net.get_output(), tf_log_labels)
-        #
-        # optimizer = tf.train.AdamOptimizer(tf_learningRate)
-        # train = optimizer.minimize(tf_lossF, global_step=tf_global_step)
+        # Tensorflow Variables
+        tf_labels = tf.placeholder(tf.float32,
+                                        shape=(None, params['outputSize'][1], params['outputSize'][2]),
+                                        name='labels')  # (?, 96, 288)
+
+        LOSS_LOG_INITIAL_VALUE = 0.1
+        tf_log_labels = tf.log(tf_labels + LOSS_LOG_INITIAL_VALUE,
+                                    name='log_labels')  # Just for displaying Image
+
+        tf_learningRate = params['learning_rate']
+        tf_global_step = tf.Variable(0, trainable=False,
+                                          name='global_step')  # Count the number of steps taken.
+
+        def tf_MSE(tf_y, tf_log_y_):
+            tf_y = tf.squeeze(tf_y, axis=3)
+
+            # print(tf_y)
+            # print(tf_log_y_)
+
+            loss_name = 'MSE'
+
+            tf_npixels_valid = tf.cast(tf.size(tf_log_y_), tf.float32)  # (batchSize*height*width)
+
+            return loss_name, (tf.reduce_sum(tf.pow(tf_log_y_ - tf_y, 2)) / tf_npixels_valid)
+
+        _, tf_loss = tf_MSE(net.get_output(), tf_log_labels)
+
+        optimizer = tf.train.AdamOptimizer(tf_learningRate)
+        train = optimizer.minimize(tf_loss, global_step=tf_global_step)
 
         # Creates Saver Obj
         train_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES))
 
-        # TODO: Remover
-        def test():
-            img_colors = Image.open(os.path.join(dataloader.train_dataset[0]))
-            img_depth = Image.open(os.path.join(dataloader.train_labels[0]))
-
-            img = img_colors
-            img = img.resize([params['inputSize'][1], params['inputSize'][0]], Image.ANTIALIAS)
-            img = np.array(img).astype('float32')
-            img = np.expand_dims(np.asarray(img), axis=0)
-
-            # fig = plt.figure()
-            # ii = plt.imshow(img, interpolation='nearest')
-            # fig.colorbar(ii)
-            # plt.show()
-
-            # input("oi")
 
     with tf.Session(graph=graph) as sess:
         tf.global_variables_initializer().run()
@@ -835,20 +829,84 @@ def train(args):
         #  Training Loop
         # =================
         start = time.time()
+
+        batch_data = np.zeros((args.batch_size,
+                               params['inputSize'][1],
+                               params['inputSize'][2],
+                               params['inputSize'][3]),
+                              dtype=np.float64)  # (?, 172, 576, 3)
+
+        batch_data_crop = np.zeros((args.batch_size,
+                                    params['inputSize'][1],
+                                    params['inputSize'][2],
+                                    params['inputSize'][3]),
+                                   dtype=np.uint8)  # (?, 172, 576, 3)
+
+        batch_labels = np.zeros((args.batch_size,
+                                 params['outputSize'][1],
+                                 params['outputSize'][2]),
+                                dtype=np.int32)  # (?, 43, 144)
+
+
         for step in range(args.max_steps):
             start2 = time.time()
 
-        # TODO: Terminar
-        # pred = sess.run(net.get_output(), feed_dict={tf_image: img})
-        # print(pred.shape)
-        #
-        # # Plot result
-        # fig = plt.figure()
-        # ii = plt.imshow(pred[0, :, :, 0], interpolation='nearest')
-        # fig.colorbar(ii)
-        # plt.show()
+            # Training and Validation Batches and Feed Dictionary Preparation
+            offset = (step * args.batch_size) % (dataloader.numTrainSamples - args.batch_size)  # Pointer
+            batch_data_path = dataloader.train_dataset[offset:(offset + args.batch_size)]
+            batch_labels_path = dataloader.train_labels[offset:(offset + args.batch_size)]
 
-        input("train")
+            for i in range(len(batch_data_path)):
+                # FIXME: os tipos retornados das variaveis estao errados, quando originalmente eram uint8 e int32, lembrar que o placeholder no tensorflow é float32
+                image, depth, image_crop, _ = dataloader.readImage(batch_data_path[i],
+                                                                   batch_labels_path[i],
+                                                                   mode='train',
+                                                                   showImages=False)
+
+                # print(image.dtype,depth.dtype, image_crop.dtype, depth_crop.dtype)
+
+                batch_data[i] = image
+                batch_labels[i] = depth
+                batch_data_crop[i] = image_crop
+
+            feed_dict_train = {tf_image: batch_data, tf_labels: batch_labels}
+
+            # ----- Session Run! ----- #
+            _, log_labels, pred, train_loss = sess.run([train, tf_log_labels, net.get_output(), tf_loss], feed_dict=feed_dict_train)  # Training
+            valid_loss = -1 # FIXME: value
+            # -----
+
+            # Prints Training Progress
+            if step % 10 == 0:
+                if args.show_train_progress:
+                    # FIXME:
+                    # train_plotObj.showTrainResults(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],
+                    #                                log_label=log_labels[0, :, :],
+                    #                                coarse=train_PredCoarse[0, :, :], fine=train_PredFine[0, :, :])
+
+                    # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
+                    pass
+
+                if args.show_train_error_progress:
+                    # FIXME:
+                    # Plot.plotTrainingErrorProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],
+                    #                                coarse=train_PredCoarse[0, :, :], fine=train_PredFine[0, :, :],
+                    #                                figId=8)
+                    pass
+
+                if args.show_valid_progress:
+                    # FIXME:
+                    # valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :], label=valid_labels_o[0],
+                    #                                log_label=np.log(valid_labels_o[0] + LOSS_LOG_INITIAL_VALUE),
+                    #                                coarse=valid_PredCoarse[0], fine=valid_PredFine[0])
+                    pass
+
+                end2 = time.time()
+                print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,
+                                                                                                            args.max_steps,
+                                                                                                            end2 - start2,
+                                                                                                            train_loss,
+                                                                                                            valid_loss))
 
         end = time.time()
         sim_train = end - start
