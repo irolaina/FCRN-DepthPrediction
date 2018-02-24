@@ -17,8 +17,8 @@ def predict(model_data_path, image_path):
     batch_size = 1
    
     # Read image
-    img = Image.open(image_path)
-    img = img.resize([width,height], Image.ANTIALIAS)
+    img_raw = Image.open(image_path)
+    img = img_raw.resize([width,height], Image.ANTIALIAS)
     img = np.array(img).astype('float32')
     img = np.expand_dims(np.asarray(img), axis = 0)
    
@@ -42,10 +42,12 @@ def predict(model_data_path, image_path):
 
         # Evalute the network for the given image
         pred = sess.run(net.get_output(), feed_dict={input_node: img})
-        
+
         # Plot result
         fig = plt.figure()
-        ii = plt.imshow(pred[0,:,:,0], interpolation='nearest')
+        ii = plt.imshow(img_raw)
+        fig = plt.figure()
+        ii = plt.imshow(pred[0, :, :, 0], interpolation='nearest')
         fig.colorbar(ii)
         plt.show()
         
@@ -55,9 +57,12 @@ def predict(model_data_path, image_path):
 def main():
     # Parse arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
     parser.add_argument('model_path', help='Converted parameters for the model')
     parser.add_argument('image_paths', help='Directory of images to predict')
     args = parser.parse_args()
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
     # Predict the image
     pred = predict(args.model_path, args.image_paths)
