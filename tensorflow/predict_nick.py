@@ -1,6 +1,32 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# ============
+#  To-Do FCRN
+# ============
+# TODO: Terminar de Portar código de treinamento
+# TODO: Terminar de Portar código de validacao
+# TODO: Terminar de Portar código de testes
+
+# TODO: Segmentar Código em arquivos
+
+# TODO: Implementar leitura das imagens pelo Tensorflow - Treinamento
+# TODO: Implementar leitura das imagens pelo Tensorflow - Validação
+# TODO: Implementar leitura das imagens pelo Tensorflow - Treinamento
+
+# TODO: Implementar Mask Out dos de valores válidos
+
+# ================
+#  To-Do Monodeep
+# ================
+# TODO: Verificar se as tarefas abaixo ainda fazem sentido para o FCRN
+# FIXME: Após uma conversa com o vitor, aparentemente tanto a saida do coarse/fine devem ser lineares, nao eh necessario apresentar o otimizar da Coarse e a rede deve prever log(depth), para isso devo converter os labels para log(y_)
+# TODO: Validar Métricas.
+# TODO: Adicionar mais topologias
+# TODO: If detect Ctrl+C, save training state.
+# TODO: Vitor sugeriu substituir a parte fully connected da rede por filtros deconvolucionais, deste modo pode-se fazer uma predicao recuperando o tamanho da imagem alem de ter muito menos parametros treinaveis na rede.
+
+
 import argparse
 import os
 import numpy as np
@@ -26,7 +52,7 @@ import models
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
 
-appName = 'monodeep'
+appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 
 ENABLE_EARLY_STOP = True
@@ -44,13 +70,13 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 
 def argumentHandler():
     # Creating Arguments Parser
-    parser = argparse.ArgumentParser("Train the Bitnet Tensorflow implementation taking the dataset.pkl file as input.")
+    parser = argparse.ArgumentParser("Train the FCRN (Fully Convolution Residual Network) Tensorflow implementation taking image files as input.")
 
     # Input
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
     parser.add_argument('-m', '--mode', type=str, help="Select 'train' or 'test' mode", default='train')
-    parser.add_argument('--model_name', type=str, help="Select Network topology: 'monodeep', etc",
-                        default='monodeep')
+    parser.add_argument('--model_name', type=str, help="Select Network topology: 'fcrn', etc",
+                        default='fcrn')
     # parser.add_argument(    '--encoder',                   type=str,   help='type of encoder, vgg or resnet50', default='vgg')
     parser.add_argument('-i', '--data_path', type=str,
                         help="Set relative path to the input dataset <filename>.pkl file",
@@ -102,7 +128,7 @@ def string_length_tf(t):
 
 
 def checkArgumentsIntegrity(dataset):
-    print("[monodeep/Dataloader] Selected Dataset:", dataset)
+    print("[fcrn/Dataloader] Selected Dataset:", dataset)
 
     try:
         if dataset != 'nyudepth' and dataset[0:5] != 'kitti':
@@ -165,7 +191,7 @@ def getListFolders(path):
 def removeUnusedFolders(test_folders, train_folders, datasetObj, kittiOcclusion=True):
     # According to Kitti Description, occluded == All Pixels
 
-    print("[monodeep/Dataloader] Removing unused folders for Kitti datasets...")
+    print("[fcrn/Dataloader] Removing unused folders for Kitti datasets...")
     unused_test_folders_idx = []
     unused_train_folders_idx = []
 
@@ -418,11 +444,11 @@ def adjust_brightness(image, brightness):
 # ===================
 #  Class Declaration
 # ===================
-class MonodeepDataloader(object):
+class Dataloader(object):
     def __init__(self, data_path, params, dataset, mode, TRAIN_VALID_RATIO=0.8):
         # 80% for Training and 20% for Validation
         checkArgumentsIntegrity(dataset)
-        print("\n[monodeep/Dataloader] Description: This script prepares the ", dataset,
+        print("\n[fcrn/Dataloader] Description: This script prepares the ", dataset,
               ".pkl file for posterior Networks training.",
               sep='')
 
@@ -430,7 +456,7 @@ class MonodeepDataloader(object):
         self.datasetObj, dataset_path = selectedDataset(data_path, dataset)
 
         # Gets the list of folders inside the 'DATASET_PATH' folder
-        print('\n[monodeep/Dataloader] Getting list of folders...')
+        print('\n[fcrn/Dataloader] Getting list of folders...')
         test_folders = getListFolders(os.path.join(dataset_path, 'testing'))
         train_folders = getListFolders(os.path.join(dataset_path, 'training'))
 
@@ -458,14 +484,14 @@ class MonodeepDataloader(object):
         print()
 
         # Gets only the filename from the complete file path
-        print("[monodeep/Dataloader] Getting the filename files list...")
+        print("[fcrn/Dataloader] Getting the filename files list...")
         test_files_colors_filename = getFilesFilename(test_files_colors_path)
         test_files_depth_filename = getFilesFilename(test_files_depth_path)
         train_files_colors_filename = getFilesFilename(train_files_colors_path)
         train_files_depth_filename = getFilesFilename(train_files_depth_path)
 
         # Checks which files have its train_depth_filepath/disparity correspondent
-        print("\n[monodeep/Dataloader] Checking which files have its train_depth_filepath/disparity correspondent...")
+        print("\n[fcrn/Dataloader] Checking which files have its train_depth_filepath/disparity correspondent...")
         test_valid_pairs_idx = getValidPairFiles(test_files_colors_filename, test_files_depth_filename, self.datasetObj)
         train_valid_pairs_idx = getValidPairFiles(train_files_colors_filename, train_files_depth_filename,
                                                   self.datasetObj)
@@ -486,7 +512,7 @@ class MonodeepDataloader(object):
         self.test_labels = test_depth_filepath
 
         # Divides the Processed train data into training set and validation set
-        print('\n[monodeep/Dataloader] Dividing available data into training, validation and test sets...')
+        print('\n[fcrn/Dataloader] Dividing available data into training, validation and test sets...')
         trainSize = len(train_valid_pairs_idx)
         divider = int(TRAIN_VALID_RATIO * trainSize)
 
@@ -697,7 +723,7 @@ class Kitti(object):
         self.imageNetworkInputSize = [228, 304]
         self.depthNetworkOutputSize = [128, 160]
 
-        print("[monodeep/Dataloader] Kitti object created.")
+        print("[fcrn/Dataloader] Kitti object created.")
 
 def createSaveFolder():
     save_path = None
@@ -959,21 +985,11 @@ def predict(model_data_path, image_path):
         
         return pred
 
-def train(args):
+# ===================== #
+#  Training/Validation  #
+# ===================== #
+def train(args, params):
     save_path, save_restore_path = createSaveFolder()
-
-
-    params = {'inputSize': -1,
-                   'outputSize': -1,
-                   'model_name': args.model_name,
-                   'learning_rate': args.learning_rate,
-                   'batch_size': args.batch_size,
-                   'max_steps': args.max_steps,
-                   'dropout': args.dropout,
-                   'ldecay': args.ldecay,
-                   'l2norm': args.l2norm,
-                   'full_summary': args.full_summary}
-
 
     graph = tf.Graph()
     with graph.as_default():
@@ -981,7 +997,7 @@ def train(args):
         batch_size = 1
 
         # Create a placeholder for the input image
-        dataloader = MonodeepDataloader(args.data_path, params, args.dataset, args.mode)
+        dataloader = Dataloader(args.data_path, params, args.dataset, args.mode)
         params['inputSize'] = dataloader.inputSize
         params['outputSize'] = dataloader.outputSize
 
@@ -1000,15 +1016,17 @@ def train(args):
         tf_log_labels = tf.log(tf_labels + LOSS_LOG_INITIAL_VALUE,
                                     name='log_labels')  # Just for displaying Image
 
-        tf_learningRate = params['learning_rate']
+
         tf_global_step = tf.Variable(0, trainable=False,
                                           name='global_step')  # Count the number of steps taken.
 
+        tf_learningRate = params['learning_rate']
+        if params['ldecay']:
+            tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95,
+                                                              staircase=True, name='ldecay')
+
         def tf_MSE(tf_y, tf_log_y_):
             tf_y = tf.squeeze(tf_y, axis=3)
-
-            # print(tf_y)
-            # print(tf_log_y_)
 
             loss_name = 'MSE'
 
@@ -1016,7 +1034,7 @@ def train(args):
 
             return loss_name, (tf.reduce_sum(tf.pow(tf_log_y_ - tf_y, 2)) / tf_npixels_valid)
 
-        _, tf_loss = tf_MSE(net.get_output(), tf_log_labels)
+        loss_name, tf_loss = tf_MSE(net.get_output(), tf_log_labels)
 
         optimizer = tf.train.AdamOptimizer(tf_learningRate)
         train = optimizer.minimize(tf_loss, global_step=tf_global_step)
@@ -1137,7 +1155,123 @@ def train(args):
 
             saveTrainedModel(save_restore_path, sess, train_saver, args.model_name)
 
-    print("Train Done.")
+        # Pegar a função do bitboyslab que está mais completa
+        # Logs the obtained test result
+        f = open('results.txt', 'a')
+        f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_lossF: %f\tvalid_lossF: %f\t%f\n" % (
+            datetime, args.model_name, args.dataset, loss_name, step, train_loss, valid_loss, sim_train))
+        f.close()
+
+
+# ========= #
+#  Testing  #
+# ========= #
+def test(args, params):
+    print('[%s] Selected mode: Test' % appName)
+    print('[%s] Selected Params: %s' % (appName, args))
+
+    # TODO: fazer rotina para pegar imagens externas, nao somente do dataset
+    # -----------------------------------------
+    #  Network Testing Model - Importing Graph
+    # -----------------------------------------
+    # Loads the dataset and restores a specified trained model.
+    dataloader = Dataloader(args.data_path, params, args.dataset, args.mode)
+    model = ImportGraph(args.restore_path)
+
+    # Memory Allocation
+    # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
+    predCoarse = np.zeros((dataloader.numTestSamples, dataloader.outputSize[1], dataloader.outputSize[2]),
+                          dtype=np.float32)  # (?, 43, 144)
+
+    predFine = np.zeros((dataloader.numTestSamples, dataloader.outputSize[1], dataloader.outputSize[2]),
+                        dtype=np.float32)  # (?, 43, 144)
+
+    test_labels_o = np.zeros((len(dataloader.test_dataset), dataloader.outputSize[1], dataloader.outputSize[2]),
+                             dtype=np.int32)  # (?, 43, 144)
+
+    test_data_o = np.zeros(
+        (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]),
+        dtype=np.uint8)  # (?, 172, 576, 3)
+
+    test_data_crop_o = np.zeros(
+        (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]),
+        dtype=np.uint8)  # (?, 172, 576, 3)
+
+    predCoarseBilinear = np.zeros((dataloader.numTestSamples, dataloader.inputSize[1], dataloader.inputSize[2]),
+                                  dtype=np.float32)  # (?, 172, 576)
+
+    predFineBilinear = np.zeros((dataloader.numTestSamples, dataloader.inputSize[1], dataloader.inputSize[2]),
+                                dtype=np.float32)  # (?, 172, 576)
+
+    # TODO: Usar?
+    # test_labelsBilinear_o = np.zeros(
+    #     (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2]),
+    #     dtype=np.int32)  # (?, 172, 576)
+
+    # ==============
+    #  Testing Loop
+    # ==============
+    start = time.time()
+    for i, image_path in enumerate(dataloader.test_dataset):
+        start2 = time.time()
+
+        if dataloader.test_labels:  # It's not empty
+            image, depth, image_crop, depth_bilinear = dataloader.readImage(dataloader.test_dataset[i],
+                                                                            dataloader.test_labels[i],
+                                                                            mode='test')
+
+            test_labels_o[i] = depth
+            # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
+        else:
+            image, _, image_crop, _ = dataloader.readImage(dataloader.test_dataset[i], None, mode='test')
+
+        test_data_o[i] = image
+        test_data_crop_o[i] = image_crop
+
+        if APPLY_BILINEAR_OUTPUT:
+            predCoarse[i], predFine[i], predCoarseBilinear[i], predFineBilinear[i] = model.networkPredict(image,
+                                                                                                          APPLY_BILINEAR_OUTPUT)
+        else:
+            predCoarse[i], predFine[i] = model.networkPredict(image)
+
+        # Prints Testing Progress
+        end2 = time.time()
+        print('step: %d/%d | t: %f' % (i + 1, dataloader.numTestSamples, end2 - start2))
+        # break # Test
+
+    # Testing Finished.
+    end = time.time()
+    print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % (end - start))
+
+    # ==============
+    #  Save Results
+    # ==============
+    # Saves the Test Predictions
+    print("[Network/Testing] Saving testing predictions...")
+    if args.output_directory == '':
+        output_directory = os.path.dirname(args.restore_path)
+    else:
+        output_directory = args.output_directory
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    if SAVE_TEST_DISPARITIES:
+        np.save(output_directory + 'test_coarse_disparities.npy', predCoarse)
+        np.save(output_directory + 'test_fine_disparities.npy', predFine)
+
+    # Calculate Metrics
+    if dataloader.test_labels:
+        metrics.evaluateTesting(predFine, test_labels_o)
+    else:
+        print(
+            "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+
+    # Show Results
+    if args.show_test_results:
+        test_plotObj = Plot(args.mode, title='Test Predictions')
+        for i in range(dataloader.numTestSamples):
+            test_plotObj.showTestResults(test_data_crop_o[i], test_labels_o[i], np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), predCoarse[i], predFine[i], i)
 
 
 def main():
@@ -1150,9 +1284,23 @@ def main():
     # Predict the image
     # pred = predict(args.model_path, args.image_paths)
 
-    train(args)
+    modelParams = {'inputSize': -1,
+              'outputSize': -1,
+              'model_name': args.model_name,
+              'learning_rate': args.learning_rate,
+              'batch_size': args.batch_size,
+              'max_steps': args.max_steps,
+              'dropout': args.dropout,
+              'ldecay': args.ldecay,
+              'l2norm': args.l2norm,
+              'full_summary': args.full_summary}
 
-    print("Done.")
+    if args.mode == 'train':
+        train(args, modelParams)
+    elif args.mode == 'test':
+        test(args, modelParams)
+
+    print("\n[%s] Done." % appName)
 
     os._exit(0)
 
