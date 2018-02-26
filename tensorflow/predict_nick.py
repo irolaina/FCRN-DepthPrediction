@@ -492,16 +492,14 @@ def test(args, params):
         # ==============
         # Saves the Test Predictions
         print("[Network/Testing] Saving testing predictions...")
-        if args.output_directory == '':
-            output_directory = os.path.dirname(args.model_path)
-        else:
-            output_directory = args.output_directory
+
+        output_directory = os.path.dirname(args.model_path) if args.output_directory == '' else args.output_directory
 
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
         if SAVE_TEST_DISPARITIES:
-            np.save(output_directory + 'test_pred.npy', pred)
+            np.save(output_directory[:-7] + 'test_pred.npy', pred) # The indexing removes 'restore' from folder path
 
         # Calculate Metrics
         if dataloader.test_labels:

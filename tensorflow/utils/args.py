@@ -59,7 +59,7 @@ def argumentHandler():
     # ========= #
     parser.add_argument('-o', '--output_directory', type=str,
                         help='output directory for test disparities, if empty outputs to checkpoint folder',
-                        default='output/')
+                        default='')
 
     parser.add_argument('-u', '--show_test_results', action='store_true',
                         help="Show the first batch testing Network prediction img", default=False)
