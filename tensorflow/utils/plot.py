@@ -24,12 +24,11 @@ class Plot(object):
             self.axes[3] = plt.subplot(224)
 
         elif mode == 'test':
-            self.fig, self.axes = plt.subplots(5, 1)
-            self.axes[0] = plt.subplot(321)
-            self.axes[1] = plt.subplot(323)
-            self.axes[2] = plt.subplot(325)
-            self.axes[3] = plt.subplot(322)
-            self.axes[4] = plt.subplot(324)
+            self.fig, self.axes = plt.subplots(4, 1)
+            self.axes[0] = plt.subplot(221)
+            self.axes[1] = plt.subplot(223)
+            self.axes[2] = plt.subplot(222)
+            self.axes[3] = plt.subplot(224)
 
         self.fig.canvas.set_window_title(title)
         self.isFirstTime = True
@@ -58,7 +57,7 @@ class Plot(object):
 
         plt.pause(0.001)
 
-    def showValidResults(self, raw, label, log_label, coarse, fine):
+    def showValidResults(self, raw, label, log_label, pred):
         plt.figure(2)
 
         # Set Titles and subplots spacing. Runs only at first Time
@@ -66,8 +65,7 @@ class Plot(object):
             self.axes[0].set_title("Raw")
             self.axes[1].set_title("Label")
             self.axes[2].set_title("log(Label)")
-            self.axes[3].set_title("Coarse")
-            self.axes[4].set_title("Fine")
+            self.axes[3].set_title("Pred")
             plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
 
             self.isFirstTime = False
@@ -77,14 +75,12 @@ class Plot(object):
         # self.fig.colorbar(cax1)
         cax2 = self.axes[2].imshow(log_label)
         # self.fig.colorbar(cax2)
-        cax3 = self.axes[3].imshow(coarse)
+        cax3 = self.axes[3].imshow(pred)
         # self.fig.colorbar(cax3)
-        cax4 = self.axes[4].imshow(fine)
-        # self.fig.colorbar(cax4)
 
         plt.pause(0.001)
 
-    def showTestResults(self, raw, label, log_label, coarse, fine, i):
+    def showTestResults(self, raw, label, log_label, pred, i):
         plt.figure(1)
 
         # Set Titles and subplots spacing. Runs only at first Time
@@ -92,8 +88,7 @@ class Plot(object):
             self.axes[0].set_title("Raw")
             self.axes[1].set_title("Label")
             self.axes[2].set_title("log(Label)")
-            self.axes[3].set_title("Coarse")
-            self.axes[4].set_title("Fine")
+            self.axes[3].set_title("Pred")
             plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
             self.isFirstTime = False
 
@@ -104,13 +99,12 @@ class Plot(object):
         # self.fig.colorbar(cax1)
         cax2 = self.axes[2].imshow(log_label)
         # self.fig.colorbar(cax2)
-        cax3 = self.axes[3].imshow(coarse)
+        cax3 = self.axes[3].imshow(pred)
         # self.fig.colorbar(cax3)
-        cax4 = self.axes[4].imshow(fine)
-        # self.fig.colorbar(cax4)
 
         plt.pause(0.001)
 
+    # TODO: Remover Deprecated
     @staticmethod
     def plotTrainingProgress(raw, label, log_label, coarse, fine, figId):
         fig = plt.figure(figId)
@@ -149,6 +143,7 @@ class Plot(object):
 
         plt.pause(0.001)
 
+    # TODO: Remover Deprecated
     @staticmethod
     # TODO: Add raw, log_labels, coarse
     def displayValidationProgress(label, fine, figId):
@@ -166,6 +161,7 @@ class Plot(object):
 
         plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
 
+    # TODO: Remover Deprecated
     @staticmethod
     def plotTrainingErrorProgress(raw, label, coarse, fine, figId):
         # Lembre que a Training Loss utilizaRMSE_log_scaleInv, porém o resultado é avaliado utilizando MSE

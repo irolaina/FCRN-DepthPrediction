@@ -4,7 +4,6 @@
 # ============
 #  To-Do FCRN
 # ============
-# TODO: Terminar de Portar código de validacao
 # TODO: Terminar de Portar código de testes
 
 # TODO: Implementar leitura das imagens pelo Tensorflow - Treinamento
@@ -12,6 +11,7 @@
 # TODO: Implementar leitura das imagens pelo Tensorflow - Treinamento
 
 # TODO: Implementar Mask Out dos de valores válidos
+# TODO: Implementar Bilinear
 
 # ================
 #  To-Do Monodeep
@@ -22,6 +22,7 @@
 # TODO: Adicionar mais topologias
 # TODO: If detect Ctrl+C, save training state.
 # TODO: Vitor sugeriu substituir a parte fully connected da rede por filtros deconvolucionais, deste modo pode-se fazer uma predicao recuperando o tamanho da imagem alem de ter muito menos parametros treinaveis na rede.
+
 
 # ===========
 #  Libraries
@@ -47,7 +48,7 @@ import utils.loss as loss
 from utils.plot import Plot
 import models  # TODO: Change
 
-# from PIL import Image
+from PIL import Image
 # from skimage import exposure
 # from skimage import dtype_limits
 # from skimage import transform
@@ -106,7 +107,9 @@ def saveTrainedModel(save_path, session, saver, model_name):
     file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
     print("\n[Results] Model saved in file: %s" % file_path)
 
-
+# ========= #
+#  Predict  #
+# ========= #
 def predict(model_data_path, image_path):
     # Default input size
     height = 228
@@ -121,10 +124,10 @@ def predict(model_data_path, image_path):
     img = np.expand_dims(np.asarray(img), axis=0)
 
     # Create a placeholder for the input image
-    input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
+    tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
     # Construct the network
-    net = models.ResNet50UpProj({'data': input_node}, batch_size, 1, False)
+    net = models.ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -138,7 +141,7 @@ def predict(model_data_path, image_path):
         # net.load(model_data_path, sess)
 
         # Evalute the network for the given image
-        pred = sess.run(net.get_output(), feed_dict={input_node: img})
+        pred = sess.run(net.get_output(), feed_dict={tf_image: img})
 
         # Plot result
         fig = plt.figure()
@@ -217,7 +220,7 @@ def train(args, params):
     # ----------------------------------------
     # Local Variables and Memory Allocation
     step, stabCounter = 0, 0
-    train_lossF, valid_lossF = None, None
+    train_loss, valid_loss = None, None
 
     batch_data = np.zeros((args.batch_size,
                            dataloader.inputSize[1],
@@ -313,12 +316,12 @@ def train(args, params):
             feed_dict_valid = {tf_image: valid_data_o, tf_labels: valid_labels_o}
 
             # ----- Session Run! ----- #
-            _, log_labels, train_pred, train_loss = sess.run([trainer, tf_log_labels, net.get_output(), tf_loss],
-                                                             feed_dict=feed_dict_train)  # Training
-            valid_loss = -1  # FIXME: value
-            # valid_PredCoarse, valid_PredFine, valid_lossF = sess.run(
-            #     [model.tf_predCoarse, model.tf_predFine, model.tf_lossF], feed_dict=feed_dict_valid)  # Validation # FIXME: terminar
+            # Training
+            _, train_log_labels, train_pred, train_loss = sess.run([trainer, tf_log_labels, net.get_output(), tf_loss],
+                                                             feed_dict=feed_dict_train)
 
+            # Validation
+            valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss], feed_dict=feed_dict_valid)
             # -----
 
             # TODO: Reativar código abaixo
@@ -327,36 +330,36 @@ def train(args, params):
             #     summary_writer.add_summary(summary_str, step)
             #     summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
-            # TODO: Reativar código abaixo
-            # # TODO: Não faz sentido eu ter validAccRate, uma vez que eu não meço Accuracy, eu apenas monitoro o erro.
-            # # TODO: Validar, original era movMeanAvg <= movMeanAvgLast
-            # if ENABLE_EARLY_STOP:
-            #     movMean.append(valid_lossF)
-            #
-            #     if step > AVG_SIZE:
-            #         movMean.popleft()
-            #
-            #     movMeanAvg = np.sum(movMean) / AVG_SIZE
-            #     movMeanAvgLast = np.sum(movMeanLast) / AVG_SIZE
-            #
-            #     if (movMeanAvg >= movMeanAvgLast) and step > MIN_EVALUATIONS:
-            #         # print(step,stabCounter)
-            #
-            #         stabCounter += 1
-            #         if stabCounter > MAX_STEPS_AFTER_STABILIZATION:
-            #             print("\nSTOP TRAINING! New samples may cause overfitting!!!")
-            #             break
-            #     else:
-            #         stabCounter = 0
-            #
-            #     movMeanLast = deque(movMean)
+            # TODO: Não faz sentido eu ter validAccRate, uma vez que eu não meço Accuracy, eu apenas monitoro o erro.
+            # TODO: Validar, original era movMeanAvg <= movMeanAvgLast
+            if ENABLE_EARLY_STOP:
+                movMean.append(valid_loss)
+
+                if step > AVG_SIZE:
+                    movMean.popleft()
+
+                movMeanAvg = np.sum(movMean) / AVG_SIZE
+                movMeanAvgLast = np.sum(movMeanLast) / AVG_SIZE
+
+                if (movMeanAvg >= movMeanAvgLast) and step > MIN_EVALUATIONS:
+                    # print(step,stabCounter)
+
+                    stabCounter += 1
+                    if stabCounter > MAX_STEPS_AFTER_STABILIZATION:
+                        print("\nSTOP TRAINING! New samples may cause overfitting!!!")
+                        break
+                else:
+                    stabCounter = 0
+
+                movMeanLast = deque(movMean)
 
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
-                    train_plotObj.showTrainResults(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],
-                                                   log_label=log_labels[0, :, :],
-                                                   pred=train_pred[0, :, :, 0])
+                    train_plotObj.showTrainResults(raw=batch_data_crop[0, :, :],
+                                                   label=batch_labels[0, :, :],
+                                                   log_label=train_log_labels[0, :, :],
+                                                   pred=train_pred[0, :, :, 0]) # TODO: Add Colorbar, como eh feito na funcao predict()
 
                     # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
                     pass
@@ -369,11 +372,10 @@ def train(args, params):
                     pass
 
                 if args.show_valid_progress:
-                    # FIXME:
-                    # valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :], label=valid_labels_o[0],
-                    #                                log_label=np.log(valid_labels_o[0] + LOSS_LOG_INITIAL_VALUE),
-                    #                                coarse=valid_PredCoarse[0], fine=valid_PredFine[0])
-                    pass
+                    valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :],
+                                                   label=valid_labels_o[0],
+                                                   log_label=valid_log_labels[0, :, :],
+                                                   pred=valid_pred[0,:,:,0]) # TODO: Add Colorbar, como eh feito na funcao predict()
 
                 end2 = time.time()
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,
@@ -392,10 +394,10 @@ def train(args, params):
         if SAVE_TRAINED_MODEL:
             saveTrainedModel(save_restore_path, sess, train_saver, args.model_name)
 
-        # Pegar a função do bitboyslab que está mais completa
+        # TODO: Pegar a função do bitboyslab que está mais completa
         # Logs the obtained test result
         f = open('results.txt', 'a')
-        f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_lossF: %f\tvalid_lossF: %f\t%f\n" % (
+        f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
             datetime, args.model_name, args.dataset, loss_name, step, train_loss, valid_loss, sim_train))
         f.close()
 
@@ -407,20 +409,28 @@ def test(args, params):
     print('[%s] Selected mode: Test' % appName)
     print('[%s] Selected Params: %s' % (appName, args))
 
+    # Default input size
+    height = 228
+    width = 304
+    channels = 3
+    batch_size = 1
+
     # -----------------------------------------
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
     # Loads the dataset and restores a specified trained model.
     dataloader = Dataloader(args.data_path, params, args.dataset, args.mode)
-    model = ImportGraph(args.restore_path)
+
+    # Create a placeholder for the input image
+    tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
+
+    # Construct the network
+    net = models.ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
 
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
-    predCoarse = np.zeros((dataloader.numTestSamples, dataloader.outputSize[1], dataloader.outputSize[2]),
+    pred = np.zeros((dataloader.numTestSamples, dataloader.outputSize[1], dataloader.outputSize[2]),
                           dtype=np.float32)  # (?, 43, 144)
-
-    predFine = np.zeros((dataloader.numTestSamples, dataloader.outputSize[1], dataloader.outputSize[2]),
-                        dtype=np.float32)  # (?, 43, 144)
 
     test_labels_o = np.zeros((len(dataloader.test_dataset), dataloader.outputSize[1], dataloader.outputSize[2]),
                              dtype=np.int32)  # (?, 43, 144)
@@ -433,81 +443,81 @@ def test(args, params):
         (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]),
         dtype=np.uint8)  # (?, 172, 576, 3)
 
-    predCoarseBilinear = np.zeros((dataloader.numTestSamples, dataloader.inputSize[1], dataloader.inputSize[2]),
-                                  dtype=np.float32)  # (?, 172, 576)
 
-    predFineBilinear = np.zeros((dataloader.numTestSamples, dataloader.inputSize[1], dataloader.inputSize[2]),
-                                dtype=np.float32)  # (?, 172, 576)
+    with tf.Session() as sess:
+        # Load the converted parameters
+        print('Loading the model')
 
-    # TODO: Usar?
-    # test_labelsBilinear_o = np.zeros(
-    #     (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2]),
-    #     dtype=np.int32)  # (?, 172, 576)
+        # Use to load from ckpt file
+        saver = tf.train.Saver()
+        saver.restore(sess, args.model_path)
 
-    # ==============
-    #  Testing Loop
-    # ==============
-    start = time.time()
-    for i, image_path in enumerate(dataloader.test_dataset):
-        start2 = time.time()
+        # Use to load from npy file
+        # net.load(model_data_path, sess)
 
-        if dataloader.test_labels:  # It's not empty
-            image, depth, image_crop, depth_bilinear = dataloader.readImage(dataloader.test_dataset[i],
-                                                                            dataloader.test_labels[i],
-                                                                            mode='test')
+        # ==============
+        #  Testing Loop
+        # ==============
+        start = time.time()
+        for i, image_path in enumerate(dataloader.test_dataset):
+            start2 = time.time()
 
-            test_labels_o[i] = depth
-            # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
-        else:
-            image, _, image_crop, _ = dataloader.readImage(dataloader.test_dataset[i], None, mode='test')
+            if dataloader.test_labels:  # It's not empty
+                image, depth, image_crop, depth_bilinear = dataloader.readImage(dataloader.test_dataset[i],
+                                                                                dataloader.test_labels[i],
+                                                                                mode='test')
 
-        test_data_o[i] = image
-        test_data_crop_o[i] = image_crop
+                test_labels_o[i] = depth
+                # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
+            else:
+                image, _, image_crop, _ = dataloader.readImage(dataloader.test_dataset[i], None, mode='test')
 
-        if APPLY_BILINEAR_OUTPUT:
-            predCoarse[i], predFine[i], predCoarseBilinear[i], predFineBilinear[i] = model.networkPredict(image,
-                                                                                                          APPLY_BILINEAR_OUTPUT)
-        else:
-            predCoarse[i], predFine[i] = model.networkPredict(image)
+            test_data_o[i] = image
+            test_data_crop_o[i] = image_crop
+
+            # Evalute the network for the given image
+            pred[i] = sess.run(net.get_output(), feed_dict={tf_image: test_data_o[i]})
 
         # Prints Testing Progress
         end2 = time.time()
         print('step: %d/%d | t: %f' % (i + 1, dataloader.numTestSamples, end2 - start2))
         # break # Test
 
-    # Testing Finished.
-    end = time.time()
-    print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % (end - start))
+        # Testing Finished.
+        end = time.time()
+        print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % (end - start))
 
-    # ==============
-    #  Save Results
-    # ==============
-    # Saves the Test Predictions
-    print("[Network/Testing] Saving testing predictions...")
-    if args.output_directory == '':
-        output_directory = os.path.dirname(args.restore_path)
-    else:
-        output_directory = args.output_directory
+        # ==============
+        #  Save Results
+        # ==============
+        # Saves the Test Predictions
+        print("[Network/Testing] Saving testing predictions...")
+        if args.output_directory == '':
+            output_directory = os.path.dirname(args.model_path)
+        else:
+            output_directory = args.output_directory
 
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
 
-    if SAVE_TEST_DISPARITIES:
-        np.save(output_directory + 'test_coarse_disparities.npy', predCoarse)
-        np.save(output_directory + 'test_fine_disparities.npy', predFine)
+        if SAVE_TEST_DISPARITIES:
+            np.save(output_directory + 'test_pred.npy', pred)
 
-    # Calculate Metrics
-    if dataloader.test_labels:
-        metrics.evaluateTesting(predFine, test_labels_o)
-    else:
-        print(
-            "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+        # Calculate Metrics
+        if dataloader.test_labels:
+            metrics.evaluateTesting(pred, test_labels_o)
+        else:
+            print(
+                "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
 
-    # Show Results
-    if args.show_test_results:
-        test_plotObj = Plot(args.mode, title='Test Predictions')
-        for i in range(dataloader.numTestSamples):
-            test_plotObj.showTestResults(test_data_crop_o[i], test_labels_o[i], np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), predCoarse[i], predFine[i], i)
+        # Show Results
+        if args.show_test_results:
+            test_plotObj = Plot(args.mode, title='Test Predictions')
+            for i in range(dataloader.numTestSamples):
+                test_plotObj.showTestResults(raw=test_data_crop_o[i],
+                                             label=test_labels_o[i],
+                                             log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), # TODO: utilizar tf_log_label
+                                             pred=pred[i], i=i) # TODO: Add Colorbar, como eh feito na funcao predict()
 
 
 def tf_readImage(args):
@@ -648,13 +658,12 @@ def main(args):
                    'l2norm': args.l2norm,
                    'full_summary': args.full_summary}
 
-    # Predict the image
-    # pred = predict(args.model_path, args.image_paths)
-
     if args.mode == 'train':
         train(args, modelParams)
     elif args.mode == 'test':
         test(args, modelParams)
+    elif args.mode == 'pred':
+        predict(args.model_path, args.image_path)
 
     print("\n[%s] Done." % appName)
     sys.exit()
@@ -665,7 +674,6 @@ def main(args):
 # ======
 if __name__ == '__main__':
     args = argsLib.argumentHandler()
-    # args = argsLib.argumentHandler_original()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
