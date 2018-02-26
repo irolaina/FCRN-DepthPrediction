@@ -4,7 +4,6 @@
 # ============
 #  To-Do FCRN
 # ============
-# TODO: Terminar de Portar código de treinamento
 # TODO: Terminar de Portar código de validacao
 # TODO: Terminar de Portar código de testes
 
@@ -27,23 +26,28 @@
 # ===========
 #  Libraries
 # ===========
+import os
+import sys
+import time
+import warnings
+import random
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import scipy.misc as scp
 
-import glob
-import time
-import os
-import warnings
+from collections import deque
 
 import utils.args as argsLib
+import utils.metrics as metricsLib
+
+from utils.importNetwork import ImportGraph
 from utils.dataloader import Dataloader
 import utils.loss as loss
 from utils.plot import Plot
 import models  # TODO: Change
 
 # from PIL import Image
-# from scipy import misc as scp
 # from skimage import exposure
 # from skimage import dtype_limits
 # from skimage import transform
@@ -149,19 +153,30 @@ def predict(model_data_path, image_path):
 #  Training/Validation  #
 # ===================== #
 def train(args, params):
+    print('[%s] Selected mode: Train' % appName)
+    print('[%s] Selected Params: ' % appName)
+    print("\t", args)
+
+    # Local Variables
+    movMeanLast = 0
+    movMean = deque()
+
     save_path, save_restore_path = createSaveFolder()
 
+    # tf_readImage(args)  # TODO: Remover, Terminar
+    # input("tf_readImage")
+
+    # -----------------------------------------
+    #  Network Training Model - Building Graph
+    # -----------------------------------------
     graph = tf.Graph()
     with graph.as_default():
-        # Default input size
-        batch_size = 1
-
-        # Create a placeholder for the input image
+        # Load Dataset
         dataloader = Dataloader(args.data_path, params, args.dataset, args.mode)
         params['inputSize'] = dataloader.inputSize
         params['outputSize'] = dataloader.outputSize
 
-        # print(params['inputSize'],params['outputSize'])
+        # FCRN (Fully Convolutional Residual Network
         tf_image = tf.placeholder(tf.float32,
                                   shape=(None, params['inputSize'][1], params['inputSize'][2], params['inputSize'][3]))
 
@@ -188,39 +203,85 @@ def train(args, params):
         optimizer = tf.train.AdamOptimizer(tf_learningRate)
         trainer = optimizer.minimize(tf_loss, global_step=tf_global_step)
 
+        # TODO: Enable Summaries
+        # with tf.name_scope("Summaries"):
+        #     # Summary Objects
+        #     summary_writer = tf.summary.FileWriter(save_path + args.log_directory, graph)
+        #     summary_op = tf.summary.merge_all('model_0')
+
         # Creates Saver Obj
         train_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES))
 
+    # ----------------------------------------
+    #  Network Training Model - Running Graph
+    # ----------------------------------------
+    # Local Variables and Memory Allocation
+    step, stabCounter = 0, 0
+    train_lossF, valid_lossF = None, None
+
+    batch_data = np.zeros((args.batch_size,
+                           dataloader.inputSize[1],
+                           dataloader.inputSize[2],
+                           dataloader.inputSize[3]),
+                          dtype=np.float64)  # (?, 172, 576, 3) # FIXME: Value
+
+    batch_data_crop = np.zeros((args.batch_size,
+                                dataloader.inputSize[1],
+                                dataloader.inputSize[2],
+                                dataloader.inputSize[3]),
+                               dtype=np.uint8)  # (?, 172, 576, 3)  # FIXME: Value
+
+    batch_labels = np.zeros((args.batch_size,
+                             dataloader.outputSize[1],
+                             dataloader.outputSize[2]),
+                            dtype=np.int32)  # (?, 43, 144)  # FIXME: Value
+
+    valid_data_o = np.zeros((len(dataloader.valid_dataset),
+                             dataloader.inputSize[1],
+                             dataloader.inputSize[2],
+                             dataloader.inputSize[3]),
+                            dtype=np.float64)  # (?, 172, 576, 3) # FIXME: Nao deveria ser uint8 para cada canal? # FIXME: Value
+
+    valid_data_crop_o = np.zeros((len(dataloader.valid_dataset),
+                                  dataloader.inputSize[1],
+                                  dataloader.inputSize[2],
+                                  dataloader.inputSize[3]),
+                                 dtype=np.uint8)  # (?, 172, 576, 3) # FIXME: Value
+
+    valid_labels_o = np.zeros((len(dataloader.valid_labels),
+                               dataloader.outputSize[1],
+                               dataloader.outputSize[2]),
+                              dtype=np.int32)  # (?, 43, 144) # FIXME: Value
+
+    print("\n[Network/Training] Running built graph...")
     with tf.Session(graph=graph) as sess:
         tf.global_variables_initializer().run()
+
+        print("[Network/Training] Training Initialized!\n")
+
+        # Proclaim the epochs
+        epochs = np.floor(args.batch_size * args.max_steps / dataloader.numTrainSamples)
+        print('Train with approximately %d epochs' % epochs)
 
         # =================
         #  Training Loop
         # =================
         start = time.time()
-
         if args.show_train_progress:
             train_plotObj = Plot(args.mode, title='Train Predictions')
 
         if args.show_valid_progress:
             valid_plotObj = Plot(args.mode, title='Validation Prediction')
 
-        batch_data = np.zeros((args.batch_size,
-                               params['inputSize'][1],
-                               params['inputSize'][2],
-                               params['inputSize'][3]),
-                              dtype=np.float64)  # (?, 172, 576, 3)
+        for i in range((len(dataloader.valid_dataset))):
+            image, depth, image_crop, _ = dataloader.readImage(dataloader.valid_dataset[i],
+                                                      dataloader.valid_labels[i],
+                                                      mode='valid',
+                                                      showImages=False)
 
-        batch_data_crop = np.zeros((args.batch_size,
-                                    params['inputSize'][1],
-                                    params['inputSize'][2],
-                                    params['inputSize'][3]),
-                                   dtype=np.uint8)  # (?, 172, 576, 3)
-
-        batch_labels = np.zeros((args.batch_size,
-                                 params['outputSize'][1],
-                                 params['outputSize'][2]),
-                                dtype=np.int32)  # (?, 43, 144)
+            valid_data_o[i] = image
+            valid_labels_o[i] = depth
+            valid_data_crop_o[i] = image_crop
 
         for step in range(args.max_steps):
             start2 = time.time()
@@ -229,6 +290,10 @@ def train(args, params):
             offset = (step * args.batch_size) % (dataloader.numTrainSamples - args.batch_size)  # Pointer
             batch_data_path = dataloader.train_dataset[offset:(offset + args.batch_size)]
             batch_labels_path = dataloader.train_labels[offset:(offset + args.batch_size)]
+
+            # print("offset: %d/%d" % (offset,dataloader.numTrainSamples))
+            # print(batch_data_path)
+            # print(len(batch_data_path))
 
             for i in range(len(batch_data_path)):
                 # FIXME: os tipos retornados das variaveis estao errados, quando originalmente eram uint8 e int32, lembrar que o placeholder no tensorflow é float32
@@ -245,11 +310,46 @@ def train(args, params):
 
             feed_dict_train = {tf_image: batch_data, tf_labels: batch_labels}
 
+            feed_dict_valid = {tf_image: valid_data_o, tf_labels: valid_labels_o}
+
             # ----- Session Run! ----- #
             _, log_labels, train_pred, train_loss = sess.run([trainer, tf_log_labels, net.get_output(), tf_loss],
                                                              feed_dict=feed_dict_train)  # Training
             valid_loss = -1  # FIXME: value
+            # valid_PredCoarse, valid_PredFine, valid_lossF = sess.run(
+            #     [model.tf_predCoarse, model.tf_predFine, model.tf_lossF], feed_dict=feed_dict_valid)  # Validation # FIXME: terminar
+
             # -----
+
+            # TODO: Reativar código abaixo
+            # if ENABLE_TENSORBOARD:
+            #     # Write information to TensorBoard
+            #     summary_writer.add_summary(summary_str, step)
+            #     summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
+
+            # TODO: Reativar código abaixo
+            # # TODO: Não faz sentido eu ter validAccRate, uma vez que eu não meço Accuracy, eu apenas monitoro o erro.
+            # # TODO: Validar, original era movMeanAvg <= movMeanAvgLast
+            # if ENABLE_EARLY_STOP:
+            #     movMean.append(valid_lossF)
+            #
+            #     if step > AVG_SIZE:
+            #         movMean.popleft()
+            #
+            #     movMeanAvg = np.sum(movMean) / AVG_SIZE
+            #     movMeanAvgLast = np.sum(movMeanLast) / AVG_SIZE
+            #
+            #     if (movMeanAvg >= movMeanAvgLast) and step > MIN_EVALUATIONS:
+            #         # print(step,stabCounter)
+            #
+            #         stabCounter += 1
+            #         if stabCounter > MAX_STEPS_AFTER_STABILIZATION:
+            #             print("\nSTOP TRAINING! New samples may cause overfitting!!!")
+            #             break
+            #     else:
+            #         stabCounter = 0
+            #
+            #     movMeanLast = deque(movMean)
 
             # Prints Training Progress
             if step % 10 == 0:
@@ -407,21 +507,136 @@ def test(args, params):
     if args.show_test_results:
         test_plotObj = Plot(args.mode, title='Test Predictions')
         for i in range(dataloader.numTestSamples):
-            test_plotObj.showTestResults(test_data_crop_o[i], test_labels_o[i],
-                                         np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), predCoarse[i], predFine[i],
-                                         i)
+            test_plotObj.showTestResults(test_data_crop_o[i], test_labels_o[i], np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), predCoarse[i], predFine[i], i)
 
 
-def main():
-    # Parse arguments
-    args = argsLib.argumentHandler()
-    # args = argsLib.argumentHandler_original()
+def tf_readImage(args):
+    # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    # KittiRaw Residential Continous
+    # Image: (375, 1242, 3) uint8
+    # Depth: (375, 1242)    uint8
 
-    # Predict the image
-    # pred = predict(args.model_path, args.image_paths)
+    # Local Variables
+    numSteps = 4
 
+    h, w = 375, 1242
+    r_w, r_h = 640, 480
+    seed = random.randint(0, 2 ** 31 - 1)
+
+    # FIXME: Kitti Original as imagens de disparidade sao do tipo int32, no caso do kittiraw_residential_continous sao uint8
+
+    # Searches dataset images filenames and create queue objects
+    tf_train_image_filename_list = tf.train.match_filenames_once("data/residential_continuous/training/imgs/*.png")
+    tf_train_depth_filename_list = tf.train.match_filenames_once("data/residential_continuous/training/dispc/*.png")
+
+    train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=1)
+    train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=1)
+
+    # Reads images
+    image_reader = tf.WholeFileReader()
+    tf_image_key, image_file = image_reader.read(train_image_filename_queue)
+    tf_depth_key, depth_file = image_reader.read(train_depth_filename_queue)
+
+    tf_images = tf.image.decode_png(image_file)
+    tf_depths = tf.image.decode_png(depth_file)
+
+    # Restores images structure (size, type)
+    tf_images_resized = tf.cast(tf_images, tf.uint8)
+    tf_depths_resized = tf.cast(tf_depths, tf.uint8)
+    tf_images_resized.set_shape((h, w, 3))
+    tf_depths_resized.set_shape((h, w, 1))
+
+    tf_depths_resized = tf.squeeze(tf_depths_resized, axis=2)
+
+
+    # Normalizes Images
+    # pixel_depth = 255
+    # mean = tf.constant(pixel_depth/2, dtype=tf.float32)
+    # print(mean)
+    # tf_images_resized = (tf.cast(tf_images_resized,dtype=tf.float32) - mean)/pixel_depth
+    tf_images_resized = tf.image.per_image_standardization(tf_images_resized) # TODO: melhor do que (img - 127,5)/255?
+
+    tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
+        # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
+        [tf_images_resized, tf_depths_resized],  # Enable for debugging images
+        batch_size=args.batch_size,
+        num_threads=1,
+        capacity=384,  # TODO: Que valor devo colocar? Antes estava igual a 3
+        min_after_dequeue=0)
+
+    # Data Augmentation
+    # TODO: Crop
+    # cropSize = [172, 576]
+    # x_min = round((h - cropSize[0]) / 2)
+    # x_max = round((h + cropSize[0]) / 2)
+    # y_min = round((w - cropSize[1]) / 2)
+    # y_max = round((w + cropSize[1]) / 2)
+    #
+    # patches_top = [0, 0.5]
+    # patches_bottom = [0.25, 0.75]
+    # boxes = tf.stack([patches_top, patches_top, patches_bottom, patches_bottom], axis=1)
+    #
+    # tf_batch_data = tf.cast(tf.image.crop_and_resize(tf_batch_data, boxes,
+    #                                              box_ind=tf.zeros_like(patches_top, dtype=tf.int32),
+    #                                              crop_size=cropSize, method="bilinear", extrapolation_value=None,
+    #                                              name="generate_resized_crop"),dtype=tf.uint8)
+
+    print(tf_batch_data)
+    print(tf_batch_labels)
+
+    with tf.Session() as sess:
+        tf.global_variables_initializer().run()
+        tf.local_variables_initializer().run()
+
+        # Check Dataset Integrity
+        train_image_filename_list, train_depth_filename_list = sess.run([tf_train_image_filename_list, tf_train_depth_filename_list])
+        train_image_filename_list = [item[-53:] for item in train_image_filename_list]
+        train_depth_filename_list = [item[-53:] for item in train_depth_filename_list]
+
+        print("[monodeep/Dataset] Checking if RGB and Depth images are paired... ")
+        if train_image_filename_list == train_depth_filename_list:
+            print("[monodeep/Dataset] Check Integrity: Pass")
+            del train_image_filename_list, train_depth_filename_list
+        else:
+            print("[monodeep/Dataset] Check Integrity: Failed")
+            raise SystemExit
+
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord)
+
+        for i in range(numSteps):
+            batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
+            # image_key, depth_key = sess.run([tf_image_key, tf_depth_key])
+
+            def debug():
+                # print()
+                # print(image_key)
+                # print()
+                # print(depth_key)
+                # print()
+                # print(batch_data)
+                # print()
+                # print(batch_labels)
+
+                plt.figure(1)
+                plt.imshow(batch_data[i])
+                plt.figure(2)
+                plt.imshow(batch_labels[i])
+                plt.pause(0.5)
+
+                input("enter")
+
+            debug()
+
+        coord.request_stop()
+        coord.join(threads)
+
+
+# ======
+#  Main
+# ======
+def main(args):
     modelParams = {'inputSize': -1,
                    'outputSize': -1,
                    'model_name': args.model_name,
@@ -433,15 +648,25 @@ def main():
                    'l2norm': args.l2norm,
                    'full_summary': args.full_summary}
 
+    # Predict the image
+    # pred = predict(args.model_path, args.image_paths)
+
     if args.mode == 'train':
         train(args, modelParams)
     elif args.mode == 'test':
         test(args, modelParams)
 
     print("\n[%s] Done." % appName)
+    sys.exit()
 
-    os._exit(0)
 
-
+# ======
+#  Main
+# ======
 if __name__ == '__main__':
-    main()
+    args = argsLib.argumentHandler()
+    # args = argsLib.argumentHandler_original()
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+
+    tf.app.run(main=main(args))
