@@ -33,7 +33,7 @@ class Plot(object):
         self.fig.canvas.set_window_title(title)
         self.isFirstTime = True
 
-    # TODO: Add ColorBar
+    # TODO: Add colorbar
     def showTrainResults(self, raw, label, log_label, pred):
         plt.figure(1)
 
@@ -48,15 +48,19 @@ class Plot(object):
             self.isFirstTime = False
 
         self.axes[0].imshow(raw)
+
         cax1 = self.axes[1].imshow(label)
-        # self.fig.colorbar(cax1)
+        # self.fig.colorbar(cax1, ax=self.axes[1])
+
         cax2 = self.axes[2].imshow(log_label)
-        # self.fig.colorbar(cax2)
+        # self.fig.colorbar(cax2, ax=self.axes[2])
+
         cax3 = self.axes[3].imshow(pred)
-        # self.fig.colorbar(cax3)
+        # self.fig.colorbar(cax3, ax=self.axes[3])
 
         plt.pause(0.001)
 
+    # TODO: Add colorbar
     def showValidResults(self, raw, label, log_label, pred):
         plt.figure(2)
 
@@ -72,14 +76,17 @@ class Plot(object):
 
         self.axes[0].imshow(raw)
         cax1 = self.axes[1].imshow(label)
-        # self.fig.colorbar(cax1)
+        # self.fig.colorbar(cax1, ax=self.axes[1])
+
         cax2 = self.axes[2].imshow(log_label)
-        # self.fig.colorbar(cax2)
+        # self.fig.colorbar(cax2, ax=self.axes[2])
+
         cax3 = self.axes[3].imshow(pred)
-        # self.fig.colorbar(cax3)
+        # self.fig.colorbar(cax3, ax=self.axes[3])
 
         plt.pause(0.001)
 
+    # TODO: Add colorbar
     def showTestResults(self, raw, label, log_label, pred, i):
         plt.figure(1)
 
@@ -96,11 +103,13 @@ class Plot(object):
 
         self.axes[0].imshow(raw)
         cax1 = self.axes[1].imshow(label)
-        # self.fig.colorbar(cax1)
+        # self.fig.colorbar(cax1, ax=self.axes[1])
+
         cax2 = self.axes[2].imshow(log_label)
-        # self.fig.colorbar(cax2)
+        # self.fig.colorbar(cax2, ax=self.axes[2])
+
         cax3 = self.axes[3].imshow(pred)
-        # self.fig.colorbar(cax3)
+        # self.fig.colorbar(cax3, ax=self.axes[3])
 
         plt.pause(0.001)
 

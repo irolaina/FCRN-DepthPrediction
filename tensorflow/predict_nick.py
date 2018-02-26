@@ -41,7 +41,6 @@ from collections import deque
 import utils.args as argsLib
 import utils.metrics as metricsLib
 
-from utils.importNetwork import ImportGraph
 from utils.dataloader import Dataloader
 import utils.loss as loss
 from utils.plot import Plot
@@ -154,7 +153,7 @@ def predict(model_data_path, image_path):
 # ===================== #
 #  Training/Validation  #
 # ===================== #
-def train(args, params):
+def train(args):
     print('[%s] Selected mode: Train' % appName)
     print('[%s] Selected Params: ' % appName)
     print("\t", args)
@@ -174,19 +173,17 @@ def train(args, params):
     graph = tf.Graph()
     with graph.as_default():
         # Load Dataset
-        dataloader = Dataloader(args.data_path, params, args.dataset, args.mode)
-        params['inputSize'] = dataloader.inputSize
-        params['outputSize'] = dataloader.outputSize
+        dataloader = Dataloader(args.data_path, args.dataset, args.mode)
 
         # FCRN (Fully Convolutional Residual Network
         tf_image = tf.placeholder(tf.float32,
-                                  shape=(None, params['inputSize'][1], params['inputSize'][2], params['inputSize'][3]))
+                                  shape=(None, dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]))
 
-        net = models.ResNet50UpProj({'data': tf_image}, params['batch_size'], 1, False)
+        net = models.ResNet50UpProj({'data': tf_image}, args.batch_size, 1, False)
 
         # Tensorflow Variables
         tf_labels = tf.placeholder(tf.float32,
-                                   shape=(None, params['outputSize'][1], params['outputSize'][2]),
+                                   shape=(None, dataloader.outputSize[1], dataloader.outputSize[2]),
                                    name='labels')  # (?, 96, 288)
 
         tf_log_labels = tf.log(tf_labels + LOSS_LOG_INITIAL_VALUE,
@@ -195,8 +192,8 @@ def train(args, params):
         tf_global_step = tf.Variable(0, trainable=False,
                                      name='global_step')  # Count the number of steps taken.
 
-        tf_learningRate = params['learning_rate']
-        if params['ldecay']:
+        tf_learningRate = args.learning_rate
+        if args.ldecay:
             tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95,
                                                          staircase=True, name='ldecay')
 
@@ -358,7 +355,7 @@ def train(args, params):
                     train_plotObj.showTrainResults(raw=batch_data_crop[0, :, :],
                                                    label=batch_labels[0, :, :],
                                                    log_label=train_log_labels[0, :, :],
-                                                   pred=train_pred[0, :, :, 0]) # TODO: Add Colorbar, como eh feito na funcao predict()
+                                                   pred=train_pred[0, :, :, 0])
 
                     # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
                     pass
@@ -374,7 +371,7 @@ def train(args, params):
                     valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :],
                                                    label=valid_labels_o[0],
                                                    log_label=valid_log_labels[0, :, :],
-                                                   pred=valid_pred[0,:,:,0]) # TODO: Add Colorbar, como eh feito na funcao predict()
+                                                   pred=valid_pred[0,:,:,0])
 
                 end2 = time.time()
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,
@@ -393,7 +390,6 @@ def train(args, params):
         if SAVE_TRAINED_MODEL:
             saveTrainedModel(save_restore_path, sess, train_saver, args.model_name)
 
-        # TODO: Pegar a função do bitboyslab que está mais completa
         # Logs the obtained test result
         f = open('results.txt', 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
@@ -404,7 +400,7 @@ def train(args, params):
 # ========= #
 #  Testing  #
 # ========= #
-def test(args, params):
+def test(args):
     print('[%s] Selected mode: Test' % appName)
     print('[%s] Selected Params: %s' % (appName, args))
 
@@ -418,7 +414,7 @@ def test(args, params):
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
     # Loads the dataset and restores a specified trained model.
-    dataloader = Dataloader(args.data_path, params, args.dataset, args.mode)
+    dataloader = Dataloader(args.data_path, args.dataset, args.mode)
 
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
@@ -515,7 +511,7 @@ def test(args, params):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
                                              log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), # TODO: utilizar tf_log_label
-                                             pred=pred[i], i=i) # TODO: Add Colorbar, como eh feito na funcao predict()
+                                             pred=pred[i], i=i)
 
 
 def tf_readImage(args):
@@ -570,7 +566,7 @@ def tf_readImage(args):
         [tf_images_resized, tf_depths_resized],  # Enable for debugging images
         batch_size=args.batch_size,
         num_threads=1,
-        capacity=384,  # TODO: Que valor devo colocar? Antes estava igual a 3
+        capacity=10,
         min_after_dequeue=0)
 
     # Data Augmentation
@@ -645,21 +641,10 @@ def tf_readImage(args):
 #  Main
 # ======
 def main(args):
-    modelParams = {'inputSize': -1,
-                   'outputSize': -1,
-                   'model_name': args.model_name,
-                   'learning_rate': args.learning_rate,
-                   'batch_size': args.batch_size,
-                   'max_steps': args.max_steps,
-                   'dropout': args.dropout,
-                   'ldecay': args.ldecay,
-                   'l2norm': args.l2norm,
-                   'full_summary': args.full_summary}
-
     if args.mode == 'train':
-        train(args, modelParams)
+        train(args)
     elif args.mode == 'test':
-        test(args, modelParams)
+        test(args)
     elif args.mode == 'pred':
         predict(args.model_path, args.image_path)
 
@@ -673,6 +658,7 @@ def main(args):
 if __name__ == '__main__':
     args = argsLib.argumentHandler()
 
+    # Limits Tensorflow to see only the specified GPU.
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
     tf.app.run(main=main(args))

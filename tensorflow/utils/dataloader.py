@@ -348,7 +348,7 @@ def adjust_brightness(image, brightness):
 #  Class Declaration
 # ===================
 class Dataloader(object):
-    def __init__(self, data_path, params, dataset, mode, TRAIN_VALID_RATIO=0.8):
+    def __init__(self, data_path, dataset, mode, TRAIN_VALID_RATIO=0.8):
         # 80% for Training and 20% for Validation
         checkArgumentsIntegrity(dataset)
         print("\n[fcrn/Dataloader] Description: This script prepares the ", dataset,
@@ -444,7 +444,6 @@ class Dataloader(object):
         print("test_labels shape:", len(self.test_labels))
 
         self.data_path = data_path
-        self.params = params
         self.dataset = dataset
         self.mode = mode
 
