@@ -4,7 +4,6 @@
 # ============
 #  To-Do FCRN
 # ============
-# TODO: Terminar de Portar código de testes
 
 # TODO: Implementar leitura das imagens pelo Tensorflow - Treinamento
 # TODO: Implementar leitura das imagens pelo Tensorflow - Validação
@@ -213,7 +212,7 @@ def train(args, params):
         #     summary_op = tf.summary.merge_all('model_0')
 
         # Creates Saver Obj
-        train_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES))
+        train_saver = tf.train.Saver()
 
     # ----------------------------------------
     #  Network Training Model - Running Graph
@@ -476,12 +475,13 @@ def test(args, params):
             test_data_crop_o[i] = image_crop
 
             # Evalute the network for the given image
-            pred[i] = sess.run(net.get_output(), feed_dict={tf_image: test_data_o[i]})
+            pred_temp = sess.run(net.get_output(), feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
+            pred[i] = pred_temp[:,:,:,0]
 
-        # Prints Testing Progress
-        end2 = time.time()
-        print('step: %d/%d | t: %f' % (i + 1, dataloader.numTestSamples, end2 - start2))
-        # break # Test
+            # Prints Testing Progress
+            end2 = time.time()
+            print('step: %d/%d | t: %f' % (i + 1, dataloader.numTestSamples, end2 - start2))
+            # break # Test
 
         # Testing Finished.
         end = time.time()
@@ -505,7 +505,7 @@ def test(args, params):
 
         # Calculate Metrics
         if dataloader.test_labels:
-            metrics.evaluateTesting(pred, test_labels_o)
+            metricsLib.evaluateTesting(pred, test_labels_o)
         else:
             print(
                 "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")

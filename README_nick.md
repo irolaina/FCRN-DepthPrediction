@@ -4,11 +4,11 @@ Run Single Prediction:
     
 Train:
 
-    python3 predict_nick.py -m train -s kittiraw_residential_continuous --max_steps 10 -d 0.5 --ldecay -t --gpu 0
+    python3 predict_nick.py -m train -s kittiraw_residential_continuous --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
 
 Test:
 
-    python3 predict_nick.py -m test -s kittiraw_residential_continuous -r output/fcrn/2018-02-26_16-21-21/restore/model.fcrn -u --gpu 1
+    python3 predict_nick.py -m test -s kittiraw_residential_continuous -r output/fcrn/2018-02-26_17-08-45/restore/model.fcrn --gpu 1 -u
 
 Predict:
 
