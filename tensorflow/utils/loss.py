@@ -78,7 +78,7 @@ def tf_MSE_monodeep(tf_valid_y, tf_valid_log_y_):
 
 
 def tf_MSE(tf_y, tf_log_y_):
-    tf_y = tf.squeeze(tf_y, axis=3)
+    # tf_y = tf.squeeze(tf_y, axis=3)
 
     loss_name = 'MSE'
 
