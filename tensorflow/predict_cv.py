@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 # ===========
 #  Libraries
 # ===========
@@ -12,6 +15,11 @@ from matplotlib import pyplot as plt
 from PIL import Image
 
 import models
+
+# ==================
+#  Global Variables
+# ==================
+SAVE_IMAGES = False
 
 # ===========
 #  Functions
@@ -32,7 +40,6 @@ def main():
 
     print(args.model_path)
     print(args.video_path)
-    # input("args")
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
@@ -57,7 +64,6 @@ def main():
     # ---------------
     #  Running Graph
     # ---------------
-    # files = []
     with tf.Session() as sess:
         # Load the converted parameters
         print('\nLoading the model...')
@@ -71,91 +77,90 @@ def main():
 
         isFirstTime = True
         success = True
-        while(success):
-        # for i in range(20):  # 20 frames
+        count = 0
+        while(True):
             # Capture frame-by-frame
             success, frame = cap.read()
-            frame = cv2.resize(frame,(304, 228), interpolation = cv2.INTER_CUBIC)
+            if success: # Detect when the video finishes
+                frame = cv2.resize(frame,(304, 228), interpolation = cv2.INTER_CUBIC)
 
-            # Read image
-            img = np.array(frame).astype('float32')
-            img = np.expand_dims(np.asarray(img), axis=0)
+                # Read image
+                img = np.array(frame).astype('float32')
+                img = np.expand_dims(np.asarray(img), axis=0)
 
-            # Evalute the network for the given image
-            pred_log, pred = sess.run([net.get_output(), tf_pred], feed_dict={input_node: img})
+                # Evalute the network for the given image
+                pred_log, pred = sess.run([net.get_output(), tf_pred], feed_dict={input_node: img})
 
-            # print(frame.shape, frame.dtype)
-            # print()
-            # print(pred_log)
-            # print(type(pred_log))
-            # print(pred_log.shape, pred_log.dtype)
-            # input("enter")
-            # print()
-            # print(pred)      
-            # print(type(pred))
-            # print(pred.shape, pred.dtype)
-            # input("enter2")
+                # print(frame.shape, frame.dtype)
+                # print()
+                # print(pred_log)
+                # print(type(pred_log))
+                # print(pred_log.shape, pred_log.dtype)
+                # input("enter")
+                # print()
+                # print(pred)      
+                # print(type(pred))
+                # print(pred.shape, pred.dtype)
+                # input("enter2")
 
-            # Barely Observed, Pred range (0, 12000)
-            def check_min_max_values():
-                min = np.min(pred)
-                max = np.max(pred)
+                # Barely Observed, Pred range (0, 12000)
+                def check_min_max_values():
+                    min = np.min(pred)
+                    max = np.max(pred)
 
-                if isFirstTime:
-                    min_min = min 
-                    max_max = max
-                    isFirstTime = False
+                    if isFirstTime:
+                        min_min = min 
+                        max_max = max
+                        isFirstTime = False
 
-                if min < min_min:
-                    min_min = min
+                    if min < min_min:
+                        min_min = min
+                    
+                    if max > max_max:
+                        max_max = max
+
+                    print()
+                    print("min:", min)      
+                    print("max:", max)
+                    
+                # check_min_max_values()
                 
-                if max > max_max:
-                    max_max = max
+                pred_resized = cv2.resize(pred[0],(304, 228), interpolation = cv2.INTER_CUBIC)
+                pred_uint8 = cv2.convertScaleAbs(pred_resized)
 
-                print()
-                print("min:", min)      
-                print("max:", max)
-                
-            # check_min_max_values()
-            
-            # pred_uint8 = pred*(255.0/12000.0)
-            # pred_uint8 = pred_uint8.astype(np.uint8)
-            pred_uint8 = cv2.convertScaleAbs(pred)
+                # print(pred_resized.shape)
+                # print(pred_uint8.shape)
 
-            # print()
-            # print(pred_uint8[0,:,:,0])
-            # print(np.min(pred_uint8))
-            # print(np.max(pred_uint8))
-            # print(pred_uint8.shape, pred_uint8.dtype)
-            # input("pred_uint8")
+                # print()
+                # print(pred_uint8[0,:,:,0])
+                # print(np.min(pred_uint8))
+                # print(np.max(pred_uint8))
+                # print(pred_uint8.shape, pred_uint8.dtype)
+                # input("pred_uint8")
 
-            # Display the resulting frame - Matplotlib
-            # fname = '_tmp%03d.png' % i
-            # print('Saving frame', fname)
+                # Display the resulting frame - Matplotlib
+                # plt.figure(1)
+                # plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)) # OpenCV uses BGR, Matplotlib uses RGB
+                # plt.figure(2)
+                # plt.imshow(pred[0, :, :, 0])
+                # plt.pause(0.001)
 
-            # plt.figure(1)
-            # plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)) # OpenCV uses BGR, Matplotlib uses RGB
-            # plt.savefig(fname)
-            # files.append(fname)
-            # plt.figure(2)
-            # plt.imshow(pred[0, :, :, 0])
-            # plt.pause(0.001)
+                # Display the resulting frame - OpenCV
+                pred_uint8_inv = 255-pred_uint8
+                cv2.imshow('frame',frame)
+                cv2.imshow('pred', pred_uint8_inv) # Colors inverted only for visual Pro
 
-            # Display the resulting frame - OpenCV
-            cv2.imshow('frame',frame)
-            cv2.imshow('pred', pred_uint8[0, :, :, 0]) # FIXME: white screen
+                # Save Images
+                if SAVE_IMAGES:
+                    cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame);
+                    cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8_inv)
+                    count += 1
 
-            if cv2.waitKey(1) & 0xFF == ord('q'): # without waitKey() the images are not shown.
+                if cv2.waitKey(1) & 0xFF == ord('q'): # without waitKey() the images are not shown.
+                    break
+
+            else:
                 break
-
-    # Encoding Video
-    # print('Making movie animation.mpg - this may take a while')
-    # subprocess.call("mencoder 'mf://_tmp*.png' -mf type=png:fps=10 -ovc lavc "
-    #                 "-lavcopts vcodec=wmv2 -oac copy -o animation.mpg", shell=True)
-
-    # CleanUp
-    # for fname in files:
-    #     os.remove(fname)
 
     # When everything done, release the capture
     cap.release()
