@@ -1,3 +1,6 @@
+# ===========
+#  Libraries
+# ===========
 import argparse
 import os
 import cv2
@@ -10,6 +13,9 @@ from PIL import Image
 
 import models
 
+# ===========
+#  Functions
+# ===========
 def argumentHandler():
     # Parse arguments
     parser = argparse.ArgumentParser()
@@ -18,6 +24,9 @@ def argumentHandler():
     parser.add_argument('video_path', help='Directory of images to predict')
     return parser.parse_args()
 
+# ======
+#  Main
+# ======
 def main():
     args = argumentHandler()
 
@@ -31,6 +40,9 @@ def main():
     # cap = cv2.VideoCapture(0)
     cap = cv2.VideoCapture(args.video_path)
 
+    # ----------------
+    #  Building Graph
+    # ----------------
     # Default input size
     height, width, channels = 228, 304, 3
     batch_size = 1
@@ -42,6 +54,9 @@ def main():
     net = models.ResNet50UpProj({'data': input_node}, batch_size, 1, False)
     tf_pred = tf.exp(net.get_output(), 'pred')
 
+    # ---------------
+    #  Running Graph
+    # ---------------
     # files = []
     with tf.Session() as sess:
         # Load the converted parameters
@@ -67,7 +82,7 @@ def main():
             img = np.expand_dims(np.asarray(img), axis=0)
 
             # Evalute the network for the given image
-            pred_log, pred = sess.run([net.get_output(), tf_pred], feed_dict={input_node: img}) # log(dist)
+            pred_log, pred = sess.run([net.get_output(), tf_pred], feed_dict={input_node: img})
 
             # print(frame.shape, frame.dtype)
             # print()
@@ -105,8 +120,12 @@ def main():
             
             # pred_uint8 = pred*(255.0/12000.0)
             # pred_uint8 = pred_uint8.astype(np.uint8)
+            pred_uint8 = cv2.convertScaleAbs(pred)
+
             # print()
             # print(pred_uint8[0,:,:,0])
+            # print(np.min(pred_uint8))
+            # print(np.max(pred_uint8))
             # print(pred_uint8.shape, pred_uint8.dtype)
             # input("pred_uint8")
 
@@ -114,17 +133,17 @@ def main():
             # fname = '_tmp%03d.png' % i
             # print('Saving frame', fname)
 
-            plt.figure(1)
-            plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)) # OpenCV uses BGR, Matplotlib uses RGB
+            # plt.figure(1)
+            # plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)) # OpenCV uses BGR, Matplotlib uses RGB
             # plt.savefig(fname)
             # files.append(fname)
-            plt.figure(2)
-            plt.imshow(pred[0, :, :, 0])
-            plt.pause(0.001)
+            # plt.figure(2)
+            # plt.imshow(pred[0, :, :, 0])
+            # plt.pause(0.001)
 
             # Display the resulting frame - OpenCV
-            # cv2.imshow('frame',frame)
-            # cv2.imshow('pred', pred[0, :, :, 0]) # FIXME: white screen
+            cv2.imshow('frame',frame)
+            cv2.imshow('pred', pred_uint8[0, :, :, 0]) # FIXME: white screen
 
             if cv2.waitKey(1) & 0xFF == ord('q'): # without waitKey() the images are not shown.
                 break

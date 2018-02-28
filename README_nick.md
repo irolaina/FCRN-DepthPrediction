@@ -13,3 +13,7 @@ Test:
 Predict:
 
     python3 predict_nick.py -m pred -r ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt -i ../misc/nyu_example.png --gpu 1
+
+Predict OpenCV:
+
+    python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.avi
