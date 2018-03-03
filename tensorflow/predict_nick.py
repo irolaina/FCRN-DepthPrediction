@@ -221,7 +221,7 @@ def train(args):
             tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95,
                                                          staircase=True, name='ldecay')
 
-        loss_name, tf_loss = loss.tf_MSE(net.get_output(), tf_log_labels)
+        loss_name, tf_loss = loss.tf_MSE(net.get_output()[:,:,:,0], tf_log_labels)
 
         optimizer = tf.train.AdamOptimizer(tf_learningRate)
         trainer = optimizer.minimize(tf_loss, global_step=tf_global_step)

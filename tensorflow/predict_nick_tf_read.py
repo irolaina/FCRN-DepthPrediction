@@ -197,109 +197,92 @@ def train(args):
     # -----------------------------------------
     graph = tf.Graph()
     with graph.as_default():
-        # # def tf_readImage(args):
-        # # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!
-        #
-        # # KittiRaw Residential Continous
-        # # Image: (375, 1242, 3) uint8
-        # # Depth: (375, 1242)    uint8
-        #
-        # # Local Variables
-        # h, w = 375, 1242
-        # r_w, r_h = 228, 304
-        # seed = random.randint(0, 2 ** 31 - 1)
-        #
-        # # FIXME: Kitti Original as imagens de disparidade sao do tipo int32, no caso do kittiraw_residential_continous sao uint8
-        #
-        # # Searches dataset images filenames and create queue objects
-        # tf_train_image_filename_list = tf.train.match_filenames_once(
-        #     "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png")
-        # tf_train_depth_filename_list = tf.train.match_filenames_once(
-        #     "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png")
-        #
-        # train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=1)
-        # train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=1)
-        #
-        # # Reads images
-        # image_reader = tf.WholeFileReader()
-        # tf_image_key, image_file = image_reader.read(train_image_filename_queue)
-        # tf_depth_key, depth_file = image_reader.read(train_depth_filename_queue)
-        #
-        # tf_images = tf.image.decode_png(image_file)
-        # tf_depths = tf.image.decode_png(depth_file)
-        #
-        # # Restores images structure (size, type)
-        # tf_images_resized = tf.cast(tf_images, tf.uint8)
-        # tf_depths_resized = tf.cast(tf_depths, tf.uint8)
-        # # tf_images_resized.set_shape((h, w, 3))
-        # # tf_depths_resized.set_shape((h, w, 1))
-        # tf_images_resized.set_shape((r_h, r_w, 3))
-        # tf_depths_resized.set_shape((r_h, r_w, 1))
-        #
-        # tf_depths_resized = tf.squeeze(tf_depths_resized, axis=2)
-        #
-        # # Normalizes Images
-        # # pixel_depth = 255
-        # # mean = tf.constant(pixel_depth/2, dtype=tf.float32)
-        # # print(mean)
-        # # tf_images_resized = (tf.cast(tf_images_resized,dtype=tf.float32) - mean)/pixel_depth
-        # tf_images_resized = tf.image.per_image_standardization(
-        #     tf_images_resized)  # TODO: melhor do que (img - 127,5)/255?
-        #
-        # tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
-        #     # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-        #     [tf_images_resized, tf_depths_resized],  # Enable for debugging images
-        #     batch_size=args.batch_size,
-        #     num_threads=1,
-        #     capacity=10,
-        #     min_after_dequeue=0)
-        #
-        # # Data Augmentation
-        # # TODO: Crop
-        # # cropSize = [172, 576]
-        # # x_min = round((h - cropSize[0]) / 2)
-        # # x_max = round((h + cropSize[0]) / 2)
-        # # y_min = round((w - cropSize[1]) / 2)
-        # # y_max = round((w + cropSize[1]) / 2)
-        # #
-        # # patches_top = [0, 0.5]
-        # # patches_bottom = [0.25, 0.75]
-        # # boxes = tf.stack([patches_top, patches_top, patches_bottom, patches_bottom], axis=1)
-        # #
-        # # tf_batch_data = tf.cast(tf.image.crop_and_resize(tf_batch_data, boxes,
-        # #                                              box_ind=tf.zeros_like(patches_top, dtype=tf.int32),
-        # #                                              crop_size=cropSize, method="bilinear", extrapolation_value=None,
-        # #                                              name="generate_resized_crop"),dtype=tf.uint8)
-        #
-        # print(tf_batch_data)
-        # print(tf_batch_labels)
-        #
-        tf_readImage(args)  # TODO: Remover, Terminar
-        input("tf_readImage")
+        # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!
+        # Local Variables
+        imageRawSize = [375, 1242] 
+        imageNetworkInputSize = [228, 304]
+        depthNetworkOutputSize = [128, 160]
 
-        # Load Dataset
-        dataloader = Dataloader(args.data_path, args.dataset, args.mode) # TODO: Desativar assim que a leitura por tensorflow estiver funcionando
+        seed = random.randint(0, 2 ** 31 - 1)
 
-        # FCRN (Fully Convolutional Residual Network
-        tf_image = tf.placeholder(tf.float32,
-                                  shape=(None, dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]))
+        # TODO: Ler outros Datasets
+        # KittiRaw Residential Continous
+        # Image: (375, 1242, 3) uint8
+        # Depth: (375, 1242)    uint8
 
-        net = models.ResNet50UpProj({'data': tf_image}, args.batch_size, 1, False)
+        # Searches dataset images filenames and create queue objects
+        tf_train_image_filename_list = tf.train.match_filenames_once(
+            "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png")
+        tf_train_depth_filename_list = tf.train.match_filenames_once(
+            "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png")
 
-        tf_labels = tf.placeholder(tf.float32,
-                                   shape=(None, dataloader.outputSize[1], dataloader.outputSize[2]),
-                                   name='labels')  # (?, 96, 288)
+        train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=1)
+        train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=1)
 
-        tf_log_labels = tf.log(tf_labels + LOSS_LOG_INITIAL_VALUE,
-                               name='log_labels')  # Just for displaying Image
+        # Reads images
+        image_reader = tf.WholeFileReader()
+        tf_image_key, image_file = image_reader.read(train_image_filename_queue)
+        tf_depth_key, depth_file = image_reader.read(train_depth_filename_queue)
 
-        tf_global_step = tf.Variable(0, trainable=False,
-                                     name='global_step')  # Count the number of steps taken.
+        tf_images = tf.image.decode_png(image_file)
+        tf_depths = tf.image.decode_png(depth_file)
+
+        # Restores images structure (size, type)
+        tf_images_resized = tf.cast(tf_images, tf.uint8)
+        tf_depths_resized = tf.cast(tf_depths, tf.uint8) # FIXME: Kitti Original as imagens de disparidade sao do tipo int32, no caso do kittiraw_residential_continous sao uint8
+        tf_images_resized.set_shape([imageRawSize[0], imageRawSize[1], 3])
+        tf_depths_resized.set_shape([imageRawSize[0], imageRawSize[1], 1])
+        tf_images_resized=tf.cast(tf.image.resize_images(tf_images, [imageNetworkInputSize[0], imageNetworkInputSize[1]]), tf.uint8)
+        tf_depths_resized=tf.cast(tf.image.resize_images(tf_depths, [depthNetworkOutputSize[0], depthNetworkOutputSize[1]]), tf.uint8)
+
+        print(tf_images_resized)
+        print(tf_depths_resized)
+
+        # Normalizes Images
+        tf_images_resized = tf.image.per_image_standardization(tf_images_resized)
+
+        # Creates Training Batch Tensors
+        tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
+            # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
+            [tf_images_resized, tf_depths_resized],  # Enable for debugging images
+            batch_size=args.batch_size,
+            num_threads=1,
+            capacity=16,
+            min_after_dequeue=0)
+
+        print(tf_batch_data)
+        print(tf_batch_labels)
+
+        # Data Augmentation
+        # TODO: Crop
+        # cropSize = [172, 576]
+        # x_min = round((h - cropSize[0]) / 2)
+        # x_max = round((h + cropSize[0]) / 2)
+        # y_min = round((w - cropSize[1]) / 2)
+        # y_max = round((w + cropSize[1]) / 2)
+        #
+        # patches_top = [0, 0.5]
+        # patches_bottom = [0.25, 0.75]
+        # boxes = tf.stack([patches_top, patches_top, patches_bottom, patches_bottom], axis=1)
+        #
+        # tf_batch_data = tf.cast(tf.image.crop_and_resize(tf_batch_data, boxes,
+        #                                              box_ind=tf.zeros_like(patches_top, dtype=tf.int32),
+        #                                              crop_size=cropSize, method="bilinear", extrapolation_value=None,
+        #                                              name="generate_resized_crop"),dtype=tf.uint8)
+
+        # Construct the network - FCRN (Fully Convolutional Residual Network)
+        net = models.ResNet50UpProj({'data': tf_batch_data}, args.batch_size, 1, False)
+
+        # Training Variables
+        tf_log_labels = tf.log(tf.cast(tf_batch_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
+        tf_global_step = tf.Variable(0, trainable=False, name='global_step')  # Count the number of steps taken.
 
         tf_learningRate = args.learning_rate
         if args.ldecay:
-            tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95,
-                                                         staircase=True, name='ldecay')
+            tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95, staircase=True, name='ldecay')
+
+        print(net.get_output())
+        print(tf_log_labels)
 
         loss_name, tf_loss = loss.tf_MSE(net.get_output(), tf_log_labels)
 
@@ -324,65 +307,31 @@ def train(args):
 
     train_loss, valid_loss = None, None
 
-    batch_data = np.zeros((args.batch_size,
-                           dataloader.inputSize[1],
-                           dataloader.inputSize[2],
-                           dataloader.inputSize[3]),
-                          dtype=np.float64)  # (?, 172, 576, 3) # FIXME: Value
-
-    batch_data_crop = np.zeros((args.batch_size,
-                                dataloader.inputSize[1],
-                                dataloader.inputSize[2],
-                                dataloader.inputSize[3]),
-                               dtype=np.uint8)  # (?, 172, 576, 3)  # FIXME: Value
-
-    batch_labels = np.zeros((args.batch_size,
-                             dataloader.outputSize[1],
-                             dataloader.outputSize[2]),
-                            dtype=np.int32)  # (?, 43, 144)  # FIXME: Value
-
-    valid_data_o = np.zeros((len(dataloader.valid_dataset),
-                             dataloader.inputSize[1],
-                             dataloader.inputSize[2],
-                             dataloader.inputSize[3]),
-                            dtype=np.float64)  # (?, 172, 576, 3) # FIXME: Nao deveria ser uint8 para cada canal? # FIXME: Value
-
-    valid_data_crop_o = np.zeros((len(dataloader.valid_dataset),
-                                  dataloader.inputSize[1],
-                                  dataloader.inputSize[2],
-                                  dataloader.inputSize[3]),
-                                 dtype=np.uint8)  # (?, 172, 576, 3) # FIXME: Value
-
-    valid_labels_o = np.zeros((len(dataloader.valid_labels),
-                               dataloader.outputSize[1],
-                               dataloader.outputSize[2]),
-                              dtype=np.int32)  # (?, 43, 144) # FIXME: Value
-
     print("\n[Network/Training] Running built graph...")
     with tf.Session(graph=graph) as sess:
         tf.global_variables_initializer().run()
-        # tf.local_variables_initializer().run()
-        #
-        # # Check Dataset Integrity
-        # train_image_filename_list, train_depth_filename_list = sess.run(
-        #     [tf_train_image_filename_list, tf_train_depth_filename_list])
-        # train_image_filename_list = [item[-53:] for item in train_image_filename_list]
-        # train_depth_filename_list = [item[-53:] for item in train_depth_filename_list]
-        #
-        # print("[monodeep/Dataset] Checking if RGB and Depth images are paired... ")
-        # if train_image_filename_list == train_depth_filename_list:
-        #     print("[monodeep/Dataset] Check Integrity: Pass")
-        #     del train_image_filename_list, train_depth_filename_list
-        # else:
-        #     print("[monodeep/Dataset] Check Integrity: Failed")
-        #     raise SystemExit
-        #
-        # coord = tf.train.Coordinator()
-        # threads = tf.train.start_queue_runners(coord=coord)
+        tf.local_variables_initializer().run()
 
-        # Proclaim the epochs
-        epochs = np.floor(args.batch_size * args.max_steps / dataloader.numTrainSamples)
-        print('Train with approximately %d epochs' % epochs)
+        # Check Dataset Integrity
+        train_image_filename_list, train_depth_filename_list = sess.run([tf_train_image_filename_list, tf_train_depth_filename_list])
+        train_image_filename_list = [item[-53:] for item in train_image_filename_list]
+        train_depth_filename_list = [item[-53:] for item in train_depth_filename_list]
+
+        print("[monodeep/Dataset] Checking if RGB and Depth images are paired... ")
+        if train_image_filename_list == train_depth_filename_list:
+            print("[monodeep/Dataset] Check Integrity: Pass")
+            del train_image_filename_list, train_depth_filename_list
+        else:
+            print("[monodeep/Dataset] Check Integrity: Failed")
+            raise SystemExit
+
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord)
+
+        # TODO: Reativar
+        # # Proclaim the epochs
+        # epochs = np.floor(args.batch_size * args.max_steps / dataloader.numTrainSamples)
+        # print('Train with approximately %d epochs' % epochs)
 
         # =================
         #  Training Loop
@@ -394,79 +343,32 @@ def train(args):
         if args.show_valid_progress:
             valid_plotObj = Plot(args.mode, title='Validation Prediction')
 
-        for i in range((len(dataloader.valid_dataset))):
-            image, depth, image_crop, _ = dataloader.readImage(dataloader.valid_dataset[i],
-                                                      dataloader.valid_labels[i],
-                                                      mode='valid',
-                                                      showImages=False)
+        # TODO: Adaptar
+        # for i in range((len(dataloader.valid_dataset))):
+        #     image, depth, image_crop, _ = dataloader.readImage(dataloader.valid_dataset[i],
+        #                                               dataloader.valid_labels[i],
+        #                                               mode='valid',
+        #                                               showImages=False)
 
-            valid_data_o[i] = image
-            valid_labels_o[i] = depth
-            valid_data_crop_o[i] = image_crop
+        #     valid_data_o[i] = image
+        #     valid_labels_o[i] = depth
+        #     valid_data_crop_o[i] = image_crop
 
         print("[Network/Training] Training Initialized!\n")
         for step in range(args.max_steps):
             start2 = time.time()
 
-            # Training and Validation Batches and Feed Dictionary Preparation
-            offset = (step * args.batch_size) % (dataloader.numTrainSamples - args.batch_size)  # Pointer
-            batch_data_path = dataloader.train_dataset[offset:(offset + args.batch_size)]
-            batch_labels_path = dataloader.train_labels[offset:(offset + args.batch_size)]
-
-            # print("offset: %d/%d" % (offset,dataloader.numTrainSamples))
-            # print(batch_data_path)
-            # print(len(batch_data_path))
-
-            for i in range(len(batch_data_path)):
-                # FIXME: os tipos retornados das variaveis estao errados, quando originalmente eram uint8 e int32, lembrar que o placeholder no tensorflow é float32
-                image, depth, image_crop, _ = dataloader.readImage(batch_data_path[i],
-                                                                   batch_labels_path[i],
-                                                                   mode='train',
-                                                                   showImages=False)
-
-                # print(image.dtype,depth.dtype, image_crop.dtype, depth_crop.dtype)
-
-                batch_data[i] = image
-                batch_labels[i] = depth
-                batch_data_crop[i] = image_crop
-
-            # input("aki")
-            # batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
-            # input("aki2")
-            #
-            # # image_key, depth_key = sess.run([tf_image_key, tf_depth_key])
-            #
-            # def debug():
-            #     # print()
-            #     # print(image_key)
-            #     # print()
-            #     # print(depth_key)
-            #     # print()
-            #     # print(batch_data)
-            #     # print()
-            #     # print(batch_labels)
-            #
-            #     plt.figure(1)
-            #     plt.imshow(batch_data[i])
-            #     plt.figure(2)
-            #     plt.imshow(batch_labels[i])
-            #     plt.pause(0.5)
-            #
-            #     input("enter")
-            #
-            # # debug()
-
-            feed_dict_train = {tf_image: batch_data, tf_labels: batch_labels}
-
-            feed_dict_valid = {tf_image: valid_data_o, tf_labels: valid_labels_o}
-
             # ----- Session Run! ----- #
             # Training
-            _, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_log_labels, net.get_output(), tf_loss],
-                                                             feed_dict=feed_dict_train)
+            # batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
+            # image_key, depth_key = sess.run([tf_image_key, tf_depth_key]  
+            _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
 
             # Validation
-            valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss], feed_dict=feed_dict_valid)
+            valid_loss = -1
+            # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss],
+            #                                                     feed_dict=feed_dict_valid)
+
             # -----
 
 
@@ -484,13 +386,12 @@ def train(args):
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
-                    train_plotObj.showTrainResults(raw=batch_data_crop[0, :, :],
-                                                   label=batch_labels[0, :, :],
-                                                   log_label=batch_log_labels[0, :, :],
+                    train_plotObj.showTrainResults(raw=batch_data[0], # TODO: Change to batch_data_crop
+                                                   label=batch_labels[0, :, :,0],
+                                                   log_label=batch_log_labels[0, :, :,0],
                                                    pred=batch_pred[0, :, :, 0])
 
                     # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
-                    pass
 
                 if args.show_train_error_progress:
                     # FIXME:
@@ -512,8 +413,8 @@ def train(args):
                                                                                                             train_loss,
                                                                                                             valid_loss))
 
-        # coord.request_stop()
-        # coord.join(threads)
+        coord.request_stop()
+        coord.join(threads)
 
         end = time.time()
         sim_train = end - start
@@ -648,159 +549,6 @@ def test(args):
                                              log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), # TODO: utilizar tf_log_label
                                              pred=pred[i], i=i)
 
-
-def tf_readImage(args):
-    # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!
-    # Local Variables
-    imageRawSize = [375, 1242] 
-    imageNetworkInputSize = [228, 304]
-    depthNetworkOutputSize = [128, 160]
-
-    seed = random.randint(0, 2 ** 31 - 1)
-
-    # TODO: Ler outros Datasets
-    # KittiRaw Residential Continous
-    # Image: (375, 1242, 3) uint8
-    # Depth: (375, 1242)    uint8
-
-    # Searches dataset images filenames and create queue objects
-    tf_train_image_filename_list = tf.train.match_filenames_once(
-        "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png")
-    tf_train_depth_filename_list = tf.train.match_filenames_once(
-        "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png")
-
-    train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=1)
-    train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=1)
-
-    # Reads images
-    image_reader = tf.WholeFileReader()
-    tf_image_key, image_file = image_reader.read(train_image_filename_queue)
-    tf_depth_key, depth_file = image_reader.read(train_depth_filename_queue)
-
-    tf_images = tf.image.decode_png(image_file)
-    tf_depths = tf.image.decode_png(depth_file)
-
-    # Restores images structure (size, type)
-    tf_images_resized = tf.cast(tf_images, tf.uint8)
-    tf_depths_resized = tf.cast(tf_depths, tf.uint8) # FIXME: Kitti Original as imagens de disparidade sao do tipo int32, no caso do kittiraw_residential_continous sao uint8
-    tf_images_resized.set_shape([imageRawSize[0], imageRawSize[1], 3])
-    tf_depths_resized.set_shape([imageRawSize[0], imageRawSize[1], 1])
-    tf_images_resized=tf.cast(tf.image.resize_images(tf_images, [imageNetworkInputSize[0], imageNetworkInputSize[1]]), tf.uint8)
-    tf_depths_resized=tf.cast(tf.image.resize_images(tf_depths, [depthNetworkOutputSize[0], depthNetworkOutputSize[1]]), tf.uint8)
-
-    print(tf_images_resized)
-    print(tf_depths_resized)
-
-    # Normalizes Images
-    tf_images_resized = tf.image.per_image_standardization(tf_images_resized)
-
-    # Creates Training Batch Tensors
-    tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
-        # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-        [tf_images_resized, tf_depths_resized],  # Enable for debugging images
-        batch_size=args.batch_size,
-        num_threads=1,
-        capacity=16,
-        min_after_dequeue=0)
-
-    print(tf_batch_data)
-    print(tf_batch_labels)
-
-    # Data Augmentation
-    # TODO: Crop
-    # cropSize = [172, 576]
-    # x_min = round((h - cropSize[0]) / 2)
-    # x_max = round((h + cropSize[0]) / 2)
-    # y_min = round((w - cropSize[1]) / 2)
-    # y_max = round((w + cropSize[1]) / 2)
-    #
-    # patches_top = [0, 0.5]
-    # patches_bottom = [0.25, 0.75]
-    # boxes = tf.stack([patches_top, patches_top, patches_bottom, patches_bottom], axis=1)
-    #
-    # tf_batch_data = tf.cast(tf.image.crop_and_resize(tf_batch_data, boxes,
-    #                                              box_ind=tf.zeros_like(patches_top, dtype=tf.int32),
-    #                                              crop_size=cropSize, method="bilinear", extrapolation_value=None,
-    #                                              name="generate_resized_crop"),dtype=tf.uint8)
-
-    # Construct the network
-    net = models.ResNet50UpProj({'data': tf_batch_data}, args.batch_size, 1, False)
-
-    # Training Variables
-    tf_log_labels = tf.log(tf.cast(tf_batch_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
-    tf_global_step = tf.Variable(0, trainable=False, name='global_step')  # Count the number of steps taken.
-
-    tf_learningRate = args.learning_rate
-    if args.ldecay:
-        tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95, staircase=True, name='ldecay')
-
-    print(net.get_output())
-    print(tf_log_labels)
-
-    loss_name, tf_loss = loss.tf_MSE(net.get_output(), tf_log_labels)
-
-    optimizer = tf.train.AdamOptimizer(tf_learningRate)
-    trainer = optimizer.minimize(tf_loss, global_step=tf_global_step)
-
-    if args.show_train_progress:
-        train_plotObj = Plot(args.mode, title='Train Predictions')
-
-    with tf.Session() as sess:
-        tf.global_variables_initializer().run()
-        tf.local_variables_initializer().run()
-
-        # Check Dataset Integrity
-        train_image_filename_list, train_depth_filename_list = sess.run([tf_train_image_filename_list, tf_train_depth_filename_list])
-        train_image_filename_list = [item[-53:] for item in train_image_filename_list]
-        train_depth_filename_list = [item[-53:] for item in train_depth_filename_list]
-
-        print("[monodeep/Dataset] Checking if RGB and Depth images are paired... ")
-        if train_image_filename_list == train_depth_filename_list:
-            print("[monodeep/Dataset] Check Integrity: Pass")
-            del train_image_filename_list, train_depth_filename_list
-        else:
-            print("[monodeep/Dataset] Check Integrity: Failed")
-            raise SystemExit
-
-        coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(coord=coord)
-
-        for step in range(args.max_steps):
-            start2 = time.time()
-
-            # ----- Session Run! ----- #
-            # Training
-            # batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
-            # image_key, depth_key = sess.run([tf_image_key, tf_depth_key]  
-            _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
-
-            # Validation
-            valid_loss = -1
-            # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss],
-            #                                                     feed_dict=feed_dict_valid)
-
-            # -----
-
-            if step % 10 == 0:
-                if args.show_train_progress:
-                    train_plotObj.showTrainResults(raw=batch_data[0], # TODO: Change to batch_data_crop
-                                                   label=batch_labels[0, :, :,0],
-                                                   log_label=batch_log_labels[0, :, :,0],
-                                                   pred=batch_pred[0, :, :, 0])
-
-                    # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
-
-                # if args.show_valid_progress:
-                #     valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :],
-                #                                    label=valid_labels_o[0],
-                #                                    log_label=valid_log_labels[0, :, :],
-                #                                    pred=valid_pred[0,:,:,0])
-
-                end2 = time.time()
-                print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step, args.max_steps, end2 - start2, train_loss, valid_loss))
-
-        coord.request_stop()
-        coord.join(threads)
 
 
 # ======
