@@ -17,6 +17,8 @@ Predict:
 Predict OpenCV:
 
     python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4
+    python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor2.mp4
+
     python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4 --gpu 1 2> error.txt
 
 Encode Video:

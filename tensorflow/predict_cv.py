@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# Helpful Links
+# http://kieleth.blogspot.com.br/2014/03/opencv-calculate-average-fps-in-python.html
+
 # ===========
 #  Libraries
 # ===========
@@ -10,6 +13,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import subprocess
+import time
 
 from matplotlib import pyplot as plt
 from PIL import Image
@@ -32,11 +36,47 @@ def argumentHandler():
     parser.add_argument('video_path', help='Directory of images to predict')
     return parser.parse_args()
 
+def circular_counter(max):
+    """helper function that creates an eternal counter till a max value"""
+    x = 0
+    while True:
+        if x == max:
+            x = 0
+        x += 1
+        yield x
+ 
+class CvTimer(object):
+    def __init__(self):
+        self.tick_frequency = cv2.getTickFrequency()
+        self.tick_at_init = cv2.getTickCount()
+        self.last_tick = self.tick_at_init
+        self.fps_len = 100
+        self.l_fps_history = [ 10 for x in range(self.fps_len)]
+        self.fps_counter = circular_counter(self.fps_len)
+    
+    def reset(self):
+        self.last_tick = cv2.getTickCount()
+    
+    def get_tick_now(self):
+        return cv2.getTickCount()
+    
+    @property
+    def fps(self):
+        fps = self.tick_frequency / (self.get_tick_now() - self.last_tick)
+        self.l_fps_history[next(self.fps_counter) - 1] = fps
+        return fps
+    
+    @property
+    def avg_fps(self):
+        return sum(self.l_fps_history) / float(self.fps_len)
+
 # ======
 #  Main
 # ======
 def main():
     args = argumentHandler()
+
+    timer = CvTimer()
 
     print(args.model_path)
     print(args.video_path)
@@ -44,13 +84,12 @@ def main():
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
     # Load from Camera or Video
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(args.video_path)
     
     if not cap.isOpened():  # Check if it succeeded
         print("It wasn't possible to open the camera.")
         return -1;
-
-    # cap = cv2.VideoCapture(args.video_path)
 
     # ----------------
     #  Building Graph
@@ -86,13 +125,11 @@ def main():
         while(True):
             # Capture frame-by-frame
             success, frame = cap.read()
-            frame = cv2.resize(frame,(304, 228), interpolation = cv2.INTER_CUBIC)
-
-            # Read image
-            img = np.array(frame).astype('float32')
-            img = np.expand_dims(np.asarray(img), axis=0)
+            frame = cv2.resize(frame,(width, height), interpolation = cv2.INTER_CUBIC)
 
             # Evalute the network for the given image
+            img = np.array(frame).astype('float32')
+            img = np.expand_dims(np.asarray(img), axis=0)
             pred_log, pred = sess.run([net.get_output(), tf_pred], feed_dict={input_node: img})
 
             # print(frame.shape, frame.dtype)
@@ -107,35 +144,16 @@ def main():
             # print(pred.shape, pred.dtype)
             # input("enter2")
 
-            # Barely Observed, Pred range (0, 12000)
-            def check_min_max_values():
-                min = np.min(pred)
-                max = np.max(pred)
+            # Image Processing
+            pred_uint8 = cv2.convertScaleAbs(pred[0])
+            pred_uint8_inv = 255-pred_uint8
+            pred_jet = cv2.applyColorMap(pred_uint8_inv, cv2.COLORMAP_JET);            
+            pred_resized = cv2.resize(pred_jet,(304, 228), interpolation = cv2.INTER_CUBIC)
+            cv2.putText(pred_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps),(1, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
 
-                if isFirstTime:
-                    min_min = min 
-                    max_max = max
-                    isFirstTime = False
-
-                if min < min_min:
-                    min_min = min
-                
-                if max > max_max:
-                    max_max = max
-
-                print()
-                print("min:", min)      
-                print("max:", max)
-                
-            # check_min_max_values()
-            
-            pred_resized = cv2.resize(pred[0],(304, 228), interpolation = cv2.INTER_CUBIC)
-            pred_uint8 = cv2.convertScaleAbs(pred_resized)
-
-            # print(pred_resized.shape)
             # print(pred_uint8.shape)
+            # print(pred_resized.shape)
 
-            # print()
             # print(pred_uint8[0,:,:,0])
             # print(np.min(pred_uint8))
             # print(np.max(pred_uint8))
@@ -150,9 +168,10 @@ def main():
             # plt.pause(0.001)
 
             # Display the resulting frame - OpenCV
-            pred_uint8_inv = 255-pred_uint8
             cv2.imshow('frame',frame)
-            cv2.imshow('pred', pred_uint8_inv) # Colors inverted only for visual Pro
+            cv2.imshow('pred', pred_uint8)          # Network Output            
+            cv2.imshow('pred_proc', pred_resized)   # Processed Prediction
+
 
             # Save Images
             if SAVE_IMAGES:
@@ -162,6 +181,8 @@ def main():
 
             if cv2.waitKey(1) & 0xFF == ord('q'): # without waitKey() the images are not shown.
                 break
+
+            timer.reset()
 
     # When everything done, release the capture
     cap.release()
