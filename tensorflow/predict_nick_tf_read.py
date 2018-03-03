@@ -44,7 +44,7 @@ import utils.metrics as metricsLib
 from utils.dataloader import Dataloader
 import utils.loss as loss
 from utils.plot import Plot
-import models  # TODO: Change
+from utils.fcrn import ResNet50UpProj
 
 from PIL import Image
 # from skimage import exposure
@@ -128,7 +128,7 @@ def predict(model_data_path, image_path):
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
     # Construct the network
-    net = models.ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -271,7 +271,7 @@ def train(args):
         #                                              name="generate_resized_crop"),dtype=tf.uint8)
 
         # Construct the network - FCRN (Fully Convolutional Residual Network)
-        net = models.ResNet50UpProj({'data': tf_batch_data}, args.batch_size, 1, False)
+        net = ResNet50UpProj({'data': tf_batch_data}, args.batch_size, 1, False)
 
         # Training Variables
         tf_log_labels = tf.log(tf.cast(tf_batch_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
@@ -456,7 +456,7 @@ def test(args):
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
     # Construct the network
-    net = models.ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
 
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.

@@ -1,0 +1,6 @@
+models/*
+misc/*
+.idea/*
+tensorflow/output/*
+*/.DS_Store
+*.pyc

@@ -44,7 +44,7 @@ import utils.metrics as metricsLib
 from utils.dataloader import Dataloader
 import utils.loss as loss
 from utils.plot import Plot
-import models  # TODO: Change
+from utils.fcrn import ResNet50UpProj
 
 from PIL import Image
 # from skimage import exposure
@@ -128,7 +128,7 @@ def predict(model_data_path, image_path):
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
     # Construct the network
-    net = models.ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -204,7 +204,7 @@ def train(args):
         tf_image = tf.placeholder(tf.float32,
                                   shape=(None, dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]))
 
-        net = models.ResNet50UpProj({'data': tf_image}, args.batch_size, 1, False)
+        net = ResNet50UpProj({'data': tf_image}, args.batch_size, 1, False)
 
         tf_labels = tf.placeholder(tf.float32,
                                    shape=(None, dataloader.outputSize[1], dataloader.outputSize[2]),
@@ -427,7 +427,7 @@ def test(args):
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
     # Construct the network
-    net = models.ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
 
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.

@@ -18,7 +18,7 @@ import time
 from matplotlib import pyplot as plt
 from PIL import Image
 
-import models
+from utils.fcrn import ResNet50UpProj
 
 # ==================
 #  Global Variables
@@ -102,7 +102,7 @@ def main():
     input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
     
     # Construct the network
-    net = models.ResNet50UpProj({'data': input_node}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': input_node}, batch_size, 1, False)
     tf_pred = tf.exp(net.get_output(), 'pred')
 
     # ---------------
