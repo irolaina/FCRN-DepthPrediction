@@ -5,6 +5,7 @@ Run Single Prediction:
 Train:
 
     python3 predict_nick.py -m train -s kittiraw_residential_continuous --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
+    python3 predict_nick_tf_read.py -m train -s kittiraw_residential_continuous --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
 
 Test:
 
@@ -19,7 +20,7 @@ Predict OpenCV:
     python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4
     python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor2.mp4
 
-    python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4 --gpu 1 2> error.txt
+    python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4 --gpu 1 2> tmp/error.txt
 
 Encode Video:
 
@@ -27,15 +28,15 @@ Encode Video:
 
 Dependencies:
 
-1) Gstreamer
-    
+1) Gstreamer:
+
     sudo apt-get install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools
 
-2) ffmpeg
+2) ffmpeg:
 
     sudo apt install ffmpeg
 
-3) Grant access to user for using video devices
+3) Grant access to user for using video devices:
 
     grep video /etc/group
     sudo usermod -a -G video olorin

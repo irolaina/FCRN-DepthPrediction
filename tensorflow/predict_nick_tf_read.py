@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+machine = 'olorin'
+machine = 'xps'
+
 # ============
 #  To-Do FCRN
 # ============
@@ -62,7 +65,7 @@ appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 
 ENABLE_EARLY_STOP = True
-SAVE_TRAINED_MODEL = True
+SAVE_TRAINED_MODEL = False
 ENABLE_TENSORBOARD = True
 SAVE_TEST_DISPARITIES = True
 APPLY_BILINEAR_OUTPUT = False
@@ -199,7 +202,7 @@ def train(args):
     with graph.as_default():
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!
         # Local Variables
-        imageRawSize = [375, 1242] 
+        imageRawSize = [375, 1242]
         imageNetworkInputSize = [228, 304]
         depthNetworkOutputSize = [128, 160]
 
@@ -211,10 +214,16 @@ def train(args):
         # Depth: (375, 1242)    uint8
 
         # Searches dataset images filenames and create queue objects
-        tf_train_image_filename_list = tf.train.match_filenames_once(
-            "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png")
-        tf_train_depth_filename_list = tf.train.match_filenames_once(
-            "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png")
+        if machine == 'olorin':
+            tf_train_image_filename_list = tf.train.match_filenames_once(
+                "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png")
+            tf_train_depth_filename_list = tf.train.match_filenames_once(
+                "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png")
+        elif machine == 'xps':
+            tf_train_image_filename_list = tf.train.match_filenames_once(
+                "../../data/residential_continuous/training/imgs/*.png")
+            tf_train_depth_filename_list = tf.train.match_filenames_once(
+                "../../data/residential_continuous/training/dispc/*.png")
 
         train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=1)
         train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=1)
@@ -235,10 +244,46 @@ def train(args):
         tf_images_resized=tf.cast(tf.image.resize_images(tf_images, [imageNetworkInputSize[0], imageNetworkInputSize[1]]), tf.uint8)
         tf_depths_resized=tf.cast(tf.image.resize_images(tf_depths, [depthNetworkOutputSize[0], depthNetworkOutputSize[1]]), tf.uint8)
 
-        print(tf_images_resized)
-        print(tf_depths_resized)
-
         # Normalizes Images
+        tf_images_proc = tf_images_resized
+        tf_depths_proc = tf_depths_resized
+
+        def augment_image_pair(self, left_image, right_image):
+            # randomly shift gamma
+            random_gamma = tf.random_uniform([], 0.8, 1.2)
+            left_image_aug  = left_image  ** random_gamma
+            right_image_aug = right_image ** random_gamma
+
+            # randomly shift brightness
+            random_brightness = tf.random_uniform([], 0.5, 2.0)
+            left_image_aug  =  left_image_aug * random_brightness
+            right_image_aug = right_image_aug * random_brightness
+
+            # randomly shift color
+            random_colors = tf.random_uniform([3], 0.8, 1.2)
+            white = tf.ones([tf.shape(left_image)[0], tf.shape(left_image)[1]])
+            color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
+            left_image_aug  *= color_image
+            right_image_aug *= color_image
+
+            # saturate
+            left_image_aug  = tf.clip_by_value(left_image_aug,  0, 1)
+            right_image_aug = tf.clip_by_value(right_image_aug, 0, 1)
+
+            return left_image_aug, right_image_aug
+
+        # randomly flip images
+        do_flip = tf.random_uniform([], 0, 1)
+        tf_images_proc  = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(tf_images_proc), lambda: tf_images_proc)
+        tf_depths_proc = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(tf_depths_proc),  lambda: tf_depths_proc)
+
+        # # randomly augment images
+        # do_augment  = tf.random_uniform([], 0, 1)
+        # left_image, right_image = tf.cond(do_augment > 0.5, lambda: augment_image_pair(left_image, right_image), lambda: (left_image, right_image))
+
+        # left_image.set_shape( [None, None, 3])
+        # right_image.set_shape([None, None, 3])
+
         tf_images_resized = tf.image.per_image_standardization(tf_images_resized)
 
         # Creates Training Batch Tensors
@@ -249,9 +294,6 @@ def train(args):
             num_threads=1,
             capacity=16,
             min_after_dequeue=0)
-
-        print(tf_batch_data)
-        print(tf_batch_labels)
 
         # Data Augmentation
         # TODO: Crop
@@ -280,9 +322,6 @@ def train(args):
         tf_learningRate = args.learning_rate
         if args.ldecay:
             tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95, staircase=True, name='ldecay')
-
-        print(net.get_output())
-        print(tf_log_labels)
 
         loss_name, tf_loss = loss.tf_MSE(net.get_output(), tf_log_labels)
 
@@ -362,13 +401,25 @@ def train(args):
             # Training
             # batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
             # image_key, depth_key = sess.run([tf_image_key, tf_depth_key]  
-            _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
+            # _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
+            _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_proc, depths_proc = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_proc, tf_depths_proc])
+
+
+            # print(images_proc.shape)
+            # print(depths_proc.shape)
+            # input("proc2")
+
+            # plt.figure()
+            # plt.imshow(images_proc)
+            # plt.figure()
+            # plt.imshow(depths_proc[:,:,0])
+            # plt.show()
+            # input("proc")
 
             # Validation
             valid_loss = -1
-            # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss],
-            #                                                     feed_dict=feed_dict_valid)
-
+            # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss])
+            # input("valid")
             # -----
 
 

@@ -100,9 +100,10 @@ def main():
 
     # Create a placeholder for the input image
     input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
+    input_node_norm = tf.image.per_image_standardization(input_node)
     
     # Construct the network
-    net = ResNet50UpProj({'data': input_node}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': input_node_norm}, batch_size, 1, False)
     tf_pred = tf.exp(net.get_output(), 'pred')
 
     # ---------------
@@ -177,7 +178,6 @@ def main():
             if SAVE_IMAGES:
                 cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame);
                 cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8_inv)
-                cv2.imwrite("output/fcrn_cv/jet%06d.png" % count, pred_resized)
                 count += 1
 
             if cv2.waitKey(1) & 0xFF == ord('q'): # without waitKey() the images are not shown.

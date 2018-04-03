@@ -70,8 +70,10 @@ def selectedDataset(DATASET_PATH_ROOT, dataset):
             dataset_path = DATASET_PATH_ROOT + 'nicolas_kitti/dataset1/campus/2011_09_28_drive_0039'
 
         elif dataset == 'kittiraw_residential_continuous':
-            # dataset_path = DATASET_PATH_ROOT + 'nicolas_kitti/dataset1/residential_continuous'                # Load from HD
-            dataset_path = '/home/olorin/Documents/nicolas/mestrado_code/monodeep/data/residential_continuous'  # Load from SSD
+            # dataset_path = DATASET_PATH_ROOT + 'nicolas_kitti/dataset1/residential_continuous'                    # Load data from Olorin's HD
+            # dataset_path = '/home/olorin/Documents/nicolas/mestrado_code/monodeep/data/residential_continuous'    # Load data from Olorin's SSD
+            # dataset_path = '/home/nicolas/remote/olorin_ssd_nicolas/data/residential_continuous'                  # Load data from Olorin's SSD to run on XPS
+            dataset_path = '/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous'                  # Load data from XPS's HD
 
         # print(dataset_path)
         # input()

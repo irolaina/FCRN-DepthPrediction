@@ -4,3 +4,5 @@ misc/*
 tensorflow/output/*
 */.DS_Store
 *.pyc
+*.DS_Store
+tensorflow/tmp/*
