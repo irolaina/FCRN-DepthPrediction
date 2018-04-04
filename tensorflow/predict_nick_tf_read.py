@@ -14,7 +14,6 @@
 #  To-Do Monodeep
 # ================
 # TODO: Verificar se as tarefas abaixo ainda fazem sentido para o FCRN
-# FIXME: Após uma conversa com o vitor, aparentemente tanto a saida do coarse/fine devem ser lineares, nao eh necessario apresentar o otimizar da Coarse e a rede deve prever log(depth), para isso devo converter os labels para log(y_)
 # TODO: Validar Métricas.
 # TODO: Adicionar mais topologias
 # TODO: If detect Ctrl+C, save training state.
@@ -40,6 +39,8 @@ import utils.args as argsLib
 import utils.metrics as metricsLib
 
 from utils.dataloader import Dataloader
+from utils.model import Model
+
 import utils.loss as loss
 from utils.plot import Plot
 from utils.fcrn import ResNet50UpProj
@@ -308,29 +309,16 @@ def train(args):
             capacity=16,
             min_after_dequeue=0)
 
-        # Construct the network - FCRN (Fully Convolutional Residual Network)
-        net = ResNet50UpProj({'data': tf_batch_data}, args.batch_size, 1, False)
+        model = Model(args, tf_batch_data, tf_batch_labels, 'train')
 
-        # Training Variables
-        tf_log_labels = tf.log(tf.cast(tf_batch_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),name='log_labels')  # Just for displaying Image
-        tf_global_step = tf.Variable(0, trainable=False, name='global_step')  # Count the number of steps taken.
-
-        tf_learningRate = args.learning_rate
-        if args.ldecay:
-            tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95, staircase=True,
-                                                         name='ldecay')
-
-        loss_name, tf_loss = loss.tf_MSE(net.get_output(), tf_log_labels)
-
-        optimizer = tf.train.AdamOptimizer(tf_learningRate)
-        trainer = optimizer.minimize(tf_loss, global_step=tf_global_step)
-
+        # TODO: Mover para model.py
         # TODO: Enable Summaries
         # with tf.name_scope("Summaries"):
         #     # Summary Objects
         #     summary_writer = tf.summary.FileWriter(save_path + args.log_directory, graph)
         #     summary_op = tf.summary.merge_all('model_0')
 
+        # TODO: Mover para model.py
         # Creates Saver Obj
         train_saver = tf.train.Saver()
 
@@ -399,13 +387,13 @@ def train(args):
             # Training
             # batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
             # image_key, depth_key = sess.run([tf_image_key, tf_depth_key]  
-            # _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
+            # _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([train, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
 
             _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized = sess.run(
-                [trainer, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_resized, tf_depths_resized])
+                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss, tf_images_resized, tf_depths_resized])
 
             # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
-            #     [trainer, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_resized, tf_depths_resized, tf_images_proc,
+            #     [train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_resized, tf_depths_resized, tf_images_proc,
             #      tf_depths_proc])
 
             def debug_data_augmentation():
@@ -492,7 +480,7 @@ def train(args):
         # Logs the obtained test result
         f = open('results.txt', 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
-            datetime, args.model_name, args.dataset, loss_name, step, train_loss, valid_loss, sim_train))
+            datetime, args.model_name, args.dataset, model.loss_name, step, train_loss, valid_loss, sim_train))
         f.close()
 
 
