@@ -1,16 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-machine = 'olorin'
-machine = 'xps'
-
 # ============
 #  To-Do FCRN
 # ============
-
-# TODO: Implementar leitura das imagens pelo Tensorflow - Treinamento
 # TODO: Implementar leitura das imagens pelo Tensorflow - Validação
-# TODO: Implementar leitura das imagens pelo Tensorflow - Treinamento
+# TODO: Implementar leitura das imagens pelo Tensorflow - Teste
 
 # TODO: Implementar Mask Out dos de valores válidos
 # TODO: Implementar Bilinear
@@ -50,6 +45,7 @@ from utils.plot import Plot
 from utils.fcrn import ResNet50UpProj
 
 from PIL import Image
+
 # from skimage import exposure
 # from skimage import dtype_limits
 # from skimage import transform
@@ -58,6 +54,10 @@ from PIL import Image
 # ==================
 #  Global Variables
 # ==================
+# Choose the current Machine:
+# machine = 'olorin'
+machine = 'xps'
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
 
@@ -108,6 +108,7 @@ def saveTrainedModel(save_path, session, saver, model_name):
     file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
     print("\n[Results] Model saved in file: %s" % file_path)
 
+
 # ========= #
 #  Predict  #
 # ========= #
@@ -155,8 +156,9 @@ def predict(model_data_path, image_path):
 
         return pred
 
+
 # TODO: move
-class EarlyStopping():
+class EarlyStopping:
     def __init__(self):
         # Local Variables
         self.movMeanLast = 0
@@ -233,95 +235,90 @@ def train(args):
         tf_image_key, image_file = image_reader.read(train_image_filename_queue)
         tf_depth_key, depth_file = image_reader.read(train_depth_filename_queue)
 
-        tf_images = tf.image.decode_png(image_file)
-        tf_depths = tf.image.decode_png(depth_file)
+        tf_images = tf.image.decode_png(image_file) # uint8
+        tf_depths = tf.image.decode_png(depth_file) # uint8
 
+        # FIXME: Kitti Original as imagens de disparidade sao do tipo int32, no caso do kittiraw_residential_continous sao uint8
         # Restores images structure (size, type)
+        # Method 1
         tf_images_resized = tf.cast(tf_images, tf.uint8)
-        tf_depths_resized = tf.cast(tf_depths, tf.uint8) # FIXME: Kitti Original as imagens de disparidade sao do tipo int32, no caso do kittiraw_residential_continous sao uint8
+        tf_depths_resized = tf.cast(tf_depths, tf.uint8)
         tf_images_resized.set_shape([imageRawSize[0], imageRawSize[1], 3])
         tf_depths_resized.set_shape([imageRawSize[0], imageRawSize[1], 1])
-        tf_images_resized=tf.cast(tf.image.resize_images(tf_images, [imageNetworkInputSize[0], imageNetworkInputSize[1]]), tf.uint8)
-        tf_depths_resized=tf.cast(tf.image.resize_images(tf_depths, [depthNetworkOutputSize[0], depthNetworkOutputSize[1]]), tf.uint8)
+        tf_images_resized = tf.cast(tf.image.resize_images(tf_images, [imageNetworkInputSize[0], imageNetworkInputSize[1]]), tf.uint8)
+        tf_depths_resized = tf.cast(tf.image.resize_images(tf_depths, [depthNetworkOutputSize[0], depthNetworkOutputSize[1]]), tf.uint8)
 
-        # Normalizes Images
+        # Method 2
+        # tf_images = tf.image.convert_image_dtype(tf_images, tf.float32)
+        # tf_depths = tf.image.convert_image_dtype(tf_depths, tf.float32)
+        # tf_images.set_shape([imageRawSize[0], imageRawSize[1], 3])
+        # tf_depths.set_shape([imageRawSize[0], imageRawSize[1], 1])
+
+        # Downsizes Input and Depth Images
+        tf_images_resized = tf.image.resize_images(tf_images, [imageNetworkInputSize[0], imageNetworkInputSize[1]])
+        tf_depths_resized = tf.image.resize_images(tf_depths, [depthNetworkOutputSize[0], depthNetworkOutputSize[1]])
+
+        # ------------------- #
+        #  Data Augmentation  #
+        # ------------------- #
+        # Copy
         tf_images_proc = tf_images_resized
         tf_depths_proc = tf_depths_resized
 
-        def augment_image_pair(self, left_image, right_image):
+        def augment_image_pair(image, depth):
+            # randomly flip images
+            do_flip = tf.random_uniform([], 0, 1)
+            image_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)
+            depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
+
             # randomly shift gamma
             random_gamma = tf.random_uniform([], 0.8, 1.2)
-            left_image_aug  = left_image  ** random_gamma
-            right_image_aug = right_image ** random_gamma
+            image_aug = image_aug ** random_gamma
 
             # randomly shift brightness
             random_brightness = tf.random_uniform([], 0.5, 2.0)
-            left_image_aug  =  left_image_aug * random_brightness
-            right_image_aug = right_image_aug * random_brightness
+            image_aug = image_aug * random_brightness
 
             # randomly shift color
             random_colors = tf.random_uniform([3], 0.8, 1.2)
-            white = tf.ones([tf.shape(left_image)[0], tf.shape(left_image)[1]])
+            white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])
             color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
-            left_image_aug  *= color_image
-            right_image_aug *= color_image
+            image_aug *= color_image
 
             # saturate
-            left_image_aug  = tf.clip_by_value(left_image_aug,  0, 1)
-            right_image_aug = tf.clip_by_value(right_image_aug, 0, 1)
+            image_aug = tf.clip_by_value(image_aug, 0, 1)
 
-            return left_image_aug, right_image_aug
+            return image_aug, depth_aug
 
-        # randomly flip images
-        do_flip = tf.random_uniform([], 0, 1)
-        tf_images_proc  = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(tf_images_proc), lambda: tf_images_proc)
-        tf_depths_proc = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(tf_depths_proc),  lambda: tf_depths_proc)
+        # randomly augment images
+        do_augment = tf.random_uniform([], 0, 1)
+        tf_images_proc, tf_depths_proc = tf.cond(do_augment > 0.5, lambda: augment_image_pair(tf_images_resized, tf_depths_resized), lambda: (tf_images_resized, tf_depths_resized))
 
-        # # randomly augment images
-        # do_augment  = tf.random_uniform([], 0, 1)
-        # left_image, right_image = tf.cond(do_augment > 0.5, lambda: augment_image_pair(left_image, right_image), lambda: (left_image, right_image))
+        # Normalizes Input
+        tf_images_proc = tf.image.per_image_standardization(tf_images_proc)
 
-        # left_image.set_shape( [None, None, 3])
-        # right_image.set_shape([None, None, 3])
-
-        tf_images_resized = tf.image.per_image_standardization(tf_images_resized)
+        tf_images_resized_uint8 = tf.cast(tf_images_resized, tf.uint8) # Visual purpose
 
         # Creates Training Batch Tensors
-        tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
+        tf_batch_data_resized, tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
             # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-            [tf_images_resized, tf_depths_resized],  # Enable for debugging images
+            [tf_images_resized_uint8, tf_images_proc, tf_depths_proc],  # Enable for debugging images
             batch_size=args.batch_size,
             num_threads=1,
             capacity=16,
             min_after_dequeue=0)
 
-        # Data Augmentation
-        # TODO: Crop
-        # cropSize = [172, 576]
-        # x_min = round((h - cropSize[0]) / 2)
-        # x_max = round((h + cropSize[0]) / 2)
-        # y_min = round((w - cropSize[1]) / 2)
-        # y_max = round((w + cropSize[1]) / 2)
-        #
-        # patches_top = [0, 0.5]
-        # patches_bottom = [0.25, 0.75]
-        # boxes = tf.stack([patches_top, patches_top, patches_bottom, patches_bottom], axis=1)
-        #
-        # tf_batch_data = tf.cast(tf.image.crop_and_resize(tf_batch_data, boxes,
-        #                                              box_ind=tf.zeros_like(patches_top, dtype=tf.int32),
-        #                                              crop_size=cropSize, method="bilinear", extrapolation_value=None,
-        #                                              name="generate_resized_crop"),dtype=tf.uint8)
-
         # Construct the network - FCRN (Fully Convolutional Residual Network)
         net = ResNet50UpProj({'data': tf_batch_data}, args.batch_size, 1, False)
 
         # Training Variables
-        tf_log_labels = tf.log(tf.cast(tf_batch_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
+        tf_log_labels = tf.log(tf.cast(tf_batch_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),name='log_labels')  # Just for displaying Image
         tf_global_step = tf.Variable(0, trainable=False, name='global_step')  # Count the number of steps taken.
 
         tf_learningRate = args.learning_rate
         if args.ldecay:
-            tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95, staircase=True, name='ldecay')
+            tf_learningRate = tf.train.exponential_decay(tf_learningRate, tf_global_step, 1000, 0.95, staircase=True,
+                                                         name='ldecay')
 
         loss_name, tf_loss = loss.tf_MSE(net.get_output(), tf_log_labels)
 
@@ -352,7 +349,8 @@ def train(args):
         tf.local_variables_initializer().run()
 
         # Check Dataset Integrity
-        train_image_filename_list, train_depth_filename_list = sess.run([tf_train_image_filename_list, tf_train_depth_filename_list])
+        train_image_filename_list, train_depth_filename_list = sess.run(
+            [tf_train_image_filename_list, tf_train_depth_filename_list])
         train_image_filename_list = [item[-53:] for item in train_image_filename_list]
         train_depth_filename_list = [item[-53:] for item in train_depth_filename_list]
 
@@ -402,26 +400,40 @@ def train(args):
             # batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
             # image_key, depth_key = sess.run([tf_image_key, tf_depth_key]  
             # _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
-            _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_proc, depths_proc = sess.run([trainer, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_proc, tf_depths_proc])
 
+            _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized = sess.run(
+                [trainer, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_resized, tf_depths_resized])
 
-            # print(images_proc.shape)
-            # print(depths_proc.shape)
-            # input("proc2")
+            # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
+            #     [trainer, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_resized, tf_depths_resized, tf_images_proc,
+            #      tf_depths_proc])
 
-            # plt.figure()
-            # plt.imshow(images_proc)
-            # plt.figure()
-            # plt.imshow(depths_proc[:,:,0])
-            # plt.show()
-            # input("proc")
+            def debug_data_augmentation():
+                fig, axes = plt.subplots(nrows=2, ncols=2)
+
+                axes[0, 0].set_title('images_resized')
+                axes[0, 0].imshow(images_resized)
+
+                axes[0, 1].set_title('depths_resized[:, :, 0]')
+                axes[0, 1].imshow(depths_resized[:, :, 0])
+
+                axes[1, 0].set_title('images_proc')
+                axes[1, 0].imshow(images_proc)
+
+                axes[1, 1].set_title('depths_proc[:,:,0]')
+                axes[1, 1].imshow(depths_proc[:,:,0])
+                fig.tight_layout()
+
+                plt.pause(0.001)
+                input("proc")
+
+            # debug_data_augmentation()
 
             # Validation
             valid_loss = -1
             # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss])
             # input("valid")
             # -----
-
 
             # TODO: Reativar código abaixo
             # if ENABLE_TENSORBOARD:
@@ -437,9 +449,9 @@ def train(args):
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
-                    train_plotObj.showTrainResults(raw=batch_data[0], # TODO: Change to batch_data_crop
-                                                   label=batch_labels[0, :, :,0],
-                                                   log_label=batch_log_labels[0, :, :,0],
+                    train_plotObj.showTrainResults(raw=batch_data_resized[0],
+                                                   label=batch_labels[0, :, :, 0],
+                                                   log_label=batch_log_labels[0, :, :, 0],
                                                    pred=batch_pred[0, :, :, 0])
 
                     # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
@@ -455,7 +467,7 @@ def train(args):
                     valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :],
                                                    label=valid_labels_o[0],
                                                    log_label=valid_log_labels[0, :, :],
-                                                   pred=valid_pred[0,:,:,0])
+                                                   pred=valid_pred[0, :, :, 0])
 
                 end2 = time.time()
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,
@@ -512,7 +524,7 @@ def test(args):
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
     pred = np.zeros((dataloader.numTestSamples, dataloader.outputSize[1], dataloader.outputSize[2]),
-                          dtype=np.float32)  # (?, 43, 144)
+                    dtype=np.float32)  # (?, 43, 144)
 
     test_labels_o = np.zeros((len(dataloader.test_dataset), dataloader.outputSize[1], dataloader.outputSize[2]),
                              dtype=np.int32)  # (?, 43, 144)
@@ -524,7 +536,6 @@ def test(args):
     test_data_crop_o = np.zeros(
         (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]),
         dtype=np.uint8)  # (?, 172, 576, 3)
-
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -558,8 +569,9 @@ def test(args):
             test_data_crop_o[i] = image_crop
 
             # Evalute the network for the given image
-            pred_temp = sess.run(net.get_output(), feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
-            pred[i] = pred_temp[:,:,:,0]
+            pred_temp = sess.run(net.get_output(),
+                                 feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
+            pred[i] = pred_temp[:, :, :, 0]
 
             # Prints Testing Progress
             end2 = time.time()
@@ -582,7 +594,7 @@ def test(args):
             os.makedirs(output_directory)
 
         if SAVE_TEST_DISPARITIES:
-            np.save(output_directory[:-7] + 'test_pred.npy', pred) # The indexing removes 'restore' from folder path
+            np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path
 
         # Calculate Metrics
         if dataloader.test_labels:
@@ -597,9 +609,9 @@ def test(args):
             for i in range(dataloader.numTestSamples):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
-                                             log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), # TODO: utilizar tf_log_label
+                                             log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE),
+                                             # TODO: utilizar tf_log_label
                                              pred=pred[i], i=i)
-
 
 
 # ======

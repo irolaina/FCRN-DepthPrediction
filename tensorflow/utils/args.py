@@ -16,8 +16,6 @@ def argumentHandler():
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
     parser.add_argument('-m', '--mode', type=str, help="Select 'train' or 'test' mode", default='train')
 
-
-
     # ========== #
     #  Training  #
     # ========== #
