@@ -6,16 +6,10 @@
 # ============
 # TODO: Implementar leitura das imagens pelo Tensorflow - Validação
 # TODO: Implementar leitura das imagens pelo Tensorflow - Teste
+# TODO: Validar Métricas.
 
-# TODO: Implementar Mask Out dos de valores válidos
 # TODO: Implementar Bilinear
 # TODO: Estou usando momento?
-
-# ================
-#  To-Do Monodeep
-# ================
-# TODO: Verificar se as tarefas abaixo ainda fazem sentido para o FCRN
-# TODO: Validar Métricas.
 # TODO: If detect Ctrl+C, save training state.
 
 
@@ -34,6 +28,7 @@ import matplotlib.pyplot as plt
 import scipy.misc as scp
 
 from collections import deque
+from PIL import Image
 
 import utils.args as argsLib
 import utils.metrics as metricsLib
@@ -43,7 +38,6 @@ from utils.model import Model
 from utils.fcrn import ResNet50UpProj
 from utils.plot import Plot
 
-from PIL import Image
 
 # ==================
 #  Global Variables
@@ -216,16 +210,13 @@ def train(args):
 
                 root_folder = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
 
-                folders_filenames = glob.glob(root_folder+"*/")
-
-                for folder in folders_filenames:
+                # Finds input images and labels inside list of folders.
+                for folder in glob.glob(root_folder+"*/"):
                     print(folder)
-
                     os.chdir(folder)
 
                     for file in glob.glob('*_colors.png'):
                         print(file)
-
                         image_filenames.append(folder+file)
 
                     for file in glob.glob('*_depth.png'):
@@ -499,15 +490,6 @@ def train(args):
                                                    log_label=batch_log_labels[0, :, :, 0],
                                                    pred=batch_pred[0, :, :, 0])
 
-                    # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
-
-                if args.show_train_error_progress:
-                    # FIXME:
-                    # Plot.plotTrainingErrorProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],
-                    #                                coarse=train_PredCoarse[0, :, :], fine=train_PredFine[0, :, :],
-                    #                                figId=8)
-                    pass
-
                 if args.show_valid_progress:
                     valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :],
                                                    label=valid_labels_o[0],
@@ -655,7 +637,6 @@ def test(args):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
                                              log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE),
-                                             # TODO: utilizar tf_log_label
                                              pred=pred[i], i=i)
 
 
