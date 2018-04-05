@@ -9,6 +9,7 @@
 
 # TODO: Implementar Mask Out dos de valores válidos
 # TODO: Implementar Bilinear
+# TODO: Estou usando momento?
 
 # ================
 #  To-Do Monodeep
@@ -22,6 +23,7 @@
 #  Libraries
 # ===========
 import os
+import glob
 import sys
 import time
 import warnings
@@ -87,18 +89,6 @@ def createSaveFolder():
             os.makedirs(save_restore_path)
 
     return save_path, save_restore_path
-
-
-# TODO: Move
-def saveTrainedModel(save_path, session, saver, model_name):
-    """ Saves trained model """
-    # Creates saver obj which backups all the variables.
-    print("[Network/Training] List of Saved Variables:")
-    for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
-        print(i)  # i.name if you want just a name
-
-    file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
-    print("\n[Results] Model saved in file: %s" % file_path)
 
 
 # ========= #
@@ -203,7 +193,7 @@ def train(args):
         seed = random.randint(0, 2 ** 31 - 1)
 
         # TODO: Ler outros Datasets
-        # KittiRaw Residential Continous
+        # KittiRaw Residential Continuous
         # Image: (375, 1242, 3) uint8
         # Depth: (375, 1242)    uint8
 
@@ -214,50 +204,81 @@ def train(args):
             tf_train_depth_filename_list = tf.train.match_filenames_once(
                 "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png")
         elif machine == 'xps':
-            tf_train_image_filename_list = tf.train.match_filenames_once(
-                "../../data/residential_continuous/training/imgs/*.png")
-            tf_train_depth_filename_list = tf.train.match_filenames_once(
-                "../../data/residential_continuous/training/dispc/*.png")
+            if args.dataset == 'kittiraw_residential_continuous':
+                tf_train_image_filename_list = tf.train.match_filenames_once(
+                    "../../data/residential_continuous/training/imgs/*.png")
+                tf_train_depth_filename_list = tf.train.match_filenames_once(
+                    "../../data/residential_continuous/training/dispc/*.png")
 
-        train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False,
-                                                                    seed=seed)
-        train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False,
-                                                                    seed=seed)
+            elif args.dataset == 'nyudepth':
+                image_filenames = []
+                depth_filenames = []
+
+                root_folder = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
+
+                folders_filenames = glob.glob(root_folder+"*/")
+
+                for folder in folders_filenames:
+                    print(folder)
+
+                    os.chdir(folder)
+
+                    for file in glob.glob('*_colors.png'):
+                        print(file)
+
+                        image_filenames.append(folder+file)
+
+                    for file in glob.glob('*_depth.png'):
+                        print(file)
+                        depth_filenames.append(folder+file)
+
+                    print()
+
+                print("Summary - Training Inputs")
+                print("image_filenames: ", len(image_filenames))
+                print("depth_filenames: ", len(depth_filenames))
+
+                tf_train_image_filename_list = tf.placeholder(tf.string)
+                tf_train_depth_filename_list = tf.placeholder(tf.string)
+
+        # Creates Inputs Queue
+        tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=seed)
+        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=seed)
 
         # Reads images
         image_reader = tf.WholeFileReader()
-        tf_image_key, image_file = image_reader.read(train_image_filename_queue)
-        tf_depth_key, depth_file = image_reader.read(train_depth_filename_queue)
+        tf_image_key, image_file = image_reader.read(tf_train_image_filename_queue)
+        tf_depth_key, depth_file = image_reader.read(tf_train_depth_filename_queue)
 
-        tf_images = tf.image.decode_png(image_file)  # uint8
-        tf_depths = tf.image.decode_png(depth_file)  # uint8
+        tf_image = tf.image.decode_image(image_file, channels=3)  # uint8
+        tf_depth = tf.image.decode_image(depth_file, channels=1)  # uint8
 
         # FIXME: Kitti Original as imagens de disparidade são do tipo int32, no caso do kittiraw_residential_continous são uint8
         # Restores images structure (size, type)
         # Method 1
-        tf_images.set_shape([imageRawSize[0], imageRawSize[1], 3])
-        tf_depths.set_shape([imageRawSize[0], imageRawSize[1], 1])
-        tf_images_resized = tf.cast(
-            tf.image.resize_images(tf_images, [imageNetwork_InputSize[0], imageNetwork_InputSize[1]]), tf.uint8)
-        tf_depths_resized = tf.cast(
-            tf.image.resize_images(tf_depths, [depthNetwork_OutputSize[0], depthNetwork_OutputSize[1]]), tf.uint8)
+        tf_image.set_shape([imageRawSize[0], imageRawSize[1], 3])
+        tf_depth.set_shape([imageRawSize[0], imageRawSize[1], 1])
+        tf_image_resized = tf.cast(
+            tf.image.resize_images(tf_image, [imageNetwork_InputSize[0], imageNetwork_InputSize[1]]), tf.uint8)
+        tf_depth_resized = tf.cast(
+            tf.image.resize_images(tf_depth, [depthNetwork_OutputSize[0], depthNetwork_OutputSize[1]]), tf.uint8)
 
         # Method 2
-        # tf_images = tf.image.convert_image_dtype(tf_images, tf.float32)
-        # tf_depths = tf.image.convert_image_dtype(tf_depths, tf.float32)
-        # tf_images.set_shape([imageRawSize[0], imageRawSize[1], 3])
-        # tf_depths.set_shape([imageRawSize[0], imageRawSize[1], 1])
+        # tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)
+        # tf_depth = tf.image.convert_image_dtype(tf_depth, tf.float32)
+        # tf_image.set_shape([imageRawSize[0], imageRawSize[1], 3])
+        # tf_depth.set_shape([imageRawSize[0], imageRawSize[1], 1])
 
         # Downsizes Input and Depth Images
-        tf_images_resized = tf.image.resize_images(tf_images, [imageNetwork_InputSize[0], imageNetwork_InputSize[1]])
-        tf_depths_resized = tf.image.resize_images(tf_depths, [depthNetwork_OutputSize[0], depthNetwork_OutputSize[1]])
+        tf_image_resized = tf.image.resize_images(tf_image, [imageNetwork_InputSize[0], imageNetwork_InputSize[1]])
+        tf_depth_resized = tf.image.resize_images(tf_depth, [depthNetwork_OutputSize[0], depthNetwork_OutputSize[1]])
 
         # ------------------- #
         #  Data Augmentation  #
         # ------------------- #
         # Copy
-        tf_images_proc = tf_images_resized
-        tf_depths_proc = tf_depths_resized
+        tf_image_proc = tf_image_resized
+        tf_depth_proc = tf_depth_resized
 
         def augment_image_pair(image, depth):
             # randomly flip images
@@ -286,19 +307,19 @@ def train(args):
 
         # randomly augment images
         do_augment = tf.random_uniform([], 0, 1)
-        tf_images_proc, tf_depths_proc = tf.cond(do_augment > 0.5,
-                                                 lambda: augment_image_pair(tf_images_resized, tf_depths_resized),
-                                                 lambda: (tf_images_resized, tf_depths_resized))
+        tf_image_proc, tf_depth_proc = tf.cond(do_augment > 0.5,
+                                                 lambda: augment_image_pair(tf_image_resized, tf_depth_resized),
+                                                 lambda: (tf_image_resized, tf_depth_resized))
 
         # Normalizes Input
-        tf_images_proc = tf.image.per_image_standardization(tf_images_proc)
+        tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
 
-        tf_images_resized_uint8 = tf.cast(tf_images_resized, tf.uint8)  # Visual purpose
+        tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
 
         # Creates Training Batch Tensors
         tf_batch_data_resized, tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
             # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-            [tf_images_resized_uint8, tf_images_proc, tf_depths_proc],  # Enable for debugging images
+            [tf_image_resized_uint8, tf_image_proc, tf_depth_proc],  # Enable for debugging images
             batch_size=args.batch_size,
             num_threads=1,
             capacity=16,
@@ -331,26 +352,62 @@ def train(args):
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
 
+        # TODO: Unificar session.run
+        def checkDatasetIntegrity(tf_image_str_list, tf_depth_str_list):
+            try:
+                if args.dataset == 'kittiraw_residential_continuous':
+                    feed_dict = None
+                    image_replace = [b'/imgs/', b'']
+                    depth_replace = [b'/dispc/', b'']
+
+                elif args.dataset == 'nyudepth':
+                    feed_dict = {tf_image_str_list: image_filenames,
+                                 tf_depth_str_list: depth_filenames}
+                    image_replace = ['_colors.png', '']
+                    depth_replace = ['_depth.png', '']
+
+                image_str_list, depth_str_list = sess.run(
+                    [tf_image_str_list, tf_depth_str_list], feed_dict=feed_dict)
+
+                image_str_list_aux = [item.replace(image_replace[0], image_replace[1]) for item in
+                                             image_str_list]
+                depth_str_list_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in
+                                             depth_str_list]
+
+                # print(image_str_list)
+                # input("oi3")
+                # print(depth_str_list)
+                # input("oi4")
+                #
+                # print(image_str_list_aux)
+                # input("oi3")
+                # print(depth_str_list_aux)
+                # input("oi4")
+
+                numSamples = len(image_str_list_aux)
+
+                print("[monodeep/Dataset] Checking if RGB and Depth images are paired... ")
+                if image_str_list_aux == depth_str_list_aux:
+                    print("[monodeep/Dataset] Check Integrity: Pass")
+                    # del image_str_list, depth_str_list
+                    # del image_str_list_aux, depth_str_list_aux
+                else:
+                    raise ValueError
+
+                return numSamples, feed_dict
+
+            except ValueError:
+                print("[monodeep/Dataset] Check Integrity: Failed")
+                raise SystemExit
+
         # Check Dataset Integrity
-        train_image_filename_list, train_depth_filename_list = sess.run(
-            [tf_train_image_filename_list, tf_train_depth_filename_list])
-        train_image_filename_list = [item[-53:] for item in train_image_filename_list]
-        train_depth_filename_list = [item[-53:] for item in train_depth_filename_list]
-
-        # Proclaim the epochs
-        epochs = np.floor(args.batch_size * args.max_steps / len(train_image_filename_list))
-
-        print("[monodeep/Dataset] Checking if RGB and Depth images are paired... ")
-        if train_image_filename_list == train_depth_filename_list:
-            print("[monodeep/Dataset] Check Integrity: Pass")
-            del train_image_filename_list, train_depth_filename_list
-        else:
-            print("[monodeep/Dataset] Check Integrity: Failed")
-            raise SystemExit
+        numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filename_list, tf_train_depth_filename_list)
 
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(coord=coord)
 
+        # Proclaim the epochs
+        epochs = np.floor(args.batch_size * args.max_steps / numSamples)
         print('\nTrain with approximately %d epochs' % epochs)
 
         # =================
@@ -380,17 +437,21 @@ def train(args):
 
             # ----- Session Run! ----- #
             # Training
-            # batch_data, batch_labels = sess.run([tf_batch_data, tf_batch_labels])
-            # image_key, depth_key = sess.run([tf_image_key, tf_depth_key]  
-            # _, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run([train, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss])
+            if args.dataset == 'kittiraw_residential_continuous':
+                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run(
+                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss])
 
-            _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized = sess.run(
-                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
-                 model.fcrn.get_output(), model.tf_loss, tf_images_resized, tf_depths_resized])
+            elif args.dataset == 'nyudepth':
+                image_key = sess.run([tf_image_key], feed_dict=feed_dict_strings)
+
+                input("oi5")
+
+                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run(
+                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss])
 
             # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
-            #     [train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_images_resized, tf_depths_resized, tf_images_proc,
-            #      tf_depths_proc])
+            #     [train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_image_resized, tf_depth_resized, tf_image_proc,
+            #      tf_depth_proc])
 
             def debug_data_augmentation():
                 fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -471,7 +532,7 @@ def train(args):
         #  Save Results
         # ==============
         if SAVE_TRAINED_MODEL:
-            saveTrainedModel(save_restore_path, sess, train_saver, args.model_name)
+            model.saveTrainedModel(save_restore_path, sess, train_saver, args.model_name)
 
         # Logs the obtained test result
         f = open('results.txt', 'a')

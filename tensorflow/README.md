@@ -4,7 +4,7 @@ Run Single Prediction:
     
 Train:
 
-    python3 predict_nick.py -m train -s kittiraw_residential_continuous --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
+    python3 predict_nick.py -m train -s kittiraw_residential_continuous --max_steps 1000 -d 0.5 --ldecay --gpu 0 -t
     python3 predict_nick_tf_read.py -m train -s kittiraw_residential_continuous --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
 
 Test:

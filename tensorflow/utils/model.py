@@ -61,12 +61,12 @@ class Model(object):
                 name='log_labels')  # Just for displaying Image
 
             # Mask Out Pixels without depth values
-            tf_idx = tf.where(self.tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
-            tf_valid_labels = tf.gather_nd(self.tf_labels, tf_idx)
+            self.tf_idx = tf.where(self.tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
+            tf_valid_labels = tf.gather_nd(self.tf_labels, self.tf_idx)
             self.tf_valid_log_labels = tf.log(tf_valid_labels, name='log_labels')
 
             # Mask Out Prediction
-            self.tf_valid_pred = tf.gather_nd(self.fcrn.get_output(), tf_idx)
+            self.tf_valid_pred = tf.gather_nd(self.fcrn.get_output(), self.tf_idx)
 
         with tf.name_scope('Train'):
             self.tf_keep_prob = tf.placeholder(tf.float32, name='keep_prob')
@@ -95,10 +95,9 @@ class Model(object):
     def build_losses(self):
         with tf.name_scope("Losses"):
             # Select Loss Function:
-            self.loss_name, self.tf_loss = loss.tf_MSE(self.tf_valid_pred,
-                                                       self.tf_valid_log_labels)  # Default, only valid pixels
+            # self.loss_name, self.tf_loss = loss.tf_MSE(self.tf_valid_pred, self.tf_valid_log_labels)  # Default, only valid pixels
             # self.loss_name, tf_loss = loss.tf_MSE(net.get_output(), self.tf_log_labels)       # Don't Use! Regress all pixels, even the sky!
-            # self.loss_name, self.tf_loss = loss.tf_L(self.tf_predFine, self.tf_log_labels, self.tf_idx, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
+            self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, self.tf_idx, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
 
             # TODO: Reativar
             # if self.params['l2norm']:
@@ -132,14 +131,10 @@ class Model(object):
 
     @staticmethod
     def saveTrainedModel(save_path, session, saver, model_name):
-        """ Saves trained model """
         # Creates saver obj which backups all the variables.
         print("[Network/Training] List of Saved Variables:")
         for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
             print(i)  # i.name if you want just a name
-
-        # train_saver = tf.train.Saver()                                                  # ~4.3 Gb
-        # train_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES))  # ~850 mb
 
         file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
         print("\n[Results] Model saved in file: %s" % file_path)
