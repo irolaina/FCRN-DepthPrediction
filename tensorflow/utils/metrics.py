@@ -9,6 +9,7 @@ import numpy as np
 # ===========
 #  Functions
 # ===========
+# TODO: Validar, usar o arquivo error_metrics.m da Iro Laina
 def evaluateTesting(fine, labels):
     print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
     print("Input")

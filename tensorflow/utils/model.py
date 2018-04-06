@@ -60,14 +60,6 @@ class Model(object):
                 tf.cast(self.tf_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
                 name='log_labels')  # Just for displaying Image
 
-            # Mask Out Pixels without depth values
-            self.tf_idx = tf.where(self.tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
-            tf_valid_labels = tf.gather_nd(self.tf_labels, self.tf_idx)
-            self.tf_valid_log_labels = tf.log(tf_valid_labels, name='log_labels')
-
-            # Mask Out Prediction
-            self.tf_valid_pred = tf.gather_nd(self.fcrn.get_output(), self.tf_idx)
-
         with tf.name_scope('Train'):
             self.tf_keep_prob = tf.placeholder(tf.float32, name='keep_prob')
             self.tf_global_step = tf.Variable(0, trainable=False,
@@ -95,9 +87,18 @@ class Model(object):
     def build_losses(self):
         with tf.name_scope("Losses"):
             # Select Loss Function:
-            # self.loss_name, self.tf_loss = loss.tf_MSE(self.tf_valid_pred, self.tf_valid_log_labels)  # Default, only valid pixels
+
+            # ----- MSE ----- #
+            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.tf_labels, valid_pixels=True)  # Default, only valid pixels
+            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.tf_labels, valid_pixels=False)  # Default, only valid pixels
+
             # self.loss_name, tf_loss = loss.tf_MSE(net.get_output(), self.tf_log_labels)       # Don't Use! Regress all pixels, even the sky!
-            self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, self.tf_idx, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
+
+            # ----- Eigen's Log Depth ----- #
+            # self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, self.tf_idx, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
+
+            # ----- BerHu ----- #
+            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels)
 
             # TODO: Reativar
             # if self.params['l2norm']:

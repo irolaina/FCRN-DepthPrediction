@@ -8,11 +8,121 @@ import tensorflow as tf
 #  Global Variables
 # ==================
 TRAINING_L2NORM_BETA = 1e-3
+LOSS_LOG_INITIAL_VALUE = 0.1
 
 
 # ===========
 #  Functions
 # ===========
+def np_maskOutInvalidPixels(y, y_):
+    condition = y_ <= 0
+    idx_i, idx_j = np.where(condition)
+
+    y_masked = np.copy(y)
+    for k in range(0, len(idx_i)):
+        y_masked[idx_i[k], idx_j[k]] = 0.0  # Predictions with labels equal to zero are set to zero.
+
+    return y_masked
+
+def tf_maskOutInvalidPixels(tf_pred, tf_labels):
+    # Values Range
+    # NyuDepth - ]0, ~4000]
+    # Kitti 2012/2015 - [0, ~30000]
+    # Kittiraw Continuous (Vitor) - [0, 255]
+
+    # Identify Pixels to be masked out.
+    tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
+
+    # Mask Out Pixels without depth values
+    tf_valid_pred = tf.gather_nd(tf_pred, tf_idx)
+    tf_valid_labels = tf.gather_nd(tf_labels, tf_idx)
+    tf_valid_log_labels = tf.log(tf_valid_labels, name='log_labels') # TODO: Precisa daquela constante inicial?
+
+    return tf_valid_pred, tf_valid_labels, tf_valid_log_labels
+
+
+# -------------------- #
+#  Mean Squared Error  #
+# -------------------- #
+def np_MSE(y, y_):
+    numPixels = y_.size
+
+    return np.power(y_ - y, 2) / numPixels  # MSE calculated for each pixel
+
+def tf_MSE(tf_y, tf_y_, valid_pixels=True):
+    loss_name = 'MSE'
+
+    # Mask Out
+    if valid_pixels:
+        print("Loss: Ignore Invalid Pixels")
+        tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+    else:
+        print("Loss: All Pixels")
+        tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
+
+    # npixels value depends on valid_pixels flag:
+    # npixels = (batchSize*height*width) OR npixels = number of valid pixels
+    tf_npixels = tf.cast(tf.size(tf_log_y_), tf.float32)
+
+    # Loss
+    mse = (tf.reduce_sum(tf.pow(tf_log_y_ - tf_y, 2)) / tf_npixels)
+
+    return loss_name, mse
+
+
+# ------- #
+#  BerHu  #
+# ------- #
+# TODO: Implemente BerHu Loss function
+def np_BerHu():
+    pass
+
+# TODO: Validar
+# TODO: pred -> y, não log(y)
+def tf_BerHu(tf_y, tf_y_, valid_pixels=False):
+    loss_name = 'BerHu'
+
+    # C Constant Calculation
+    tf_abs_error = tf.abs(tf.subtract(tf_y, tf_y_), name='abs_error')
+    tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
+
+    # Mask Out
+    if valid_pixels:
+        print("Loss: Ignore Invalid Pixels")
+        tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+    else:
+        print("Loss: All Pixels")
+        # tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
+
+    # Loss
+    tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
+                             (tf.square(tf_abs_error) + tf.square(tf_c)) / (2 * tf_c))
+
+    tf_loss = tf.reduce_sum(tf_berHu_loss)
+
+    # Debug
+    # c, abs_error, berHu_loss, loss = sess.run([tf_c, tf_abs_error, tf_berHu_loss, tf_loss])
+    # print()
+    # print(tf_c)
+    # print("c:", c)
+    # print()
+    # print(tf_abs_error)
+    # print("abs_error:", abs_error)
+    # print(len(abs_error))
+    # print()
+    # print(tf_berHu_loss)
+    # print("berHu_loss:", berHu_loss)
+    # print()
+    # print(tf_loss)
+    # print("loss:", loss)
+    # print()
+    # input("remover")
+
+    return loss_name, tf_loss
+
+# ------------------------------ #
+#  Training Loss - Eigen,Fergus  #
+# ------------------------------ #
 def gradient_x(img):
     gx = img[:, :, :-1] - img[:, :, 1:]
 
@@ -32,77 +142,6 @@ def gradient_y(img):
 
     return gy
 
-
-def np_maskOutInvalidPixels(y, y_):
-    condition = y_ <= 0
-    idx_i, idx_j = np.where(condition)
-
-    y_masked = np.copy(y)
-    for k in range(0, len(idx_i)):
-        y_masked[idx_i[k], idx_j[k]] = 0.0  # Predictions with labels equal to zero are set to zero.
-
-    return y_masked
-
-
-def tf_maskOutInvalidPixels(tf_y, tf_y_):
-    # Values Range
-    # NyuDepth - ]0, ~4000]
-    # Kitti 2012/2015 - [0, ~30000]
-    # Kittiraw Continuous (Vitor) - [0, 255]
-
-    # Variables
-    tf_idx = tf.where(tf_y_ > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
-    tf_valid_y = tf.gather_nd(tf_y, tf_idx)
-    tf_valid_y_ = tf.gather_nd(tf_y_, tf_idx)
-    tf_npixels_valid = tf.cast(tf.shape(tf_valid_y_), tf.float32)
-
-    return tf_valid_y, tf_valid_y_, tf_npixels_valid
-
-
-# -------------------- #
-#  Mean Squared Error  #
-# -------------------- #
-def np_MSE(y, y_):
-    numPixels = y_.size
-
-    return np.power(y_ - y, 2) / numPixels  # MSE calculated for each pixel
-
-
-# TODO: Excluir?
-def tf_MSE_monodeep(tf_valid_y, tf_valid_log_y_):
-    loss_name = 'MSE'
-
-    tf_npixels_valid = tf.cast(tf.size(tf_valid_log_y_), tf.float32)  # (batchSize*height*width)
-
-    return loss_name, (tf.reduce_sum(tf.pow(tf_valid_log_y_ - tf_valid_y, 2)) / tf_npixels_valid)
-
-
-def tf_MSE(tf_y, tf_log_y_):
-    # tf_y = tf.squeeze(tf_y, axis=3)
-
-    loss_name = 'MSE'
-
-    tf_npixels_valid = tf.cast(tf.size(tf_log_y_), tf.float32)  # (batchSize*height*width)
-
-    return loss_name, (tf.reduce_sum(tf.pow(tf_log_y_ - tf_y, 2)) / tf_npixels_valid)
-
-
-# ------- #
-#  BerHu  #
-# ------- #
-# TODO: Implemente BerHu Loss function
-def np_BerHu():
-    pass
-
-
-# TODO: Implemente BerHu Loss function
-def tf_BerHu():
-    pass
-
-
-# ------------------------------ #
-#  Training Loss - Eigen,Fergus  #
-# ------------------------------ #
 def tf_L(tf_log_y, tf_log_y_, tf_idx, gamma=0.5):
     loss_name = "Eigen's Log Depth"
 

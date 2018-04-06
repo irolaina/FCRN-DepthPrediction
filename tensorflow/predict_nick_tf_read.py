@@ -32,6 +32,7 @@ from PIL import Image
 
 import utils.args as argsLib
 import utils.metrics as metricsLib
+import utils.loss as lossLib
 
 from utils.dataloader import Dataloader
 from utils.model import Model
@@ -432,9 +433,9 @@ def train(args):
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run(
                 [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss])
 
+            # TODO: Terminar
             elif args.dataset == 'nyudepth':
                 image_key = sess.run([tf_image_key], feed_dict=feed_dict_strings)
-
                 input("oi5")
 
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run(
