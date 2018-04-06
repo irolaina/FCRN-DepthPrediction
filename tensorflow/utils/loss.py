@@ -78,21 +78,25 @@ def np_BerHu():
     pass
 
 # TODO: Validar
-# TODO: pred -> y, não log(y)
-def tf_BerHu(tf_y, tf_y_, valid_pixels=False):
+def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
-    tf_abs_error = tf.abs(tf.subtract(tf_y, tf_y_), name='abs_error')
+    tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
+    tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
     tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
 
     # Mask Out
     if valid_pixels:
         print("Loss: Ignore Invalid Pixels")
+        # Overwrites the 'log(y)' tensor!
         tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+
+        # Overwrites the previous tensor, so now considers only the Valid Pixels!
+        tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
+
     else:
         print("Loss: All Pixels")
-        # tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
 
     # Loss
     tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,

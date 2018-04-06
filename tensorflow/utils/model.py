@@ -98,7 +98,8 @@ class Model(object):
             # self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, self.tf_idx, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
 
             # ----- BerHu ----- #
-            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels)
+            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=True)
+            # self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=False)
 
             # TODO: Reativar
             # if self.params['l2norm']:
