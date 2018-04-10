@@ -20,3 +20,7 @@ class NyuDepth(object):
         self.depthNetworkOutputSize = [128, 160]
 
         print("[monodeep/Dataloader] NyuDepth object created.")
+
+    # TODO: Terminar
+    def getFileList(self):
+        pass

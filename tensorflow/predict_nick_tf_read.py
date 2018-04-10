@@ -43,10 +43,6 @@ from utils.plot import Plot
 # ==================
 #  Global Variables
 # ==================
-# Choose the current Machine:
-# machine = 'olorin'
-machine = 'xps'
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
 
@@ -85,6 +81,93 @@ def createSaveFolder():
 
     return save_path, save_restore_path
 
+
+# TODO: Ler outros Datasets
+def getTrainInputs():
+    if args.machine == 'olorin':
+        # KittiRaw Residential Continuous
+        # Image: (375, 1242, 3) uint8
+        # Depth: (375, 1242)    uint8
+        if args.dataset == 'kittiraw_residential_continuous':
+            search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png"
+            search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png"
+
+            tf_image_filename_list = tf.train.match_filenames_once(search_image_files_str)
+            tf_depth_filename_list = tf.train.match_filenames_once(search_depth_files_str)
+
+    elif args.machine == 'xps':
+        # KittiRaw Residential Continuous
+        # Image: (375, 1242, 3) uint8
+        # Depth: (375, 1242)    uint8
+        if args.dataset == 'kittiraw_residential_continuous':
+            search_image_files_str = "../../data/residential_continuous/training/imgs/*.png"
+            search_depth_files_str = "../../data/residential_continuous/training/dispc/*.png"
+
+            tf_image_filename_list = tf.train.match_filenames_once(search_image_files_str)
+            tf_depth_filename_list = tf.train.match_filenames_once(search_depth_files_str)
+
+        # NYU Depth v2
+        # Image: (480, 640, 3) ?
+        # Depth: (480, 640)    ?
+        elif args.dataset == 'nyudepth':
+            image_filenames = []
+            depth_filenames = []
+
+            root_folder = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
+
+            # Finds input images and labels inside list of folders.
+            for folder in glob.glob(root_folder + "*/"):
+                print(folder)
+                os.chdir(folder)
+
+                for file in glob.glob('*_colors.png'):
+                    print(file)
+                    image_filenames.append(folder + file)
+
+                for file in glob.glob('*_depth.png'):
+                    print(file)
+                    depth_filenames.append(folder + file)
+
+                print()
+
+            print("Summary - Training Inputs")
+            print("image_filenames: ", len(image_filenames))
+            print("depth_filenames: ", len(depth_filenames))
+
+            tf_image_filename_list = tf.placeholder(tf.string)
+            tf_depth_filename_list = tf.placeholder(tf.string)
+
+    return tf_image_filename_list, tf_depth_filename_list
+
+# TODO: Move
+# TODO: Validar
+class EarlyStopping:
+    def __init__(self):
+        # Local Variables
+        self.movMeanLast = 0
+        self.movMean = deque()
+        self.stabCounter = 0
+
+    def check(self, step, valid_loss):
+        self.movMean.append(valid_loss)
+
+        if step > AVG_SIZE:
+            self.movMean.popleft()
+
+        movMeanAvg = np.sum(self.movMean) / AVG_SIZE
+        movMeanAvgLast = np.sum(self.movMeanLast) / AVG_SIZE
+
+        if (movMeanAvg >= movMeanAvgLast) and step > MIN_EVALUATIONS:
+            # print(step,stabCounter)
+
+            self.stabCounter += 1
+            if self.stabCounter > MAX_STEPS_AFTER_STABILIZATION:
+                print("\nSTOP TRAINING! New samples may cause overfitting!!!")
+                return 1
+        else:
+            self.stabCounter = 0
+
+            self.movMeanLast = deque(self.movMean)
 
 # ========= #
 #  Predict  #
@@ -133,38 +216,6 @@ def predict(model_data_path, image_path):
 
         return pred
 
-
-# TODO: Move
-# TODO: Validar
-class EarlyStopping:
-    def __init__(self):
-        # Local Variables
-        self.movMeanLast = 0
-        self.movMean = deque()
-        self.stabCounter = 0
-
-    def check(self, step, valid_loss):
-        self.movMean.append(valid_loss)
-
-        if step > AVG_SIZE:
-            self.movMean.popleft()
-
-        movMeanAvg = np.sum(self.movMean) / AVG_SIZE
-        movMeanAvgLast = np.sum(self.movMeanLast) / AVG_SIZE
-
-        if (movMeanAvg >= movMeanAvgLast) and step > MIN_EVALUATIONS:
-            # print(step,stabCounter)
-
-            self.stabCounter += 1
-            if self.stabCounter > MAX_STEPS_AFTER_STABILIZATION:
-                print("\nSTOP TRAINING! New samples may cause overfitting!!!")
-                return 1
-        else:
-            self.stabCounter = 0
-
-            self.movMeanLast = deque(self.movMean)
-
-
 # ===================== #
 #  Training/Validation  #
 # ===================== #
@@ -173,68 +224,22 @@ def train(args):
     print('[%s] Selected Params: \n\n%s' % (appName, args))
 
     # Local Variables
-    save_path, save_restore_path = createSaveFolder()
+    save_path, save_restore_path = createSaveFolder() # TODO: Evitar criar pastas vazias
+    imageRawSize = [375, 1242] # TODO: Usar class Size
+    model = Model(args)
 
-    # -----------------------------------------
-    #  Network Training Model - Building Graph
-    # -----------------------------------------
+    # ----------------------------------------- #
+    #  Network Training Model - Building Graph  #
+    # ----------------------------------------- #
     graph = tf.Graph()
     with graph.as_default():
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
-        # Local Variables
-        imageRawSize = [375, 1242]
-        imageNetwork_InputSize = [228, 304]
-        depthNetwork_OutputSize = [128, 160]
 
-        seed = random.randint(0, 2 ** 31 - 1)
-
-        # TODO: Ler outros Datasets
-        # KittiRaw Residential Continuous
-        # Image: (375, 1242, 3) uint8
-        # Depth: (375, 1242)    uint8
-
-        # Searches dataset images filenames and create queue objects
-        if machine == 'olorin':
-            tf_train_image_filename_list = tf.train.match_filenames_once(
-                "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png")
-            tf_train_depth_filename_list = tf.train.match_filenames_once(
-                "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png")
-        elif machine == 'xps':
-            if args.dataset == 'kittiraw_residential_continuous':
-                tf_train_image_filename_list = tf.train.match_filenames_once(
-                    "../../data/residential_continuous/training/imgs/*.png")
-                tf_train_depth_filename_list = tf.train.match_filenames_once(
-                    "../../data/residential_continuous/training/dispc/*.png")
-
-            elif args.dataset == 'nyudepth':
-                image_filenames = []
-                depth_filenames = []
-
-                root_folder = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
-
-                # Finds input images and labels inside list of folders.
-                for folder in glob.glob(root_folder+"*/"):
-                    print(folder)
-                    os.chdir(folder)
-
-                    for file in glob.glob('*_colors.png'):
-                        print(file)
-                        image_filenames.append(folder+file)
-
-                    for file in glob.glob('*_depth.png'):
-                        print(file)
-                        depth_filenames.append(folder+file)
-
-                    print()
-
-                print("Summary - Training Inputs")
-                print("image_filenames: ", len(image_filenames))
-                print("depth_filenames: ", len(depth_filenames))
-
-                tf_train_image_filename_list = tf.placeholder(tf.string)
-                tf_train_depth_filename_list = tf.placeholder(tf.string)
+        # Searches dataset images filenames
+        tf_train_image_filename_list, tf_train_depth_filename_list = getTrainInputs()
 
         # Creates Inputs Queue
+        seed = random.randint(0, 2 ** 31 - 1)
         tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=seed)
         tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=seed)
 
@@ -243,28 +248,17 @@ def train(args):
         tf_image_key, image_file = image_reader.read(tf_train_image_filename_queue)
         tf_depth_key, depth_file = image_reader.read(tf_train_depth_filename_queue)
 
+        # FIXME: Kitti Original as imagens de disparidade são do tipo int32, no caso do kittiraw_residential_continous são uint8
         tf_image = tf.image.decode_image(image_file, channels=3)  # uint8
         tf_depth = tf.image.decode_image(depth_file, channels=1)  # uint8
 
-        # FIXME: Kitti Original as imagens de disparidade são do tipo int32, no caso do kittiraw_residential_continous são uint8
         # Restores images structure (size, type)
-        # Method 1
         tf_image.set_shape([imageRawSize[0], imageRawSize[1], 3])
         tf_depth.set_shape([imageRawSize[0], imageRawSize[1], 1])
-        tf_image_resized = tf.cast(
-            tf.image.resize_images(tf_image, [imageNetwork_InputSize[0], imageNetwork_InputSize[1]]), tf.uint8)
-        tf_depth_resized = tf.cast(
-            tf.image.resize_images(tf_depth, [depthNetwork_OutputSize[0], depthNetwork_OutputSize[1]]), tf.uint8)
-
-        # Method 2
-        # tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)
-        # tf_depth = tf.image.convert_image_dtype(tf_depth, tf.float32)
-        # tf_image.set_shape([imageRawSize[0], imageRawSize[1], 3])
-        # tf_depth.set_shape([imageRawSize[0], imageRawSize[1], 1])
 
         # Downsizes Input and Depth Images
-        tf_image_resized = tf.image.resize_images(tf_image, [imageNetwork_InputSize[0], imageNetwork_InputSize[1]])
-        tf_depth_resized = tf.image.resize_images(tf_depth, [depthNetwork_OutputSize[0], depthNetwork_OutputSize[1]])
+        tf_image_resized = tf.image.resize_images(tf_image, [model.inputSize.height, model.inputSize.width])
+        tf_depth_resized = tf.image.resize_images(tf_depth, [model.outputSize.height, model.outputSize.width])
 
         # ------------------- #
         #  Data Augmentation  #
@@ -318,22 +312,19 @@ def train(args):
             capacity=16,
             min_after_dequeue=0)
 
-        model = Model(args, tf_batch_data, tf_batch_labels, 'train')
+        # Build Network Model
+        model.build_model(tf_batch_data, tf_batch_labels)
+        model.build_losses()
+        model.build_optimizer()
+        model.build_summaries()
+        model.countParams()
 
-        # TODO: Mover para model.py
-        # TODO: Enable Summaries
-        # with tf.name_scope("Summaries"):
-        #     # Summary Objects
-        #     summary_writer = tf.summary.FileWriter(save_path + args.log_directory, graph)
-        #     summary_op = tf.summary.merge_all('model_0')
+        model.collectSummaries(save_path, graph)
+        model.createTrainSaver()
 
-        # TODO: Mover para model.py
-        # Creates Saver Obj
-        train_saver = tf.train.Saver()
-
-    # ----------------------------------------
-    #  Network Training Model - Running Graph
-    # ----------------------------------------
+    # ---------------------------------------- #
+    #  Network Training Model - Running Graph  #
+    # ---------------------------------------- #
     # Local Variables and Memory Allocation
     step = 0
     stop = EarlyStopping()
@@ -430,16 +421,16 @@ def train(args):
             # ----- Session Run! ----- #
             # Training
             if args.dataset == 'kittiraw_residential_continuous':
-                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run(
-                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss])
+                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
+                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             # TODO: Terminar
             elif args.dataset == 'nyudepth':
                 image_key = sess.run([tf_image_key], feed_dict=feed_dict_strings)
                 input("oi5")
 
-                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss = sess.run(
-                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss])
+                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
+                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
             #     [train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_image_resized, tf_depth_resized, tf_image_proc,
@@ -472,11 +463,10 @@ def train(args):
             # input("valid")
             # -----
 
-            # TODO: Reativar código abaixo
-            # if ENABLE_TENSORBOARD:
-            #     # Write information to TensorBoard
-            #     summary_writer.add_summary(summary_str, step)
-            #     summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
+            if ENABLE_TENSORBOARD:
+                # Write information to TensorBoard
+                model.summary_writer.add_summary(summary_str, step)
+                model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
             # TODO: Validar
             if ENABLE_EARLY_STOP:
@@ -515,7 +505,7 @@ def train(args):
         #  Save Results
         # ==============
         if SAVE_TRAINED_MODEL:
-            model.saveTrainedModel(save_restore_path, sess, train_saver, args.model_name)
+            model.saveTrainedModel(save_restore_path, sess, model.train_saver, args.model_name)
 
         # Logs the obtained test result
         f = open('results.txt', 'a')
@@ -541,7 +531,7 @@ def test(args):
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
     # Loads the dataset and restores a specified trained model.
-    dataloader = Dataloader(args.data_path, args.dataset, args.mode)
+    dataloader = Dataloader(args.data_path, args.dataset, args.mode) # TODO: Usar leitura pelo Tensorflow
 
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))

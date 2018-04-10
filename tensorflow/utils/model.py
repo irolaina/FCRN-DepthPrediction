@@ -17,28 +17,30 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 # ===========
 #  Functions
 # ===========
-
+class Size():
+    def __init__(self, height, width, nchannels):
+        self.height = height
+        self.width = width
+        self.nchannels = nchannels
 
 # ===================
 #  Class Declaration
 # ===================
 class Model(object):
-    def __init__(self, args, tf_image, labels, mode):
-        self.mode = mode
+    def __init__(self, args):
         self.args = args
+
+        self.inputSize = Size(228, 304, 3)
+        self.outputSize = Size(128, 160, 1)
 
         model_index = 0
         self.model_collection = ['model_' + str(model_index)]
 
-        self.build_model(tf_image, labels)
-
-        if self.mode == 'test':
-            return
-
-        self.build_losses()
-        self.build_optimizer()
-        self.build_summaries()
-        self.countParams()
+        # self.build_model(tf_image, labels)
+        # self.build_losses()
+        # self.build_optimizer()
+        # self.build_summaries()
+        # self.countParams()
 
     def build_model(self, tf_image, tf_labels):
         # =============================================
@@ -121,6 +123,18 @@ class Model(object):
         for variable in tf.trainable_variables():
             total_num_parameters += np.array(variable.get_shape().as_list()).prod()
         print("[Network/Model] Number of trainable parameters: {}".format(total_num_parameters))
+
+    def collectSummaries(self, save_path, graph):
+        # TODO: Mover para model.py
+        # TODO: Enable Summaries
+        with tf.name_scope("Summaries"):
+            # Summary Objects
+            self.summary_writer = tf.summary.FileWriter(save_path + self.args.log_directory, graph)
+            self.summary_op = tf.summary.merge_all('model_0')
+
+    def createTrainSaver(self):
+        ''' Creates Saver Object '''
+        self.train_saver = tf.train.Saver()
 
     @staticmethod
     def saveTrainedModel(save_path, session, saver, model_name):

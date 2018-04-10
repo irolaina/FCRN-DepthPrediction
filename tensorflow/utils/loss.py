@@ -186,7 +186,7 @@ def calculateL2norm():
 
     totalSum = 0
     for var in var_list:
-        print(var)
+        # print(var)
         totalSum += tf.nn.l2_loss(var)
 
     return TRAINING_L2NORM_BETA * totalSum
