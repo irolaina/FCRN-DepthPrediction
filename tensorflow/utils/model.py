@@ -61,7 +61,6 @@ class Model(object):
                 name='log_labels')  # Just for displaying Image
 
         with tf.name_scope('Train'):
-            self.tf_keep_prob = tf.placeholder(tf.float32, name='keep_prob')
             self.tf_global_step = tf.Variable(0, trainable=False,
                                               name='global_step')  # Count the number of steps taken.
 
@@ -72,17 +71,11 @@ class Model(object):
                                                                   staircase=True,
                                                                   name='ldecay')
 
-        # TODO: Reativar
-        # tf.add_to_collection('image', self.tf_image)
-        # tf.add_to_collection('labels', self.tf_labels)
-        # tf.add_to_collection('keep_prob', self.tf_keep_prob)
-        # tf.add_to_collection('global_step', self.tf_global_step)
-        # tf.add_to_collection('bn_train', self.tf_bn_train)
-        # tf.add_to_collection('learning_rate', self.tf_learningRate)
-        # tf.add_to_collection('predCoarse', self.tf_predCoarse)
-        # tf.add_to_collection('predFine', self.tf_predFine)
-        # tf.add_to_collection('predCoarseBilinear', self.tf_predCoarseBilinear)
-        # tf.add_to_collection('predFineBilinear', self.tf_predFineBilinear)
+        tf.add_to_collection('image', self.tf_image)
+        tf.add_to_collection('labels', self.tf_labels)
+        tf.add_to_collection('global_step', self.tf_global_step)
+        tf.add_to_collection('learning_rate', self.tf_learningRate)
+        tf.add_to_collection('pred', self.fcrn.get_output())
 
     def build_losses(self):
         with tf.name_scope("Losses"):
@@ -120,7 +113,6 @@ class Model(object):
         with tf.name_scope("Summaries"):
             tf.summary.scalar('learning_rate', self.tf_learningRate, collections=self.model_collection)
             tf.summary.scalar('loss', self.tf_loss, collections=self.model_collection)
-            tf.summary.scalar('keep_prob', self.tf_keep_prob, collections=self.model_collection)
 
     @staticmethod
     def countParams():
