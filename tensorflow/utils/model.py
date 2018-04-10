@@ -101,9 +101,8 @@ class Model(object):
             self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=True)
             # self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=False)
 
-            # TODO: Reativar
-            # if self.params['l2norm']:
-            #     self.tf_loss += loss.calculateL2norm()
+            if self.args.l2norm:
+                self.tf_loss += loss.calculateL2norm()
 
             print("[Network/Model] Loss Function: %s" % self.loss_name)
 

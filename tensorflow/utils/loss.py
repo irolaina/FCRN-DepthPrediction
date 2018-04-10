@@ -77,7 +77,6 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
 def np_BerHu():
     pass
 
-# TODO: Validar
 def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
@@ -182,21 +181,12 @@ def getTrainableVars(scope):
 
 
 def calculateL2norm():
-    coarse_vars = getTrainableVars("c_")
-    fine_vars = getTrainableVars("f_")
+    # Gets All Trainable Variables
+    var_list = getTrainableVars('')
 
     totalSum = 0
-    for i, val in enumerate(coarse_vars):
-        totalSum += tf.nn.l2_loss(val)
-        # print (i, val)
-
-    for i, val in enumerate(fine_vars):
-        totalSum += tf.nn.l2_loss(val)
-        # print (i, val)
-
-    # Debug
-    # print(coarse_vars)
-    # print(fine_vars)
-    # print("totalSum: ", totalSum)
+    for var in var_list:
+        print(var)
+        totalSum += tf.nn.l2_loss(var)
 
     return TRAINING_L2NORM_BETA * totalSum

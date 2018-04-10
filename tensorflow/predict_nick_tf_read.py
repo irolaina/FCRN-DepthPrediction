@@ -134,7 +134,8 @@ def predict(model_data_path, image_path):
         return pred
 
 
-# TODO: move
+# TODO: Move
+# TODO: Validar
 class EarlyStopping:
     def __init__(self):
         # Local Variables
@@ -358,13 +359,10 @@ def train(args):
                     image_replace = ['_colors.png', '']
                     depth_replace = ['_depth.png', '']
 
-                image_str_list, depth_str_list = sess.run(
-                    [tf_image_str_list, tf_depth_str_list], feed_dict=feed_dict)
+                image_str_list, depth_str_list = sess.run([tf_image_str_list, tf_depth_str_list], feed_dict=feed_dict)
 
-                image_str_list_aux = [item.replace(image_replace[0], image_replace[1]) for item in
-                                             image_str_list]
-                depth_str_list_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in
-                                             depth_str_list]
+                image_str_list_aux = [item.replace(image_replace[0], image_replace[1]) for item in image_str_list]
+                depth_str_list_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in depth_str_list]
 
                 # print(image_str_list)
                 # input("oi3")
@@ -395,9 +393,6 @@ def train(args):
         # Check Dataset Integrity
         numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filename_list, tf_train_depth_filename_list)
 
-        coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(coord=coord)
-
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)
         print('\nTrain with approximately %d epochs' % epochs)
@@ -406,6 +401,7 @@ def train(args):
         #  Training Loop
         # =================
         start = time.time()
+
         if args.show_train_progress:
             train_plotObj = Plot(args.mode, title='Train Predictions')
 
@@ -424,6 +420,10 @@ def train(args):
         #     valid_data_crop_o[i] = image_crop
 
         print("[Network/Training] Training Initialized!\n")
+
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord)
+
         for step in range(args.max_steps):
             start2 = time.time()
 
