@@ -24,6 +24,13 @@ class Plot(object):
             self.axes[3] = plt.subplot(234)
             self.axes[4] = plt.subplot(235)
 
+            # Sets Titles
+            self.axes[0].set_title("Raw")
+            self.axes[1].set_title("Label")
+            self.axes[2].set_title("log(Label)")
+            self.axes[3].set_title("Pred")
+            self.axes[4].set_title("MSE(Pred)")
+
         elif mode == 'test':
             self.fig, self.axes = plt.subplots(4, 1)
             self.axes[0] = plt.subplot(221)
@@ -31,39 +38,55 @@ class Plot(object):
             self.axes[2] = plt.subplot(222)
             self.axes[3] = plt.subplot(224)
 
-        self.fig.canvas.set_window_title(title)
-        self.isFirstTime = True
-
-    # TODO: Add colorbar
-    def showTrainResults(self, raw, label, log_label, pred):
-        plt.figure(1)
-
-        # Set Titles and subplots spacing. Runs only at first Time
-        if self.isFirstTime:
+            # Sets Titles
             self.axes[0].set_title("Raw")
             self.axes[1].set_title("Label")
             self.axes[2].set_title("log(Label)")
             self.axes[3].set_title("Pred")
-            self.axes[4].set_title("MSE(Pred)")
-            plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+
+        self.fig.canvas.set_window_title(title)
+        self.fig.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0) # Fix Subplots Spacing
+
+        self.isFirstTime = True
+
+    # TODO: Add colorbar
+    # TODO: Otimizar
+    def showTrainResults(self, raw, label, log_label, pred):
+        predMSE = loss.np_MSE(y=pred, y_=log_label)
+
+        if self.isFirstTime:
+            self.cax1 = self.axes[0].imshow(raw)
+            self.cax2 = self.axes[1].imshow(label)
+            self.cax3 = self.axes[2].imshow(log_label)
+            self.cax4 = self.axes[3].imshow(pred)
+            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
+
+            # cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
+            # # self.axes[1].set_aspect('auto')
+            #
+            # cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
+            # # self.axes[2].set_aspect('auto')
+            #
+            # cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
+            # # self.axes[3].set_aspect('auto')
+            #
+            # cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
+            # # self.axes[4].set_aspect('auto')
 
             self.isFirstTime = False
+        else:
+            # self.cax1.set_data(raw)
+            # self.cax2.set_data(label)
+            # self.cax3.set_data(log_label)
+            # self.cax4.set_data(pred)
+            # self.cax5.set_data(predMSE)
+            # plt.draw()
 
-        self.axes[0].imshow(raw)
-
-        cax1 = self.axes[1].imshow(label)
-        # self.fig.colorbar(cax1, ax=self.axes[1])
-
-        cax2 = self.axes[2].imshow(log_label)
-        # self.fig.colorbar(cax2, ax=self.axes[2])
-
-        cax3 = self.axes[3].imshow(pred)
-        # self.fig.colorbar(cax3, ax=self.axes[3])
-
-        # TODO: Lembre que a Training Loss utilizaRMSE_log_scaleInv, porém o resultado é avaliado utilizando MSE
-        predMSE = loss.np_MSE(y=pred, y_=log_label)
-        cax4 = self.axes[4].imshow(predMSE, cmap='jet')
-        # self.fig.colorbar(cax4)
+            self.cax1 = self.axes[0].imshow(raw)
+            self.cax2 = self.axes[1].imshow(label)
+            self.cax3 = self.axes[2].imshow(log_label)
+            self.cax4 = self.axes[3].imshow(pred)
+            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
         plt.pause(0.001)
 
@@ -95,30 +118,27 @@ class Plot(object):
 
     # TODO: Add colorbar
     def showTestResults(self, raw, label, log_label, pred, i):
-        plt.figure(1)
-
-        # Set Titles and subplots spacing. Runs only at first Time
         if self.isFirstTime:
-            self.axes[0].set_title("Raw")
-            self.axes[1].set_title("Label")
-            self.axes[2].set_title("log(Label)")
-            self.axes[3].set_title("Pred")
-            plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+            self.cax1 = self.axes[0].imshow(raw)
+            self.cax2 = self.axes[1].imshow(label)
+            self.cax3 = self.axes[2].imshow(log_label)
+            self.cax4 = self.axes[3].imshow(pred)
+
+            # self.fig.colorbar(self.cax2, ax=self.axes[1])
+            # self.fig.colorbar(self.cax3, ax=self.axes[2])
+            # self.fig.colorbar(self.cax4, ax=self.axes[3])
+
             self.isFirstTime = False
+        else:
+            self.cax1.set_data(raw)
+            self.cax2.set_data(label)
+            self.cax3.set_data(log_label)
+            self.cax4.set_data(pred)
+            plt.draw()
 
         self.fig.canvas.set_window_title("Test Predictions [%d]" % i)
 
-        self.axes[0].imshow(raw)
-        cax1 = self.axes[1].imshow(label)
-        # self.fig.colorbar(cax1, ax=self.axes[1])
-
-        cax2 = self.axes[2].imshow(log_label)
-        # self.fig.colorbar(cax2, ax=self.axes[2])
-
-        cax3 = self.axes[3].imshow(pred)
-        # self.fig.colorbar(cax3, ax=self.axes[3])
-
-        plt.pause(0.001)
+        plt.pause(0.5)
 
     # TODO: Remover Deprecated
     @staticmethod
