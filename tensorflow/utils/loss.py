@@ -54,10 +54,8 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
 
     # Mask Out
     if valid_pixels:
-        print("Loss: Ignore Invalid Pixels")
         tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
     else:
-        print("Loss: All Pixels")
         tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
 
     # npixels value depends on valid_pixels flag:
@@ -65,7 +63,8 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
     tf_npixels = tf.cast(tf.size(tf_log_y_), tf.float32)
 
     # Loss
-    mse = (tf.reduce_sum(tf.pow(tf_log_y_ - tf_y, 2)) / tf_npixels)
+    mse = (tf.reduce_sum(tf.square(tf_log_y_ - tf_y)) / tf_npixels)
+
 
     return loss_name, mse
 
@@ -87,15 +86,11 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 
     # Mask Out
     if valid_pixels:
-        print("Loss: Ignore Invalid Pixels")
         # Overwrites the 'log(y)' tensor!
         tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
 
         # Overwrites the previous tensor, so now considers only the Valid Pixels!
         tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
-
-    else:
-        print("Loss: All Pixels")
 
     # Loss
     tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
@@ -145,24 +140,29 @@ def gradient_y(img):
 
     return gy
 
-def tf_L(tf_log_y, tf_log_y_, tf_idx, gamma=0.5):
+def tf_L(tf_log_y, tf_log_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Eigen's Log Depth"
 
-    # Calculate Difference and Gradients
+    # Calculate Difference and Gradients. Compute over all pixels!
     tf_d = tf_log_y - tf_log_y_
     tf_gx_d = gradient_x(tf_d)
     tf_gy_d = gradient_y(tf_d)
 
     # Mask Out
-    tf_valid_d = tf.gather_nd(tf_d, tf_idx)
-    tf_valid_gx_d = tf.gather_nd(tf_gx_d, tf_idx)
-    tf_valid_gy_d = tf.gather_nd(tf_gy_d, tf_idx)
+    if valid_pixels:
+        # Identify Pixels to be masked out.
+        tf_idx = tf.where(tf_log_y_ > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
+
+        # Overwrites the 'd', 'gx_d', 'gy_d' tensors, so now considers only the Valid Pixels!
+        tf_d = tf.gather_nd(tf_d, tf_idx)
+        tf_gx_d = tf.gather_nd(tf_gx_d, tf_idx)
+        tf_gy_d = tf.gather_nd(tf_gy_d, tf_idx)
 
     # Loss
-    tf_valid_npixels = tf.cast(tf.size(tf_valid_d), tf.float32)
-    mean_term = (tf.reduce_sum(tf.pow(tf_valid_d, 2)) / tf_valid_npixels)
-    variance_term = ((gamma / tf.pow(tf_valid_npixels, 2)) * tf.pow(tf.reduce_sum(tf_valid_d), 2))
-    grads_term = (tf.reduce_sum(tf.pow(tf_valid_gx_d, 2)) + tf.reduce_sum(tf.pow(tf_valid_gy_d, 2))) / tf_valid_npixels
+    tf_npixels = tf.cast(tf.size(tf_d), tf.float32)
+    mean_term = (tf.reduce_sum(tf.square(tf_d)) / tf_npixels)
+    variance_term = ((gamma / tf.square(tf_npixels)) * tf.square(tf.reduce_sum(tf_d)))
+    grads_term = (tf.reduce_sum(tf.square(tf_gx_d)) + tf.reduce_sum(tf.square(tf_gy_d))) / tf_npixels
 
     tf_loss_d = mean_term - variance_term + grads_term
 
