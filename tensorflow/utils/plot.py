@@ -16,7 +16,7 @@ class Plot(object):
     def __init__(self, mode, title):
         self.fig, self.axes = None, None
 
-        if mode == 'train':
+        if mode == 'train': # Or Validation
             self.fig, self.axes = plt.subplots(5, 1)
             self.axes[0] = plt.subplot(231)
             self.axes[1] = plt.subplot(232)
@@ -91,28 +91,44 @@ class Plot(object):
         plt.pause(0.001)
 
     # TODO: Add colorbar
+    # FIXME: predMSE
     def showValidResults(self, raw, label, log_label, pred):
-        plt.figure(2)
+        # predMSE = loss.np_MSE(y=pred, y_=log_label)  # FIXME:
 
-        # Set Titles and subplots spacing. Runs only at first Time
         if self.isFirstTime:
-            self.axes[0].set_title("Raw")
-            self.axes[1].set_title("Label")
-            self.axes[2].set_title("log(Label)")
-            self.axes[3].set_title("Pred")
-            plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+            self.cax1 = self.axes[0].imshow(raw)
+            self.cax2 = self.axes[1].imshow(label)
+            self.cax3 = self.axes[2].imshow(log_label)
+            self.cax4 = self.axes[3].imshow(pred)
+            # self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')  # FIXME:
+
+            # cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
+            # # self.axes[1].set_aspect('auto')
+            #
+            # cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
+            # # self.axes[2].set_aspect('auto')
+            #
+            # cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
+            # # self.axes[3].set_aspect('auto')
+            #
+            # cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
+            # # self.axes[4].set_aspect('auto')
 
             self.isFirstTime = False
 
-        self.axes[0].imshow(raw)
-        cax1 = self.axes[1].imshow(label)
-        # self.fig.colorbar(cax1, ax=self.axes[1])
+        else:
+            # self.cax1.set_data(raw)
+            # self.cax2.set_data(label)
+            # self.cax3.set_data(log_label)
+            # self.cax4.set_data(pred)
+            # self.cax5.set_data(predMSE)
+            # plt.draw()
 
-        cax2 = self.axes[2].imshow(log_label)
-        # self.fig.colorbar(cax2, ax=self.axes[2])
-
-        cax3 = self.axes[3].imshow(pred)
-        # self.fig.colorbar(cax3, ax=self.axes[3])
+            self.cax1 = self.axes[0].imshow(raw)
+            self.cax2 = self.axes[1].imshow(label)
+            self.cax3 = self.axes[2].imshow(log_label)
+            self.cax4 = self.axes[3].imshow(pred)
+            # self.cax5 = self.axes[4].imshow(predMSE, cmap='jet') # FIXME:
 
         plt.pause(0.001)
 

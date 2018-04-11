@@ -470,7 +470,6 @@ def train(args):
 
                 print(valid_pred.shape)
 
-
                 if args.show_valid_progress:
                     valid_plotObj.showValidResults(raw=valid_image[0, :, :],
                                                    label=valid_labels[0, :, :, 0],

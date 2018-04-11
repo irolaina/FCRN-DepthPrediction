@@ -107,8 +107,6 @@ class Model(object):
         print("[Network/Model] Number of trainable parameters: {}".format(total_num_parameters))
 
     def collectSummaries(self, save_path, graph):
-        # TODO: Mover para model.py
-        # TODO: Enable Summaries
         with tf.name_scope("Summaries"):
             # Summary Objects
             self.summary_writer = tf.summary.FileWriter(save_path + self.args.log_directory, graph)

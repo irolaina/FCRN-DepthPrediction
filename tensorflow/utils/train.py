@@ -56,7 +56,6 @@ class Train:
         tf.add_to_collection('global_step', self.tf_global_step)
         tf.add_to_collection('learning_rate', self.tf_learningRate)
 
-# TODO: Move
 # TODO: Validar
 class EarlyStopping:
     def __init__(self):
