@@ -20,7 +20,6 @@ import random
 import sys
 import time
 import warnings
-from collections import deque
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,6 +29,7 @@ import utils.metrics as metricsLib
 from PIL import Image
 from utils.dataloader import Dataloader
 from utils.fcrn import ResNet50UpProj
+from utils.train import EarlyStopping
 from utils.model import Model
 from utils.plot import Plot
 from utils.size import Size
@@ -48,12 +48,6 @@ SAVE_TRAINED_MODEL = True
 ENABLE_TENSORBOARD = True
 SAVE_TEST_DISPARITIES = True
 APPLY_BILINEAR_OUTPUT = False
-
-# Early Stop Configuration
-AVG_SIZE = 20
-MIN_EVALUATIONS = 1000
-MAX_STEPS_AFTER_STABILIZATION = 10000
-LOSS_LOG_INITIAL_VALUE = 0.1
 
 
 # ===========
@@ -77,6 +71,7 @@ def createSaveFolder():
 
 
 # TODO: Ler outros Datasets
+# TODO: move to train.py
 def getTrainInputs():
     if args.machine == 'olorin':
         # KittiRaw Residential Continuous
@@ -132,37 +127,6 @@ def getTrainInputs():
             tf_depth_filename_list = tf.placeholder(tf.string)
 
     return tf_image_filename_list, tf_depth_filename_list
-
-
-# TODO: Move
-# TODO: Validar
-class EarlyStopping:
-    def __init__(self):
-        # Local Variables
-        self.movMeanLast = 0
-        self.movMean = deque()
-        self.stabCounter = 0
-
-    def check(self, step, valid_loss):
-        self.movMean.append(valid_loss)
-
-        if step > AVG_SIZE:
-            self.movMean.popleft()
-
-        movMeanAvg = np.sum(self.movMean) / AVG_SIZE
-        movMeanAvgLast = np.sum(self.movMeanLast) / AVG_SIZE
-
-        if (movMeanAvg >= movMeanAvgLast) and step > MIN_EVALUATIONS:
-            # print(step,stabCounter)
-
-            self.stabCounter += 1
-            if self.stabCounter > MAX_STEPS_AFTER_STABILIZATION:
-                print("\nSTOP TRAINING! New samples may cause overfitting!!!")
-                return 1
-        else:
-            self.stabCounter = 0
-
-            self.movMeanLast = deque(self.movMean)
 
 
 # ========= #
@@ -503,6 +467,9 @@ def train(args):
                                                    label=batch_labels[0, :, :, 0],
                                                    log_label=batch_log_labels[0, :, :, 0],
                                                    pred=batch_pred[0, :, :, 0])
+
+                print(valid_pred.shape)
+
 
                 if args.show_valid_progress:
                     valid_plotObj.showValidResults(raw=valid_image[0, :, :],
