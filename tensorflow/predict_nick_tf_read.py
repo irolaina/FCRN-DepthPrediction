@@ -273,6 +273,7 @@ def train(args):
         tf_image_proc = tf_image_resized
         tf_depth_proc = tf_depth_resized
 
+        # TODO: Move
         def augment_image_pair(image, depth):
             # randomly flip images
             do_flip = tf.random_uniform([], 0, 1)
@@ -317,6 +318,8 @@ def train(args):
             num_threads=1,
             capacity=16,
             min_after_dequeue=0)
+
+        # TODO: Mover tensores acima para a classe train.py
 
         # Build Network Model
         model.build_model(tf_batch_data, tf_batch_labels)
@@ -429,7 +432,7 @@ def train(args):
             # Training
             if args.dataset == 'kittiraw_residential_continuous':
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
-                    [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
+                    [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.train.tf_log_labels,
                      model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             # TODO: Terminar
@@ -438,7 +441,7 @@ def train(args):
                 input("oi5")
 
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
-                    [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
+                    [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
                      model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
@@ -467,16 +470,20 @@ def train(args):
             # debug_data_augmentation()
 
             # Validation
-            valid_loss = -1 # FIXME: Terminar
+            valid_loss = -1  # FIXME: Terminar
             # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss])
 
             # FIXME: Uses only one image as validation!
-            valid_image = plt.imread("/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
-            valid_depth = plt.imread("/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
+            valid_image = plt.imread(
+                "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
+            valid_depth = plt.imread(
+                "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
 
-            feed_dict_valid = {model.tf_valid_image: np.expand_dims(valid_image, axis=0),
-                               model.tf_valid_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
-            valid_image, valid_pred, valid_labels, valid_log_labels = sess.run([model.tf_valid_image_resized, model.fcrn_valid.get_output(), model.tf_valid_depth_resized, model.tf_valid_log_depth_resized], feed_dict=feed_dict_valid)
+            feed_dict_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
+                               model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+            valid_image, valid_pred, valid_labels, valid_log_labels = sess.run(
+                [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
+                 model.valid.tf_log_depth_resized], feed_dict=feed_dict_valid)
             # -----
 
             if ENABLE_TENSORBOARD:
@@ -498,10 +505,10 @@ def train(args):
                                                    pred=batch_pred[0, :, :, 0])
 
                 if args.show_valid_progress:
-                    valid_plotObj.showValidResults(raw=valid_image[0,:,:],
-                                                   label=valid_labels[0,:,:,0],
-                                                   log_label=valid_log_labels[0,:,:,0],
-                                                   pred=valid_pred[0, :, :, 0])
+                    valid_plotObj.showValidResults(raw=valid_image[0, :, :],
+                                                   label=valid_labels[0, :, :, 0],
+                                                   log_label=valid_log_labels[0, :, :, 0],
+                                                   pred=valid_pred[0, :, :, 0])  # FIXME: pred size wrong
 
                 end2 = time.time()
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,

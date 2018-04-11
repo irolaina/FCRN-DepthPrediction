@@ -7,6 +7,8 @@ import os
 import utils.loss as loss
 
 from utils.size import Size
+from utils.train import Train
+from utils.validation import Validation
 from utils.fcrn import ResNet50UpProj
 
 # ==================
@@ -18,7 +20,6 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 # ===========
 #  Functions
 # ===========
-
 
 # ===================
 #  Class Declaration
@@ -40,55 +41,20 @@ class Model(object):
         # self.countParams()
 
     def build_model(self, tf_image, tf_labels):
+        print("\n[Network/Model] Build Network Model...")
+
         # =============================================
         #  FCRN (Fully Convolutional Residual Network)
         # =============================================
-        # Construct the network graph
+        # Construct the network graphs
         with tf.variable_scope('model') as scope:
+            self.train = Train(self.args, tf_image, tf_labels, self.inputSize, self.outputSize)
             self.fcrn = ResNet50UpProj({'data': tf_image}, self.args.batch_size, 1, False)
+            tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
         with tf.variable_scope("model", reuse=True):
-            # TODO: Organizar
-            # TODO: Criar classe de treinamento e classe de validação
-            self.tf_valid_image = tf.placeholder(tf.float32, shape=(None, 375, 1242, 3)) # TODO: Usar variáveis com essas informações
-            self.tf_valid_depth = tf.placeholder(tf.float32, shape=(None, 375, 1242, 1))  # TODO: Usar variáveis com essas informações
-
-            self.tf_valid_image_resized = tf.image.resize_images(self.tf_valid_image, [self.inputSize.height, self.inputSize.width])
-            self.tf_valid_depth_resized = tf.image.resize_images(self.tf_valid_depth, [self.outputSize.height, self.outputSize.width])
-
-            self.tf_valid_log_depth_resized = tf.log(self.tf_valid_depth_resized + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32))
-
-            self.fcrn_valid = ResNet50UpProj({'data': self.tf_valid_image_resized}, self.args.batch_size, 1, False)
-
-        # ======================
-        #  Tensorflow Variables
-        # ======================
-        print("\n[Network/Model] Build Network Model...")
-
-        with tf.name_scope('Inputs'):
-            self.tf_image = tf_image
-            self.tf_labels = tf_labels
-
-            self.tf_log_labels = tf.log(
-                tf.cast(self.tf_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
-                name='log_labels')  # Just for displaying Image
-
-        with tf.name_scope('Train'):
-            self.tf_global_step = tf.Variable(0, trainable=False,
-                                              name='global_step')  # Count the number of steps taken.
-
-            self.tf_learningRate = self.args.learning_rate
-
-            if self.args.ldecay:
-                self.tf_learningRate = tf.train.exponential_decay(self.tf_learningRate, self.tf_global_step, 1000, 0.95,
-                                                                  staircase=True,
-                                                                  name='ldecay')
-
-        tf.add_to_collection('image', self.tf_image)
-        tf.add_to_collection('labels', self.tf_labels)
-        tf.add_to_collection('global_step', self.tf_global_step)
-        tf.add_to_collection('learning_rate', self.tf_learningRate)
-        tf.add_to_collection('pred', self.fcrn.get_output())
+            self.valid = Validation(self.inputSize, self.outputSize)
+            self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image}, self.args.batch_size, 1, False)
 
     def build_losses(self):
         with tf.name_scope("Losses"):
@@ -97,7 +63,7 @@ class Model(object):
 
             # Select Loss Function:
             # ----- MSE ----- #
-            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.tf_labels, valid_pixels=valid_pixels)  # Default, only valid pixels
+            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.train.tf_labels, valid_pixels=valid_pixels)  # Default, only valid pixels
 
             # self.loss_name, tf_loss = loss.tf_MSE(net.get_output(), self.tf_log_labels)       # Don't Use! Regress all pixels, even the sky!
 
@@ -105,13 +71,13 @@ class Model(object):
             # self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, valid_pixels=valid_pixels, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
 
             # ----- BerHu ----- #
-            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels,
+            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.train.tf_labels,
                                                          valid_pixels=valid_pixels)
 
             if self.args.l2norm:
                 self.tf_loss += loss.calculateL2norm()
 
-            print("[Network/Loss] Loss Function: %s" % self.loss_name)
+            print("\n[Network/Loss] Loss Function: %s" % self.loss_name)
             if valid_pixels:
                 print("[Network/Loss] Loss: All Pixels")
             else:
@@ -121,15 +87,15 @@ class Model(object):
         with tf.name_scope("Optimizer"):
             # optimizer = tf.train.GradientDescentOptimizer(self.learningRate).minimize(self.tf_loss,
             #                                                global_step=self.global_step)
-            optimizer = tf.train.AdamOptimizer(self.tf_learningRate)
-            self.train = optimizer.minimize(self.tf_loss, global_step=self.tf_global_step)
-            tf.add_to_collection("train_step", self.train)
+            optimizer = tf.train.AdamOptimizer(self.train.tf_learningRate)
+            self.train_step = optimizer.minimize(self.tf_loss, global_step=self.train.tf_global_step)
+            tf.add_to_collection("train_step", self.train_step)
 
     # TODO: Criar summaries das variaveis internas do modelo
     def build_summaries(self):
         # Filling Summary Obj
         with tf.name_scope("Summaries"):
-            tf.summary.scalar('learning_rate', self.tf_learningRate, collections=self.model_collection)
+            tf.summary.scalar('learning_rate', self.train.tf_learningRate, collections=self.model_collection)
             tf.summary.scalar('loss', self.tf_loss, collections=self.model_collection)
 
     @staticmethod
