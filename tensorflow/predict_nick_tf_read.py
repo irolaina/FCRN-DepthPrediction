@@ -9,36 +9,30 @@
 # TODO: Validar Métricas.
 
 # TODO: Implementar Bilinear
-# TODO: Estou usando momento?
 # TODO: If detect Ctrl+C, save training state.
 
-
+import glob
 # ===========
 #  Libraries
 # ===========
 import os
-import glob
+import random
 import sys
 import time
 import warnings
-import random
+from collections import deque
+
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
-import scipy.misc as scp
-
-from collections import deque
-from PIL import Image
-
 import utils.args as argsLib
 import utils.metrics as metricsLib
-import utils.loss as lossLib
-
+from PIL import Image
 from utils.dataloader import Dataloader
-from utils.model import Model
 from utils.fcrn import ResNet50UpProj
+from utils.model import Model
 from utils.plot import Plot
-
+from utils.size import Size
 
 # ==================
 #  Global Variables
@@ -139,6 +133,7 @@ def getTrainInputs():
 
     return tf_image_filename_list, tf_depth_filename_list
 
+
 # TODO: Move
 # TODO: Validar
 class EarlyStopping:
@@ -168,6 +163,7 @@ class EarlyStopping:
             self.stabCounter = 0
 
             self.movMeanLast = deque(self.movMean)
+
 
 # ========= #
 #  Predict  #
@@ -216,6 +212,7 @@ def predict(model_data_path, image_path):
 
         return pred
 
+
 # ===================== #
 #  Training/Validation  #
 # ===================== #
@@ -224,9 +221,7 @@ def train(args):
     print('[%s] Selected Params: \n\n%s' % (appName, args))
 
     # Local Variables
-    save_path, save_restore_path = createSaveFolder() # TODO: Evitar criar pastas vazias
-    imageRawSize = [375, 1242] # TODO: Usar class Size
-    model = Model(args)
+    save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
 
     # ----------------------------------------- #
     #  Network Training Model - Building Graph  #
@@ -235,13 +230,24 @@ def train(args):
     with graph.as_default():
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
 
+        # TODO: Create newer Dataloader Handler!
+
         # Searches dataset images filenames
         tf_train_image_filename_list, tf_train_depth_filename_list = getTrainInputs()
 
+        # Dataset Info
+        imageRawSize = Size(375, 1242, 3)  # TODO: change
+        depthRawSize = Size(375, 1242, 1)  # TODO: change
+
+        # Creates Model Obj
+        model = Model(args)
+
         # Creates Inputs Queue
         seed = random.randint(0, 2 ** 31 - 1)
-        tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False, seed=seed)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False, seed=seed)
+        tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False,
+                                                                       seed=seed)
+        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False,
+                                                                       seed=seed)
 
         # Reads images
         image_reader = tf.WholeFileReader()
@@ -253,8 +259,8 @@ def train(args):
         tf_depth = tf.image.decode_image(depth_file, channels=1)  # uint8
 
         # Restores images structure (size, type)
-        tf_image.set_shape([imageRawSize[0], imageRawSize[1], 3])
-        tf_depth.set_shape([imageRawSize[0], imageRawSize[1], 1])
+        tf_image.set_shape([imageRawSize.height, imageRawSize.width, imageRawSize.nchannels])
+        tf_depth.set_shape([depthRawSize.height, depthRawSize.width, depthRawSize.nchannels])
 
         # Downsizes Input and Depth Images
         tf_image_resized = tf.image.resize_images(tf_image, [model.inputSize.height, model.inputSize.width])
@@ -295,8 +301,8 @@ def train(args):
         # randomly augment images
         do_augment = tf.random_uniform([], 0, 1)
         tf_image_proc, tf_depth_proc = tf.cond(do_augment > 0.5,
-                                                 lambda: augment_image_pair(tf_image_resized, tf_depth_resized),
-                                                 lambda: (tf_image_resized, tf_depth_resized))
+                                               lambda: augment_image_pair(tf_image_resized, tf_depth_resized),
+                                               lambda: (tf_image_resized, tf_depth_resized))
 
         # Normalizes Input
         tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
@@ -382,7 +388,8 @@ def train(args):
                 raise SystemExit
 
         # Check Dataset Integrity
-        numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filename_list, tf_train_depth_filename_list)
+        numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filename_list,
+                                                              tf_train_depth_filename_list)
 
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)
@@ -422,7 +429,8 @@ def train(args):
             # Training
             if args.dataset == 'kittiraw_residential_continuous':
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
-                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss, model.summary_op])
+                    [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
+                     model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             # TODO: Terminar
             elif args.dataset == 'nyudepth':
@@ -430,7 +438,8 @@ def train(args):
                 input("oi5")
 
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
-                [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels, model.fcrn.get_output(), model.tf_loss, model.summary_op])
+                    [model.train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
+                     model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
             #     [train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_image_resized, tf_depth_resized, tf_image_proc,
@@ -532,7 +541,7 @@ def test(args):
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
     # Loads the dataset and restores a specified trained model.
-    dataloader = Dataloader(args.data_path, args.dataset, args.mode) # TODO: Usar leitura pelo Tensorflow
+    dataloader = Dataloader(args.data_path, args.dataset, args.mode)  # TODO: Usar leitura pelo Tensorflow
 
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))

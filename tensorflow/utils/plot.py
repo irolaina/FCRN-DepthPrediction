@@ -45,7 +45,7 @@ class Plot(object):
             self.axes[3].set_title("Pred")
 
         self.fig.canvas.set_window_title(title)
-        self.fig.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0) # Fix Subplots Spacing
+        self.fig.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)  # Fix Subplots Spacing
 
         self.isFirstTime = True
 

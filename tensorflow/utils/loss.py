@@ -24,6 +24,7 @@ def np_maskOutInvalidPixels(y, y_):
 
     return y_masked
 
+
 def tf_maskOutInvalidPixels(tf_pred, tf_labels):
     # Values Range
     # NyuDepth - ]0, ~4000]
@@ -36,7 +37,7 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
     # Mask Out Pixels without depth values
     tf_valid_pred = tf.gather_nd(tf_pred, tf_idx)
     tf_valid_labels = tf.gather_nd(tf_labels, tf_idx)
-    tf_valid_log_labels = tf.log(tf_valid_labels, name='log_labels') # TODO: Precisa daquela constante inicial?
+    tf_valid_log_labels = tf.log(tf_valid_labels, name='log_labels')  # TODO: Precisa daquela constante inicial?
 
     return tf_valid_pred, tf_valid_labels, tf_valid_log_labels
 
@@ -49,6 +50,7 @@ def np_MSE(y, y_):
 
     return np.power(y_ - y, 2) / numPixels  # MSE calculated for each pixel
 
+
 def tf_MSE(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'MSE'
 
@@ -56,7 +58,8 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
     if valid_pixels:
         tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
     else:
-        tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
+        tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
+                           name='log_labels')  # Just for displaying Image
 
     # npixels value depends on valid_pixels flag:
     # npixels = (batchSize*height*width) OR npixels = number of valid pixels
@@ -64,7 +67,6 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
 
     # Loss
     mse = (tf.reduce_sum(tf.square(tf_log_y_ - tf_y)) / tf_npixels)
-
 
     return loss_name, mse
 
@@ -76,11 +78,13 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
 def np_BerHu():
     pass
 
+
 def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
-    tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32), name='log_labels')  # Just for displaying Image
+    tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
+                       name='log_labels')  # Just for displaying Image
     tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
     tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
 
@@ -118,6 +122,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 
     return loss_name, tf_loss
 
+
 # ------------------------------ #
 #  Training Loss - Eigen,Fergus  #
 # ------------------------------ #
@@ -139,6 +144,7 @@ def gradient_y(img):
     # print("gy:",gy.shape)
 
     return gy
+
 
 def tf_L(tf_log_y, tf_log_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Eigen's Log Depth"

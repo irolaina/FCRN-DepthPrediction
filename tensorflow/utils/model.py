@@ -6,6 +6,7 @@ import tensorflow as tf
 import os
 import utils.loss as loss
 
+from utils.size import Size
 from utils.fcrn import ResNet50UpProj
 
 # ==================
@@ -17,11 +18,7 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 # ===========
 #  Functions
 # ===========
-class Size():
-    def __init__(self, height, width, nchannels):
-        self.height = height
-        self.width = width
-        self.nchannels = nchannels
+
 
 # ===================
 #  Class Declaration
@@ -94,7 +91,8 @@ class Model(object):
             # self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, valid_pixels=valid_pixels, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
 
             # ----- BerHu ----- #
-            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=valid_pixels)
+            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels,
+                                                         valid_pixels=valid_pixels)
 
             if self.args.l2norm:
                 self.tf_loss += loss.calculateL2norm()
@@ -104,7 +102,6 @@ class Model(object):
                 print("[Network/Loss] Loss: All Pixels")
             else:
                 print("[Network/Loss] Compute: Ignore invalid pixels")
-
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
@@ -138,7 +135,7 @@ class Model(object):
             self.summary_op = tf.summary.merge_all('model_0')
 
     def createTrainSaver(self):
-        ''' Creates Saver Object '''
+        """ Creates Saver Object """
         self.train_saver = tf.train.Saver()
 
     @staticmethod
