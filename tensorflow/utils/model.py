@@ -81,25 +81,30 @@ class Model(object):
 
     def build_losses(self):
         with tf.name_scope("Losses"):
-            # Select Loss Function:
+            # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
+            valid_pixels = True
 
+            # Select Loss Function:
             # ----- MSE ----- #
-            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.tf_labels, valid_pixels=True)  # Default, only valid pixels
-            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.tf_labels, valid_pixels=False)  # Default, only valid pixels
+            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.tf_labels, valid_pixels=valid_pixels)  # Default, only valid pixels
 
             # self.loss_name, tf_loss = loss.tf_MSE(net.get_output(), self.tf_log_labels)       # Don't Use! Regress all pixels, even the sky!
 
             # ----- Eigen's Log Depth ----- #
-            # self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, self.tf_idx, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
+            # self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, valid_pixels=valid_pixels, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
 
             # ----- BerHu ----- #
-            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=True)
-            # self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=False)
+            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.tf_labels, valid_pixels=valid_pixels)
 
             if self.args.l2norm:
                 self.tf_loss += loss.calculateL2norm()
 
-            print("[Network/Model] Loss Function: %s" % self.loss_name)
+            print("[Network/Loss] Loss Function: %s" % self.loss_name)
+            if valid_pixels:
+                print("[Network/Loss] Loss: All Pixels")
+            else:
+                print("[Network/Loss] Compute: Ignore invalid pixels")
+
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):

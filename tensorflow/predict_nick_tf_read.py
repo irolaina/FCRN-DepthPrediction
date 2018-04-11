@@ -367,9 +367,9 @@ def train(args):
 
                 numSamples = len(image_str_list_aux)
 
-                print("[monodeep/Dataset] Checking if RGB and Depth images are paired... ")
+                print("[Dataset] Checking if RGB and Depth images are paired... ")
                 if image_str_list_aux == depth_str_list_aux:
-                    print("[monodeep/Dataset] Check Integrity: Pass")
+                    print("[Dataset] Check Integrity: Pass")
                     # del image_str_list, depth_str_list
                     # del image_str_list_aux, depth_str_list_aux
                 else:
@@ -378,7 +378,7 @@ def train(args):
                 return numSamples, feed_dict
 
             except ValueError:
-                print("[monodeep/Dataset] Check Integrity: Failed")
+                print("[Dataset] Check Integrity: Failed")
                 raise SystemExit
 
         # Check Dataset Integrity
@@ -507,7 +507,8 @@ def train(args):
         if SAVE_TRAINED_MODEL:
             model.saveTrainedModel(save_restore_path, sess, model.train_saver, args.model_name)
 
-        # Logs the obtained test result
+        # Logs the obtained simulation results
+        print("[Results] Logging simulation info to 'results.txt' file...")
         f = open('results.txt', 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
             datetime, args.model_name, args.dataset, model.loss_name, step, train_loss, valid_loss, sim_train))
