@@ -467,9 +467,16 @@ def train(args):
             # debug_data_augmentation()
 
             # Validation
-            valid_loss = -1
+            valid_loss = -1 # FIXME: Terminar
             # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss])
-            # input("valid")
+
+            # FIXME: Uses only one image as validation!
+            valid_image = plt.imread("/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
+            valid_depth = plt.imread("/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
+
+            feed_dict_valid = {model.tf_valid_image: np.expand_dims(valid_image, axis=0),
+                               model.tf_valid_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+            valid_image, valid_pred, valid_labels, valid_log_labels = sess.run([model.tf_valid_image_resized, model.fcrn_valid.get_output(), model.tf_valid_depth_resized, model.tf_valid_log_depth_resized], feed_dict=feed_dict_valid)
             # -----
 
             if ENABLE_TENSORBOARD:
@@ -491,9 +498,9 @@ def train(args):
                                                    pred=batch_pred[0, :, :, 0])
 
                 if args.show_valid_progress:
-                    valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :],
-                                                   label=valid_labels_o[0],
-                                                   log_label=valid_log_labels[0, :, :],
+                    valid_plotObj.showValidResults(raw=valid_image[0,:,:],
+                                                   label=valid_labels[0,:,:,0],
+                                                   log_label=valid_log_labels[0,:,:,0],
                                                    pred=valid_pred[0, :, :, 0])
 
                 end2 = time.time()

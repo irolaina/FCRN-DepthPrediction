@@ -44,7 +44,21 @@ class Model(object):
         #  FCRN (Fully Convolutional Residual Network)
         # =============================================
         # Construct the network graph
-        self.fcrn = ResNet50UpProj({'data': tf_image}, self.args.batch_size, 1, False)
+        with tf.variable_scope('model') as scope:
+            self.fcrn = ResNet50UpProj({'data': tf_image}, self.args.batch_size, 1, False)
+
+        with tf.variable_scope("model", reuse=True):
+            # TODO: Organizar
+            # TODO: Criar classe de treinamento e classe de validação
+            self.tf_valid_image = tf.placeholder(tf.float32, shape=(None, 375, 1242, 3)) # TODO: Usar variáveis com essas informações
+            self.tf_valid_depth = tf.placeholder(tf.float32, shape=(None, 375, 1242, 1))  # TODO: Usar variáveis com essas informações
+
+            self.tf_valid_image_resized = tf.image.resize_images(self.tf_valid_image, [self.inputSize.height, self.inputSize.width])
+            self.tf_valid_depth_resized = tf.image.resize_images(self.tf_valid_depth, [self.outputSize.height, self.outputSize.width])
+
+            self.tf_valid_log_depth_resized = tf.log(self.tf_valid_depth_resized + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32))
+
+            self.fcrn_valid = ResNet50UpProj({'data': self.tf_valid_image_resized}, self.args.batch_size, 1, False)
 
         # ======================
         #  Tensorflow Variables

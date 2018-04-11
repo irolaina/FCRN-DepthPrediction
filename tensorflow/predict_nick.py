@@ -93,67 +93,9 @@ def createSaveFolder():
 
     return save_path, save_restore_path
 
-
 # TODO: Move
-def saveTrainedModel(save_path, session, saver, model_name):
-    """ Saves trained model """
-    # Creates saver obj which backups all the variables.
-    print("[Network/Training] List of Saved Variables:")
-    for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
-        print(i)  # i.name if you want just a name
-
-    file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
-    print("\n[Results] Model saved in file: %s" % file_path)
-
-# ========= #
-#  Predict  #
-# ========= #
-def predict(model_data_path, image_path):
-    print('[%s] Selected mode: Predict' % appName)
-    print('[%s] Selected Params: \n\n%s' % (appName, args))
-
-    # Default input size
-    height = 228
-    width = 304
-    channels = 3
-    batch_size = 1
-
-    # Read image
-    img = Image.open(image_path)
-    img = img.resize([width, height], Image.ANTIALIAS)
-    img = np.array(img).astype('float32')
-    img = np.expand_dims(np.asarray(img), axis=0)
-
-    # Create a placeholder for the input image
-    tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
-
-    # Construct the network
-    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
-
-    with tf.Session() as sess:
-        # Load the converted parameters
-        print('Loading the model')
-
-        # Use to load from ckpt file
-        saver = tf.train.Saver()
-        saver.restore(sess, model_data_path)
-
-        # Use to load from npy file
-        # net.load(model_data_path, sess)
-
-        # Evalute the network for the given image
-        pred = sess.run(net.get_output(), feed_dict={tf_image: img})
-
-        # Plot result
-        fig = plt.figure()
-        ii = plt.imshow(pred[0, :, :, 0], interpolation='nearest')
-        fig.colorbar(ii)
-        plt.show()
-
-        return pred
-
-# TODO: move
-class EarlyStopping():
+# TODO: Validar
+class EarlyStopping:
     def __init__(self):
         # Local Variables
         self.movMeanLast = 0
@@ -182,6 +124,54 @@ class EarlyStopping():
             self.movMeanLast = deque(self.movMean)
 
 
+# ========= #
+#  Predict  #
+# ========= #
+def predict(model_data_path, image_path):
+    print('[%s] Selected mode: Predict' % appName)
+    print('[%s] Selected Params: \n\n%s' % (appName, args))
+
+    # Default input size
+    height = 228
+    width = 304
+    channels = 3
+    batch_size = 1
+
+    # Read image
+    img = Image.open(image_path)
+    img = img.resize([width, height], Image.ANTIALIAS)
+    img = np.array(img).astype('float32')
+    img = np.expand_dims(np.asarray(img), axis=0)
+
+    # Create a placeholder for the input image
+    tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
+
+    # Construct the network
+    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+
+    with tf.Session() as sess:
+        # Load the converted parameters
+        print('\n[network/Predict] Loading the model')
+
+        # Use to load from ckpt file
+        saver = tf.train.Saver()
+        saver.restore(sess, model_data_path)
+
+        # Use to load from npy file
+        # net.load(model_data_path, sess)
+
+        # Evalute the network for the given image
+        pred = sess.run(net.get_output(), feed_dict={tf_image: img})
+
+        # Plot result
+        fig = plt.figure()
+        ii = plt.imshow(pred[0, :, :, 0], interpolation='nearest')
+        fig.colorbar(ii)
+        plt.show()
+
+        return pred
+
+
 # ===================== #
 #  Training/Validation  #
 # ===================== #
@@ -190,11 +180,11 @@ def train(args):
     print('[%s] Selected Params: \n\n%s' % (appName, args))
 
     # Local Variables
-    save_path, save_restore_path = createSaveFolder()
+    save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
 
-    # -----------------------------------------
-    #  Network Training Model - Building Graph
-    # -----------------------------------------
+    # ----------------------------------------- #
+    #  Network Training Model - Building Graph  #
+    # ----------------------------------------- #
     graph = tf.Graph()
     with graph.as_default():
         # Load Dataset
@@ -365,13 +355,6 @@ def train(args):
                                                    pred=batch_pred[0, :, :, 0])
 
                     # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
-                    pass
-
-                if args.show_train_error_progress:
-                    # FIXME:
-                    # Plot.plotTrainingErrorProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],
-                    #                                coarse=train_PredCoarse[0, :, :], fine=train_PredFine[0, :, :],
-                    #                                figId=8)
                     pass
 
                 if args.show_valid_progress:
