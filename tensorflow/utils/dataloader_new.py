@@ -23,18 +23,18 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 # ===================
 #  Class Declaration
 # ===================
-class Dataloader_new():
+class Dataloader_new:
     def __init__(self, args):
         # Detects which dataset was selected and creates the 'datasetObj'.
         self.selectedDataset = args.dataset
         # print(selectedDataset)
 
         if self.selectedDataset == 'kittiraw_residential_continuous':
-            datasetObj = KittiRaw() # TODO: Terminar
+            datasetObj = KittiRaw()  # TODO: Terminar
             pass
 
         elif self.selectedDataset == 'nyudepth':
-            datasetObj = NyuDepth() # TODO: Terminar
+            datasetObj = NyuDepth()  # TODO: Terminar
             pass
 
         else:
@@ -50,7 +50,8 @@ class Dataloader_new():
         print("[Dataset] dataloader object created.")
 
     # TODO: Ler outros Datasets
-    def getTrainInputs(self, args):
+    @staticmethod
+    def getTrainInputs(args):
         if args.machine == 'olorin':
             # KittiRaw Residential Continuous
             # Image: (375, 1242, 3) uint8
@@ -136,7 +137,8 @@ class Dataloader_new():
 
         return tf_image, tf_depth
 
-    def augment_image_pair(self, image, depth):
+    @staticmethod
+    def augment_image_pair(image, depth):
         # randomly flip images
         do_flip = tf.random_uniform([], 0, 1)
         image_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)

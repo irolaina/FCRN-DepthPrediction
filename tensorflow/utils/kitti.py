@@ -3,12 +3,13 @@
 # ===========
 from .size import Size
 
+
 # ===================
 #  Class Declaration
 # ===================
 class Kitti(object):
     def __init__(self):
-        self.dataset_path = '' # TODO: Terminar
+        self.dataset_path = ''  # TODO: Terminar
         self.name = 'kitti'
 
         self.image_size = Size(376, 1241, 3)

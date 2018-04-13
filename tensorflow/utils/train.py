@@ -16,6 +16,7 @@ AVG_SIZE = 20
 MIN_EVALUATIONS = 1000
 MAX_STEPS_AFTER_STABILIZATION = 10000
 
+
 # ===================
 #  Class Declaration
 # ===================
@@ -57,6 +58,7 @@ class Train:
         tf.add_to_collection('labels', self.tf_labels)
         tf.add_to_collection('global_step', self.tf_global_step)
         tf.add_to_collection('learning_rate', self.tf_learningRate)
+
 
 # TODO: Validar
 class EarlyStopping:

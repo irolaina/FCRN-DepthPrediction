@@ -28,7 +28,7 @@ import utils.args as argsLib
 
 from PIL import Image
 # from utils.dataloader import Dataloader
-from utils.dataloader_new import Dataloader_new # TODO: make official
+from utils.dataloader_new import Dataloader_new  # TODO: make official
 from utils.model import Model
 from utils.fcrn import ResNet50UpProj
 from utils.train import EarlyStopping
@@ -139,11 +139,12 @@ def train(args):
     graph = tf.Graph()
     with graph.as_default():
         # TODO: Separar algumas imagens para o subset de Validação
-        data = Dataloader_new(args) # TODO: Mudar nome
+        data = Dataloader_new(args)  # TODO: Mudar nome
         model = Model(args)
 
         # Searches dataset images filenames
-        train_image_filenames, train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainInputs(args) # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
+        train_image_filenames, train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainInputs(
+            args)  # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
         tf_image, tf_depth = data.readData(tf_train_image_filenames, tf_train_depth_filenames)
 
         # Downsizes Input and Depth Images
@@ -151,7 +152,8 @@ def train(args):
         tf_depth_resized = tf.image.resize_images(tf_depth, [model.output_size.height, model.output_size.width])
 
         # Create Tensors for Batch Training
-        tf_batch_data_resized, tf_batch_data, tf_batch_labels = data.prepareTrainData(tf_image_resized, tf_depth_resized, args.batch_size)
+        tf_batch_data_resized, tf_batch_data, tf_batch_labels = data.prepareTrainData(tf_image_resized,
+                                                                                      tf_depth_resized, args.batch_size)
 
         # Build Network Model
         model.build_model(tf_batch_data, tf_batch_labels)
@@ -215,12 +217,9 @@ def train(args):
             # ----- Session Run! ----- #
             # Training
             if args.dataset == 'kittiraw_residential_continuous':
-                # t = time.time()
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
                     [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.train.tf_log_labels,
                      model.fcrn.get_output(), model.tf_loss, model.summary_op])
-                # print("sess.run(): ", (time.time()-t))
-
 
             # TODO: Terminar
             elif args.dataset == 'nyudepth':
@@ -319,7 +318,8 @@ def train(args):
         print("[Results] Logging simulation info to 'results.txt' file...")
         f = open('results.txt', 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
-            datetime, args.model_name, args.dataset, model.loss_name, step, model.train.loss, model.valid.loss, sim_train))
+            datetime, args.model_name, args.dataset, model.loss_name, step, model.train.loss, model.valid.loss,
+            sim_train))
         f.close()
 
 
