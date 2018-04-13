@@ -178,7 +178,7 @@ def train(args):
         tf.local_variables_initializer().run()
 
         # Check Dataset Integrity
-        numSamples, feed_dict_strings = data.checkIntegrity(tf_train_image_filenames, tf_train_depth_filenames, sess)
+        numSamples, feed_dict_strings = data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames)
 
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)

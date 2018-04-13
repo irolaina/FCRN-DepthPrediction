@@ -3,6 +3,8 @@
 # ===========
 import tensorflow as tf
 import random
+import glob
+import os
 
 from .size import Size
 from .kitti import Kitti
@@ -23,6 +25,7 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 # ===================
 #  Class Declaration
 # ===================
+# TODO: Criar rotina que subdivide os dados disponívels em train/valid
 class Dataloader_new:
     def __init__(self, args):
         # Detects which dataset was selected and creates the 'datasetObj'.
@@ -38,7 +41,7 @@ class Dataloader_new:
             pass
 
         else:
-            print("[Dataset] The typed dataset '%s' is invalid. Check the list of supported datasets." % self.selectedDataset)
+            print("[Dataloader] The typed dataset '%s' is invalid. Check the list of supported datasets." % self.selectedDataset)
             raise SystemExit
 
         # Collects Dataset Info
@@ -47,11 +50,10 @@ class Dataloader_new:
         self.image_size = datasetObj.image_size
         self.depth_size = datasetObj.depth_size
 
-        print("[Dataset] dataloader object created.")
+        print("[Dataloader] dataloader object created.")
 
     # TODO: Ler outros Datasets
-    @staticmethod
-    def getTrainInputs(args):
+    def getTrainInputs(self, args):
         if args.machine == 'olorin':
             # KittiRaw Residential Continuous
             # Image: (375, 1242, 3) uint8
@@ -73,8 +75,8 @@ class Dataloader_new:
                 search_image_files_str = "../../data/residential_continuous/training/imgs/*.png"
                 search_depth_files_str = "../../data/residential_continuous/training/dispc/*.png"
 
-                image_filenames = None
-                depth_filenames = None
+                self.image_filenames = None
+                self.depth_filenames = None
 
                 tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
                 tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
@@ -83,8 +85,8 @@ class Dataloader_new:
             # Image: (480, 640, 3) ?
             # Depth: (480, 640)    ?
             elif args.dataset == 'nyudepth':
-                image_filenames = []
-                depth_filenames = []
+                self.image_filenames = []
+                self.depth_filenames = []
 
                 # TODO: Migrar informações para os handlers de cada dataset
                 root_folder = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
@@ -96,30 +98,30 @@ class Dataloader_new:
 
                     for file in glob.glob('*_colors.png'):
                         print(file)
-                        image_filenames.append(folder + file)
+                        self.image_filenames.append(folder + file)
 
                     for file in glob.glob('*_depth.png'):
                         print(file)
-                        depth_filenames.append(folder + file)
+                        self.depth_filenames.append(folder + file)
 
                     print()
 
                 print("Summary - Training Inputs")
-                print("image_filenames: ", len(image_filenames))
-                print("depth_filenames: ", len(depth_filenames))
+                print("image_filenames: ", len(self.image_filenames))
+                print("depth_filenames: ", len(self.depth_filenames))
 
                 tf_image_filenames = tf.placeholder(tf.string)
                 tf_depth_filenames = tf.placeholder(tf.string)
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+        return self.image_filenames, self.depth_filenames, tf_image_filenames, tf_depth_filenames
 
-    def readData(self, tf_train_image_filenames, tf_train_depth_filenames):
+    def readData(self, tf_image_filenames, tf_depth_filenames):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
         seed = random.randint(0, 2 ** 31 - 1)
-        tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filenames, shuffle=False,
+        tf_train_image_filename_queue = tf.train.string_input_producer(tf_image_filenames, shuffle=False,
                                                                        seed=seed)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filenames, shuffle=False,
+        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_depth_filenames, shuffle=False,
                                                                        seed=seed)
 
         # Reads images
@@ -164,6 +166,8 @@ class Dataloader_new:
         return image_aug, depth_aug
 
     def prepareTrainData(self, tf_image_resized, tf_depth_resized, batch_size):
+        # TODO: Neste Ponto, os dados de entrada ja deveriam estar seperados em treinamento e validação, acredito que imagens de validação não devem sofrer data augmentation
+
         # ------------------- #
         #  Data Augmentation  #
         # ------------------- #
@@ -193,7 +197,7 @@ class Dataloader_new:
 
         return tf_batch_data_resized, tf_batch_data, tf_batch_labels
 
-    def checkIntegrity(self, tf_image_filenames, tf_depth_filenames, sess):
+    def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):
         try:
             # TODO: Essas informações podem ser migradas para o handler de cada dataset
             if self.selectedDataset == 'kittiraw_residential_continuous':
@@ -202,8 +206,8 @@ class Dataloader_new:
                 depth_replace = [b'/dispc/', b'']
 
             elif self.selectedDataset == 'nyudepth':
-                feed_dict = {tf_image_filenames: train_image_filenames,
-                             tf_depth_filenames: train_depth_filenames}
+                feed_dict = {tf_image_filenames: self.image_filenames,
+                             tf_depth_filenames: self.depth_filenames}
                 image_replace = ['_colors.png', '']
                 depth_replace = ['_depth.png', '']
 
@@ -225,14 +229,14 @@ class Dataloader_new:
 
             numSamples = len(image_filenames_aux)
 
-            print("[Dataset] Checking if RGB and Depth images are paired... ")
+            print("[Dataloader] Checking if RGB and Depth images are paired... ")
             if image_filenames_aux == depth_filenames_aux:
-                print("[Dataset] Check Integrity: Pass")
+                print("[Dataloader] Check Integrity: Pass")
             else:
                 raise ValueError
 
             return numSamples, feed_dict
 
         except ValueError:
-            print("[Dataset] Check Integrity: Failed")
+            print("[Dataloader] Check Integrity: Failed")
             raise SystemExit
