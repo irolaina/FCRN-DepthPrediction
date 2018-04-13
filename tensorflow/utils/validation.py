@@ -23,8 +23,7 @@ class Validation:
         # Network Input/Output
         self.tf_image_resized = tf.image.resize_images(self.tf_image, [inputSize.height, inputSize.width])
         self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [outputSize.height, outputSize.width])
-        self.tf_log_depth_resized = tf.log(
-            self.tf_depth_resized + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32))
+        self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32))
 
         print("\n[Network/Validation] Validation Tensors Created.")
         print(self.tf_image)

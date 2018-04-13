@@ -54,7 +54,7 @@ class Model(object):
 
         with tf.variable_scope("model", reuse=True):
             self.valid = Validation(self.inputSize, self.outputSize)
-            self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image}, self.args.batch_size, 1, False)
+            self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image_resized}, self.args.batch_size, 1, False)
 
     def build_losses(self):
         with tf.name_scope("Losses"):

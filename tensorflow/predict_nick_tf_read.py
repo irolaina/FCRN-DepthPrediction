@@ -474,7 +474,7 @@ def train(args):
                     valid_plotObj.showValidResults(raw=valid_image[0, :, :],
                                                    label=valid_labels[0, :, :, 0],
                                                    log_label=valid_log_labels[0, :, :, 0],
-                                                   pred=valid_pred[0, :, :, 0])  # FIXME: pred size wrong
+                                                   pred=valid_pred[0, :, :, 0])
 
                 end2 = time.time()
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,
