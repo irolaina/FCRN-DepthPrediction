@@ -15,7 +15,7 @@ class NyuDepth(object):
         self.image_size = Size(480, 640, 3)
         self.depth_size = Size(480, 640, 1)
 
-        print("[monodeep/Dataloader] NyuDepth object created.")
+        print("[Dataloader] NyuDepth object created.")
 
     # TODO: Terminar
     def getFileList(self):

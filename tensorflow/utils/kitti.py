@@ -15,7 +15,7 @@ class Kitti(object):
         self.image_size = Size(376, 1241, 3)
         self.depth_size = Size(376, 1226, 1)
 
-        print("[fcrn/Dataloader] Kitti object created.")
+        print("[Dataloader] Kitti object created.")
 
     # TODO: Terminar
     def getFileList(self):

@@ -15,7 +15,7 @@ class KittiRaw(object):
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
 
-        print("[fcrn/Dataloader] KittiRaw object created.")
+        print("[Dataloader] KittiRaw object created.")
 
     # TODO: Terminar
     def getFileList(self):
