@@ -15,24 +15,25 @@
 #  Libraries
 # ===========
 import os
-import random
-import sys
-import time
 import warnings
+import time
+import sys
 
-import matplotlib.pyplot as plt
-import numpy as np
 import tensorflow as tf
-import utils.args as argsLib
+import numpy as np
+import matplotlib.pyplot as plt
+
 import utils.metrics as metricsLib
+import utils.args as argsLib
+
 from PIL import Image
-from utils.dataloader_new import Dataloader_new # TODO: make official
 # from utils.dataloader import Dataloader
+from utils.dataloader_new import Dataloader_new # TODO: make official
+from utils.model import Model
 from utils.fcrn import ResNet50UpProj
 from utils.train import EarlyStopping
-from utils.model import Model
-from utils.plot import Plot
 from utils.size import Size
+from utils.plot import Plot
 
 # ==================
 #  Global Variables
@@ -133,94 +134,20 @@ def train(args):
     # ----------------------------------------- #
     graph = tf.Graph()
     with graph.as_default():
-        # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
-
+        # TODO: Separar algumas imagens para o subset de Validação
         data = Dataloader_new(args) # TODO: Mudar nome
+        model = Model(args)
 
         # Searches dataset images filenames
         train_image_filenames, train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainInputs(args) # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
-
-        # Creates Model Obj
-        model = Model(args)
-
-        # Creates Inputs Queue
-        seed = random.randint(0, 2 ** 31 - 1)
-        tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filenames, shuffle=False,
-                                                                       seed=seed)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filenames, shuffle=False,
-                                                                       seed=seed)
-
-        # Reads images
-        image_reader = tf.WholeFileReader()
-        tf_image_key, image_file = image_reader.read(tf_train_image_filename_queue)
-        tf_depth_key, depth_file = image_reader.read(tf_train_depth_filename_queue)
-
-        # FIXME: Kitti Original as imagens de disparidade são do tipo int32, no caso do kittiraw_residential_continous são uint8
-        tf_image = tf.image.decode_image(image_file, channels=3)  # uint8
-        tf_depth = tf.image.decode_image(depth_file, channels=1)  # uint8
-
-        # Restores images structure (size, type)
-        tf_image.set_shape([data.image_size.height, data.image_size.width, data.image_size.nchannels])
-        tf_depth.set_shape([data.depth_size.height, data.depth_size.width, data.depth_size.nchannels])
+        tf_image, tf_depth = data.readData(tf_train_image_filenames, tf_train_depth_filenames)
 
         # Downsizes Input and Depth Images
         tf_image_resized = tf.image.resize_images(tf_image, [model.input_size.height, model.input_size.width])
         tf_depth_resized = tf.image.resize_images(tf_depth, [model.output_size.height, model.output_size.width])
 
-        # ------------------- #
-        #  Data Augmentation  #
-        # ------------------- #
-        # Copy
-        tf_image_proc = tf_image_resized
-        tf_depth_proc = tf_depth_resized
-
-        # TODO: Move
-        def augment_image_pair(image, depth):
-            # randomly flip images
-            do_flip = tf.random_uniform([], 0, 1)
-            image_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)
-            depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
-
-            # randomly shift gamma
-            random_gamma = tf.random_uniform([], 0.8, 1.2)
-            image_aug = image_aug ** random_gamma
-
-            # randomly shift brightness
-            random_brightness = tf.random_uniform([], 0.5, 2.0)
-            image_aug = image_aug * random_brightness
-
-            # randomly shift color
-            random_colors = tf.random_uniform([3], 0.8, 1.2)
-            white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])
-            color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
-            image_aug *= color_image
-
-            # saturate
-            image_aug = tf.clip_by_value(image_aug, 0, 1)
-
-            return image_aug, depth_aug
-
-        # randomly augment images
-        do_augment = tf.random_uniform([], 0, 1)
-        tf_image_proc, tf_depth_proc = tf.cond(do_augment > 0.5,
-                                               lambda: augment_image_pair(tf_image_resized, tf_depth_resized),
-                                               lambda: (tf_image_resized, tf_depth_resized))
-
-        # Normalizes Input
-        tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
-
-        tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
-
-        # Creates Training Batch Tensors
-        tf_batch_data_resized, tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
-            # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-            [tf_image_resized_uint8, tf_image_proc, tf_depth_proc],  # Enable for debugging images
-            batch_size=args.batch_size,
-            num_threads=1,
-            capacity=16,
-            min_after_dequeue=0)
-
-        # TODO: Mover tensores acima para a classe train.py
+        # Create Tensors for Batch Training
+        tf_batch_data_resized, tf_batch_data, tf_batch_labels = data.prepareTrainData(tf_image_resized, tf_depth_resized, args.batch_size)
 
         # Build Network Model
         model.build_model(tf_batch_data, tf_batch_labels)
@@ -238,8 +165,6 @@ def train(args):
     # Local Variables and Memory Allocation
     step = 0
     stop = EarlyStopping()
-
-    train_loss, valid_loss = None, None
 
     print("\n[Network/Training] Running built graph...")
     with tf.Session(graph=graph) as sess:
@@ -293,8 +218,7 @@ def train(args):
                 print("[Dataset] Check Integrity: Failed")
                 raise SystemExit
 
-        input("continue...")
-
+        # TODO: Mover
         # Check Dataset Integrity
         numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filenames,
                                                               tf_train_depth_filenames)
@@ -337,7 +261,7 @@ def train(args):
             # Training
             if args.dataset == 'kittiraw_residential_continuous':
                 # t = time.time()
-                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
+                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
                     [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.train.tf_log_labels,
                      model.fcrn.get_output(), model.tf_loss, model.summary_op])
                 # print("sess.run(): ", (time.time()-t))
@@ -348,11 +272,11 @@ def train(args):
                 image_key = sess.run([tf_image_key], feed_dict=feed_dict_strings)
                 input("oi5")
 
-                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
+                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
                     [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
                      model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
-            # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
+            # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
             #     [train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_image_resized, tf_depth_resized, tf_image_proc,
             #      tf_depth_proc])
 
@@ -378,15 +302,13 @@ def train(args):
             # debug_data_augmentation()
 
             # Validation
-            valid_loss = -1  # FIXME: Terminar
-            # valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss])
-
             # FIXME: Uses only one image as validation!
             valid_image = plt.imread(
                 "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
             valid_depth = plt.imread(
                 "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
 
+            # FIXME: valid_loss = -1
             feed_dict_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
                                model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
             valid_image, valid_pred, valid_labels, valid_log_labels = sess.run(
@@ -401,7 +323,7 @@ def train(args):
 
             # TODO: Validar
             if ENABLE_EARLY_STOP:
-                if stop.check(step, valid_loss):
+                if stop.check(step, model.valid.loss):
                     break
 
             # Prints Training Progress
@@ -422,8 +344,8 @@ def train(args):
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,
                                                                                                             args.max_steps,
                                                                                                             end2 - start2,
-                                                                                                            train_loss,
-                                                                                                            valid_loss))
+                                                                                                            model.train.loss,
+                                                                                                            model.valid.loss))
 
         coord.request_stop()
         coord.join(threads)
@@ -442,7 +364,7 @@ def train(args):
         print("[Results] Logging simulation info to 'results.txt' file...")
         f = open('results.txt', 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
-            datetime, args.model_name, args.dataset, model.loss_name, step, train_loss, valid_loss, sim_train))
+            datetime, args.model_name, args.dataset, model.loss_name, step, model.train.loss, model.valid.loss, sim_train))
         f.close()
 
 

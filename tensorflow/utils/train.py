@@ -31,6 +31,8 @@ class Train:
                 tf.cast(self.tf_labels, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
                 name='log_labels')  # Just for displaying Image
 
+            self.loss = -1
+
         with tf.name_scope('Train'):
             # Count the number of steps taken.
             self.tf_global_step = tf.Variable(0, trainable=False, name='global_step')
