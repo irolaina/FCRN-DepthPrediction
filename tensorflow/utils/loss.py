@@ -74,11 +74,6 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
 # ------- #
 #  BerHu  #
 # ------- #
-# TODO: Implemente BerHu Loss function
-def np_BerHu():
-    pass
-
-
 def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 

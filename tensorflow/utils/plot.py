@@ -91,16 +91,15 @@ class Plot(object):
         plt.pause(0.001)
 
     # TODO: Add colorbar
-    # FIXME: predMSE
     def showValidResults(self, raw, label, log_label, pred):
-        # predMSE = loss.np_MSE(y=pred, y_=log_label)  # FIXME:
+        predMSE = loss.np_MSE(y=pred, y_=log_label)
 
         if self.isFirstTime:
             self.cax1 = self.axes[0].imshow(raw)
             self.cax2 = self.axes[1].imshow(label)
             self.cax3 = self.axes[2].imshow(log_label)
             self.cax4 = self.axes[3].imshow(pred)
-            # self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')  # FIXME:
+            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
             # cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
             # # self.axes[1].set_aspect('auto')
@@ -128,7 +127,7 @@ class Plot(object):
             self.cax2 = self.axes[1].imshow(label)
             self.cax3 = self.axes[2].imshow(log_label)
             self.cax4 = self.axes[3].imshow(pred)
-            # self.cax5 = self.axes[4].imshow(predMSE, cmap='jet') # FIXME:
+            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
         plt.pause(0.001)
 
