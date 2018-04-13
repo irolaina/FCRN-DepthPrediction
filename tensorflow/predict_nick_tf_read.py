@@ -93,8 +93,12 @@ def predict(model_data_path, image_path):
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
-    # Construct the network
-    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+    with tf.variable_scope('model'):
+        # Construct the network
+        net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+
+        # for var in tf.trainable_variables():
+        #     print(var)
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -171,57 +175,8 @@ def train(args):
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
 
-        # TODO: Unificar session.run
-        def checkDatasetIntegrity(tf_image_filenames, tf_depth_filenames):
-            try:
-                # TODO: Essas informações podem ser migradas para o handler de cada dataset
-                if args.dataset == 'kittiraw_residential_continuous':
-                    feed_dict = None
-                    image_replace = [b'/imgs/', b'']
-                    depth_replace = [b'/dispc/', b'']
-
-                elif args.dataset == 'nyudepth':
-
-                    feed_dict = {tf_image_filenames: train_image_filenames,
-                                 tf_depth_filenames: train_depth_filenames}
-                    image_replace = ['_colors.png', '']
-                    depth_replace = ['_depth.png', '']
-
-                image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames], feed_dict=feed_dict)
-
-                image_filenames_aux = [item.replace(image_replace[0], image_replace[1]) for item in image_filenames]
-                depth_filenames_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in depth_filenames]
-
-                # print(image_filenames)
-                # input("oi1")
-                # print(depth_filenames)
-                # input("oi2")
-                #
-                # print(image_filenames_aux)
-                # input("oi3")
-                # print(depth_filenames_aux)
-                # input("oi4")
-
-                numSamples = len(image_filenames_aux)
-
-                print("[Dataset] Checking if RGB and Depth images are paired... ")
-                if image_filenames_aux == depth_filenames_aux:
-                    print("[Dataset] Check Integrity: Pass")
-                    # del image_filenames, depth_filenames
-                    # del image_filenames_aux, depth_filenames_aux
-                else:
-                    raise ValueError
-
-                return numSamples, feed_dict
-
-            except ValueError:
-                print("[Dataset] Check Integrity: Failed")
-                raise SystemExit
-
-        # TODO: Mover
         # Check Dataset Integrity
-        numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filenames,
-                                                              tf_train_depth_filenames)
+        numSamples, feed_dict_strings = data.checkIntegrity(tf_train_image_filenames, tf_train_depth_filenames, sess)
 
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)
