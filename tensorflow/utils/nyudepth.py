@@ -1,3 +1,8 @@
+# ===========
+#  Libraries
+# ===========
+from .size import Size
+
 # ===================
 #  Class Declaration
 # ===================
@@ -7,17 +12,8 @@ class NyuDepth(object):
         self.name = name
         self.type = 'nyudepth'
 
-        self.imageInputSize = [480, 640]
-        self.depthInputSize = [480, 640]
-
-        # Monodeep
-        # self.imageNetworkInputSize = [228, 304]
-        # self.depthNetworkOutputSize = [57, 76]
-        # self.depthBilinearOutputSize = [228, 304]
-
-        # FCRN
-        self.imageNetworkInputSize = [228, 304]
-        self.depthNetworkOutputSize = [128, 160]
+        self.image_size = Size(480, 640, 3)
+        self.depth_size = Size(480, 640, 1)
 
         print("[monodeep/Dataloader] NyuDepth object created.")
 
