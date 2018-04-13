@@ -28,8 +28,8 @@ class Model(object):
     def __init__(self, args):
         self.args = args
 
-        self.inputSize = Size(228, 304, 3)
-        self.outputSize = Size(128, 160, 1)
+        self.input_size = Size(228, 304, 3)
+        self.output_size = Size(128, 160, 1)
 
         model_index = 0
         self.model_collection = ['model_' + str(model_index)]
@@ -48,12 +48,12 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope('model') as scope:
-            self.train = Train(self.args, tf_image, tf_labels, self.inputSize, self.outputSize)
+            self.train = Train(self.args, tf_image, tf_labels, self.input_size, self.output_size)
             self.fcrn = ResNet50UpProj({'data': tf_image}, self.args.batch_size, 1, False)
             tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.inputSize, self.outputSize)
+            self.valid = Validation(self.input_size, self.output_size)
             self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image_resized}, self.args.batch_size, 1, False)
 
     def build_losses(self):
@@ -91,7 +91,7 @@ class Model(object):
             self.train_step = optimizer.minimize(self.tf_loss, global_step=self.train.tf_global_step)
             tf.add_to_collection("train_step", self.train_step)
 
-    # TODO: Criar summaries das variaveis internas do modelo
+    # TODO: Adicionar mais summaries das variaveis internas do modelo
     def build_summaries(self):
         # Filling Summary Obj
         with tf.name_scope("Summaries"):

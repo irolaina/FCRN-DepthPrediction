@@ -11,7 +11,6 @@
 # TODO: Implementar Bilinear
 # TODO: If detect Ctrl+C, save training state.
 
-import glob
 # ===========
 #  Libraries
 # ===========
@@ -27,7 +26,8 @@ import tensorflow as tf
 import utils.args as argsLib
 import utils.metrics as metricsLib
 from PIL import Image
-from utils.dataloader import Dataloader
+from utils.dataloader_new import Dataloader_new # TODO: make official
+# from utils.dataloader import Dataloader
 from utils.fcrn import ResNet50UpProj
 from utils.train import EarlyStopping
 from utils.model import Model
@@ -68,65 +68,6 @@ def createSaveFolder():
             os.makedirs(save_restore_path)
 
     return save_path, save_restore_path
-
-
-# TODO: Ler outros Datasets
-# TODO: move to train.py
-def getTrainInputs():
-    if args.machine == 'olorin':
-        # KittiRaw Residential Continuous
-        # Image: (375, 1242, 3) uint8
-        # Depth: (375, 1242)    uint8
-        if args.dataset == 'kittiraw_residential_continuous':
-            search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png"
-            search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png"
-
-            tf_image_filename_list = tf.train.match_filenames_once(search_image_files_str)
-            tf_depth_filename_list = tf.train.match_filenames_once(search_depth_files_str)
-
-    elif args.machine == 'xps':
-        # KittiRaw Residential Continuous
-        # Image: (375, 1242, 3) uint8
-        # Depth: (375, 1242)    uint8
-        if args.dataset == 'kittiraw_residential_continuous':
-            search_image_files_str = "../../data/residential_continuous/training/imgs/*.png"
-            search_depth_files_str = "../../data/residential_continuous/training/dispc/*.png"
-
-            tf_image_filename_list = tf.train.match_filenames_once(search_image_files_str)
-            tf_depth_filename_list = tf.train.match_filenames_once(search_depth_files_str)
-
-        # NYU Depth v2
-        # Image: (480, 640, 3) ?
-        # Depth: (480, 640)    ?
-        elif args.dataset == 'nyudepth':
-            image_filenames = []
-            depth_filenames = []
-
-            root_folder = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
-
-            # Finds input images and labels inside list of folders.
-            for folder in glob.glob(root_folder + "*/"):
-                print(folder)
-                os.chdir(folder)
-
-                for file in glob.glob('*_colors.png'):
-                    print(file)
-                    image_filenames.append(folder + file)
-
-                for file in glob.glob('*_depth.png'):
-                    print(file)
-                    depth_filenames.append(folder + file)
-
-                print()
-
-            print("Summary - Training Inputs")
-            print("image_filenames: ", len(image_filenames))
-            print("depth_filenames: ", len(depth_filenames))
-
-            tf_image_filename_list = tf.placeholder(tf.string)
-            tf_depth_filename_list = tf.placeholder(tf.string)
-
-    return tf_image_filename_list, tf_depth_filename_list
 
 
 # ========= #
@@ -194,23 +135,19 @@ def train(args):
     with graph.as_default():
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
 
-        # TODO: Create newer Dataloader Handler!
+        data = Dataloader_new(args) # TODO: Mudar nome
 
         # Searches dataset images filenames
-        tf_train_image_filename_list, tf_train_depth_filename_list = getTrainInputs()
-
-        # Dataset Info
-        imageRawSize = Size(375, 1242, 3)  # TODO: change
-        depthRawSize = Size(375, 1242, 1)  # TODO: change
+        train_image_filenames, train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainInputs(args) # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
 
         # Creates Model Obj
         model = Model(args)
 
         # Creates Inputs Queue
         seed = random.randint(0, 2 ** 31 - 1)
-        tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filename_list, shuffle=False,
+        tf_train_image_filename_queue = tf.train.string_input_producer(tf_train_image_filenames, shuffle=False,
                                                                        seed=seed)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filename_list, shuffle=False,
+        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_train_depth_filenames, shuffle=False,
                                                                        seed=seed)
 
         # Reads images
@@ -223,12 +160,12 @@ def train(args):
         tf_depth = tf.image.decode_image(depth_file, channels=1)  # uint8
 
         # Restores images structure (size, type)
-        tf_image.set_shape([imageRawSize.height, imageRawSize.width, imageRawSize.nchannels])
-        tf_depth.set_shape([depthRawSize.height, depthRawSize.width, depthRawSize.nchannels])
+        tf_image.set_shape([data.image_size.height, data.image_size.width, data.image_size.nchannels])
+        tf_depth.set_shape([data.depth_size.height, data.depth_size.width, data.depth_size.nchannels])
 
         # Downsizes Input and Depth Images
-        tf_image_resized = tf.image.resize_images(tf_image, [model.inputSize.height, model.inputSize.width])
-        tf_depth_resized = tf.image.resize_images(tf_depth, [model.outputSize.height, model.outputSize.width])
+        tf_image_resized = tf.image.resize_images(tf_image, [model.input_size.height, model.input_size.width])
+        tf_depth_resized = tf.image.resize_images(tf_depth, [model.output_size.height, model.output_size.width])
 
         # ------------------- #
         #  Data Augmentation  #
@@ -310,41 +247,43 @@ def train(args):
         tf.local_variables_initializer().run()
 
         # TODO: Unificar session.run
-        def checkDatasetIntegrity(tf_image_str_list, tf_depth_str_list):
+        def checkDatasetIntegrity(tf_image_filenames, tf_depth_filenames):
             try:
+                # TODO: Essas informações podem ser migradas para o handler de cada dataset
                 if args.dataset == 'kittiraw_residential_continuous':
                     feed_dict = None
                     image_replace = [b'/imgs/', b'']
                     depth_replace = [b'/dispc/', b'']
 
                 elif args.dataset == 'nyudepth':
-                    feed_dict = {tf_image_str_list: image_filenames,
-                                 tf_depth_str_list: depth_filenames}
+
+                    feed_dict = {tf_image_filenames: train_image_filenames,
+                                 tf_depth_filenames: train_depth_filenames}
                     image_replace = ['_colors.png', '']
                     depth_replace = ['_depth.png', '']
 
-                image_str_list, depth_str_list = sess.run([tf_image_str_list, tf_depth_str_list], feed_dict=feed_dict)
+                image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames], feed_dict=feed_dict)
 
-                image_str_list_aux = [item.replace(image_replace[0], image_replace[1]) for item in image_str_list]
-                depth_str_list_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in depth_str_list]
+                image_filenames_aux = [item.replace(image_replace[0], image_replace[1]) for item in image_filenames]
+                depth_filenames_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in depth_filenames]
 
-                # print(image_str_list)
-                # input("oi3")
-                # print(depth_str_list)
-                # input("oi4")
+                # print(image_filenames)
+                # input("oi1")
+                # print(depth_filenames)
+                # input("oi2")
                 #
-                # print(image_str_list_aux)
+                # print(image_filenames_aux)
                 # input("oi3")
-                # print(depth_str_list_aux)
+                # print(depth_filenames_aux)
                 # input("oi4")
 
-                numSamples = len(image_str_list_aux)
+                numSamples = len(image_filenames_aux)
 
                 print("[Dataset] Checking if RGB and Depth images are paired... ")
-                if image_str_list_aux == depth_str_list_aux:
+                if image_filenames_aux == depth_filenames_aux:
                     print("[Dataset] Check Integrity: Pass")
-                    # del image_str_list, depth_str_list
-                    # del image_str_list_aux, depth_str_list_aux
+                    # del image_filenames, depth_filenames
+                    # del image_filenames_aux, depth_filenames_aux
                 else:
                     raise ValueError
 
@@ -354,9 +293,11 @@ def train(args):
                 print("[Dataset] Check Integrity: Failed")
                 raise SystemExit
 
+        input("continue...")
+
         # Check Dataset Integrity
-        numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filename_list,
-                                                              tf_train_depth_filename_list)
+        numSamples, feed_dict_strings = checkDatasetIntegrity(tf_train_image_filenames,
+                                                              tf_train_depth_filenames)
 
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)
@@ -395,9 +336,12 @@ def train(args):
             # ----- Session Run! ----- #
             # Training
             if args.dataset == 'kittiraw_residential_continuous':
+                # t = time.time()
                 _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, train_loss, summary_str = sess.run(
                     [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.train.tf_log_labels,
                      model.fcrn.get_output(), model.tf_loss, model.summary_op])
+                # print("sess.run(): ", (time.time()-t))
+
 
             # TODO: Terminar
             elif args.dataset == 'nyudepth':
@@ -467,8 +411,6 @@ def train(args):
                                                    label=batch_labels[0, :, :, 0],
                                                    log_label=batch_log_labels[0, :, :, 0],
                                                    pred=batch_pred[0, :, :, 0])
-
-                print(valid_pred.shape)
 
                 if args.show_valid_progress:
                     valid_plotObj.showValidResults(raw=valid_image[0, :, :],
