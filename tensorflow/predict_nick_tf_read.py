@@ -213,7 +213,7 @@ def train(args):
 
             # ----- Session Run! ----- #
             # Training
-            _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
+            _, batch_data_raw, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
                 [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data, model.train.tf_batch_labels, model.train.tf_log_labels,
                  model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
@@ -267,7 +267,7 @@ def train(args):
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
-                    train_plotObj.showTrainResults(raw=batch_data_resized[0],
+                    train_plotObj.showTrainResults(raw=batch_data_raw[0],
                                                    label=batch_labels[0, :, :, 0],
                                                    log_label=batch_log_labels[0, :, :, 0],
                                                    pred=batch_pred[0, :, :, 0])

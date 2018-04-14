@@ -33,11 +33,11 @@ class Dataloader:
         # print(selectedDataset)
 
         if self.selectedDataset == 'kittiraw_residential_continuous':
-            datasetObj = KittiRaw()  # TODO: Terminar
+            self.datasetObj = KittiRaw()  # TODO: Terminar
             pass
 
         elif self.selectedDataset == 'nyudepth':
-            datasetObj = NyuDepth()  # TODO: Terminar
+            self.datasetObj = NyuDepth()  # TODO: Terminar
             pass
 
         else:
@@ -45,10 +45,10 @@ class Dataloader:
             raise SystemExit
 
         # Collects Dataset Info
-        self.dataset_name = datasetObj.name
-        self.dataset_path = datasetObj.dataset_path
-        self.image_size = datasetObj.image_size
-        self.depth_size = datasetObj.depth_size
+        self.dataset_name = self.datasetObj.name
+        self.dataset_path = self.datasetObj.dataset_path
+        self.image_size = self.datasetObj.image_size
+        self.depth_size = self.datasetObj.depth_size
 
         print("[Dataloader] dataloader object created.")
 
@@ -59,7 +59,6 @@ class Dataloader:
             # Image: (375, 1242, 3) uint8
             # Depth: (375, 1242)    uint8
             if args.dataset == 'kittiraw_residential_continuous':
-                # TODO: Migrar informações para os handlers de cada dataset
                 search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png"
                 search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png"
 
@@ -67,54 +66,18 @@ class Dataloader:
                 tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
 
         elif args.machine == 'xps':
-            # KittiRaw Residential Continuous
-            # Image: (375, 1242, 3) uint8
-            # Depth: (375, 1242)    uint8
-            if args.dataset == 'kittiraw_residential_continuous':
-                # TODO: Migrar informações para os handlers de cada dataset
-                search_image_files_str = "../../data/residential_continuous/training/imgs/*.png"
-                search_depth_files_str = "../../data/residential_continuous/training/dispc/*.png"
-
-                self.image_filenames = None
-                self.depth_filenames = None
-
-                tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
-                tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
-
-            # NYU Depth v2
-            # Image: (480, 640, 3) ?
-            # Depth: (480, 640)    ?
-            elif args.dataset == 'nyudepth':
-                self.image_filenames = []
-                self.depth_filenames = []
-
-                # TODO: Migrar informações para os handlers de cada dataset
-                root_folder = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
-
-                # Finds input images and labels inside list of folders.
-                for folder in glob.glob(root_folder + "*/"):
-                    # print(folder)
-                    os.chdir(folder)
-
-                    for file in glob.glob('*_colors.png'):
-                        # print(file)
-                        self.image_filenames.append(folder + file)
-
-                    for file in glob.glob('*_depth.png'):
-                        # print(file)
-                        self.depth_filenames.append(folder + file)
-
-                    # print()
-
-                print("Summary - Training Inputs")
-                print("image_filenames: ", len(self.image_filenames))
-                print("depth_filenames: ", len(self.depth_filenames))
-
-                tf_image_filenames = tf.constant(self.image_filenames)
-                tf_depth_filenames = tf.constant(self.depth_filenames)
+            image_filenames, depth_filenames = self.datasetObj.getFilenamesLists()
+            tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
 
 
-        return self.image_filenames, self.depth_filenames, tf_image_filenames, tf_depth_filenames
+        try:
+            print("\nSummary - Dataset Inputs")
+            print("image_filenames: ", len(image_filenames))
+            print("depth_filenames: ", len(depth_filenames))
+        except TypeError:
+            print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
+
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
     def readData(self, tf_image_filenames, tf_depth_filenames):
         # Creates Inputs Queue.
@@ -141,24 +104,17 @@ class Dataloader:
         return tf_image, tf_depth
 
     # TODO: Terminar
-    def splitData(self):
+    def splitData(self, ratio=0.8):
+
+
         print("Terminar")
 
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):
         try:
-            # TODO: Essas informações podem ser migradas para o handler de cada dataset
-            if self.selectedDataset == 'kittiraw_residential_continuous':
-                image_replace = [b'/imgs/', b'']
-                depth_replace = [b'/dispc/', b'']
-
-            elif self.selectedDataset == 'nyudepth':
-                image_replace = [b'_colors.png', b'']
-                depth_replace = [b'_depth.png', b'']
-
             image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames])
 
-            image_filenames_aux = [item.replace(image_replace[0], image_replace[1]) for item in image_filenames]
-            depth_filenames_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in depth_filenames]
+            image_filenames_aux = [item.replace(self.datasetObj.image_replace[0], self.datasetObj.image_replace[1]) for item in image_filenames]
+            depth_filenames_aux = [item.replace(self.datasetObj.depth_replace[0], self.datasetObj.depth_replace[1]) for item in depth_filenames]
 
             # print(image_filenames)
             # input("oi1")
