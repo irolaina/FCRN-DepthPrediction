@@ -137,25 +137,24 @@ def train(args):
     # ----------------------------------------- #
     graph = tf.Graph()
     with graph.as_default():
-        # TODO: Separar algumas imagens para o subset de Validação
         data = Dataloader(args)
         model = Model(args)
 
         # Searches dataset images filenames
         train_image_filenames, train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainInputs(
-            args)  # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
+            args)
         tf_image, tf_depth = data.readData(tf_train_image_filenames, tf_train_depth_filenames)
+
+        # TODO: Separar algumas imagens para o subset de Validação
+        # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
+        data.splitData()
 
         # Downsizes Input and Depth Images
         tf_image_resized = tf.image.resize_images(tf_image, [model.input_size.height, model.input_size.width])
         tf_depth_resized = tf.image.resize_images(tf_depth, [model.output_size.height, model.output_size.width])
 
-        # Create Tensors for Batch Training
-        tf_batch_data_resized, tf_batch_data, tf_batch_labels = data.prepareTrainData(tf_image_resized,
-                                                                                      tf_depth_resized, args.batch_size)
-
         # Build Network Model
-        model.build_model(data.image_size, data.depth_size, tf_batch_data, tf_batch_labels)
+        model.build_model(data.image_size, data.depth_size, tf_image_resized, tf_depth_resized)
         model.build_losses()
         model.build_optimizer()
         model.build_summaries()
@@ -215,7 +214,7 @@ def train(args):
             # ----- Session Run! ----- #
             # Training
             _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.train.tf_log_labels,
+                [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data, model.train.tf_batch_labels, model.train.tf_log_labels,
                  model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             def debug_data_augmentation():

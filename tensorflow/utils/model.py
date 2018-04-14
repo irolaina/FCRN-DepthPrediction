@@ -40,7 +40,7 @@ class Model(object):
         # self.build_summaries()
         # self.countParams()
 
-    def build_model(self, image_size, depth_size, tf_image, tf_labels):
+    def build_model(self, image_size, depth_size, tf_image_resized, tf_depth_resized):
         print("\n[Network/Model] Build Network Model...")
 
         # =============================================
@@ -48,8 +48,8 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope('model') as scope:
-            self.train = Train(self.args, tf_image, tf_labels, self.input_size, self.output_size)
-            self.fcrn = ResNet50UpProj({'data': tf_image}, self.args.batch_size, 1, False)
+            self.train = Train(self.args, tf_image_resized, tf_depth_resized, self.input_size, self.output_size)
+            self.fcrn = ResNet50UpProj({'data': self.train.tf_batch_data}, self.args.batch_size, 1, False)
             tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
         with tf.variable_scope("model", reuse=True):
@@ -79,9 +79,9 @@ class Model(object):
 
             print("\n[Network/Loss] Loss Function: %s" % self.loss_name)
             if valid_pixels:
-                print("[Network/Loss] Loss: All Pixels")
-            else:
                 print("[Network/Loss] Compute: Ignore invalid pixels")
+            else:
+                print("[Network/Loss] Loss: All Pixels")
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):

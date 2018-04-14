@@ -140,63 +140,9 @@ class Dataloader:
 
         return tf_image, tf_depth
 
-    @staticmethod
-    def augment_image_pair(image, depth):
-        # randomly flip images
-        do_flip = tf.random_uniform([], 0, 1)
-        image_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)
-        depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
-
-        # randomly shift gamma
-        random_gamma = tf.random_uniform([], 0.8, 1.2)
-        image_aug = image_aug ** random_gamma
-
-        # randomly shift brightness
-        random_brightness = tf.random_uniform([], 0.5, 2.0)
-        image_aug = image_aug * random_brightness
-
-        # randomly shift color
-        random_colors = tf.random_uniform([3], 0.8, 1.2)
-        white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])
-        color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
-        image_aug *= color_image
-
-        # saturate
-        image_aug = tf.clip_by_value(image_aug, 0, 1)
-
-        return image_aug, depth_aug
-
-    def prepareTrainData(self, tf_image_resized, tf_depth_resized, batch_size):
-        # TODO: Neste Ponto, os dados de entrada ja deveriam estar seperados em treinamento e validação, acredito que imagens de validação não devem sofrer data augmentation
-
-        # ------------------- #
-        #  Data Augmentation  #
-        # ------------------- #
-        # Copy
-        tf_image_proc = tf_image_resized
-        tf_depth_proc = tf_depth_resized
-
-        # randomly augment images
-        do_augment = tf.random_uniform([], 0, 1)
-        tf_image_proc, tf_depth_proc = tf.cond(do_augment > 0.5,
-                                               lambda: self.augment_image_pair(tf_image_resized, tf_depth_resized),
-                                               lambda: (tf_image_resized, tf_depth_resized))
-
-        # Normalizes Input
-        tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
-
-        tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
-
-        # Creates Training Batch Tensors
-        tf_batch_data_resized, tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
-            # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-            [tf_image_resized_uint8, tf_image_proc, tf_depth_proc],  # Enable for debugging images
-            batch_size=batch_size,
-            num_threads=1,
-            capacity=16,
-            min_after_dequeue=0)
-
-        return tf_batch_data_resized, tf_batch_data, tf_batch_labels
+    # TODO: Terminar
+    def splitData(self):
+        print("Terminar")
 
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):
         try:
