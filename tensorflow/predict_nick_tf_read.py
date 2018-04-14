@@ -174,11 +174,10 @@ def train(args):
 
     print("\n[Network/Training] Running built graph...")
     with tf.Session(graph=graph) as sess:
-        tf.global_variables_initializer().run()
-        tf.local_variables_initializer().run()
+        sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         # Check Dataset Integrity
-        numSamples, feed_dict_strings = data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames)
+        numSamples = data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames)
 
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)
@@ -216,23 +215,9 @@ def train(args):
 
             # ----- Session Run! ----- #
             # Training
-            if args.dataset == 'kittiraw_residential_continuous':
-                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                    [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.train.tf_log_labels,
-                     model.fcrn.get_output(), model.tf_loss, model.summary_op])
-
-            # TODO: Terminar
-            elif args.dataset == 'nyudepth':
-                image_key = sess.run([tf_image_key], feed_dict=feed_dict_strings)
-                input("oi5")
-
-                _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                    [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.tf_log_labels,
-                     model.fcrn.get_output(), model.tf_loss, model.summary_op])
-
-            # _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, images_resized, depths_resized, images_proc, depths_proc = sess.run(
-            #     [train, tf_batch_data_resized, tf_batch_data, tf_batch_labels, tf_log_labels, net.get_output(), tf_loss, tf_image_resized, tf_depth_resized, tf_image_proc,
-            #      tf_depth_proc])
+            _, batch_data_resized, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
+                [model.train_step, tf_batch_data_resized, tf_batch_data, tf_batch_labels, model.train.tf_log_labels,
+                 model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             def debug_data_augmentation():
                 fig, axes = plt.subplots(nrows=2, ncols=2)

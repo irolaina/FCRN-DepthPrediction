@@ -93,25 +93,26 @@ class Dataloader_new:
 
                 # Finds input images and labels inside list of folders.
                 for folder in glob.glob(root_folder + "*/"):
-                    print(folder)
+                    # print(folder)
                     os.chdir(folder)
 
                     for file in glob.glob('*_colors.png'):
-                        print(file)
+                        # print(file)
                         self.image_filenames.append(folder + file)
 
                     for file in glob.glob('*_depth.png'):
-                        print(file)
+                        # print(file)
                         self.depth_filenames.append(folder + file)
 
-                    print()
+                    # print()
 
                 print("Summary - Training Inputs")
                 print("image_filenames: ", len(self.image_filenames))
                 print("depth_filenames: ", len(self.depth_filenames))
 
-                tf_image_filenames = tf.placeholder(tf.string)
-                tf_depth_filenames = tf.placeholder(tf.string)
+                tf_image_filenames = tf.constant(self.image_filenames)
+                tf_depth_filenames = tf.constant(self.depth_filenames)
+
 
         return self.image_filenames, self.depth_filenames, tf_image_filenames, tf_depth_filenames
 
@@ -201,18 +202,14 @@ class Dataloader_new:
         try:
             # TODO: Essas informações podem ser migradas para o handler de cada dataset
             if self.selectedDataset == 'kittiraw_residential_continuous':
-                feed_dict = None
                 image_replace = [b'/imgs/', b'']
                 depth_replace = [b'/dispc/', b'']
 
             elif self.selectedDataset == 'nyudepth':
-                feed_dict = {tf_image_filenames: self.image_filenames,
-                             tf_depth_filenames: self.depth_filenames}
-                image_replace = ['_colors.png', '']
-                depth_replace = ['_depth.png', '']
+                image_replace = [b'_colors.png', b'']
+                depth_replace = [b'_depth.png', b'']
 
-            image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames],
-                                                        feed_dict=feed_dict)
+            image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames])
 
             image_filenames_aux = [item.replace(image_replace[0], image_replace[1]) for item in image_filenames]
             depth_filenames_aux = [item.replace(depth_replace[0], depth_replace[1]) for item in depth_filenames]
@@ -235,7 +232,7 @@ class Dataloader_new:
             else:
                 raise ValueError
 
-            return numSamples, feed_dict
+            return numSamples
 
         except ValueError:
             print("[Dataloader] Check Integrity: Failed")
