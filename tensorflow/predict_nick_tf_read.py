@@ -27,8 +27,7 @@ import utils.metrics as metricsLib
 import utils.args as argsLib
 
 from PIL import Image
-# from utils.dataloader import Dataloader
-from utils.dataloader_new import Dataloader_new  # TODO: make official
+from utils.dataloader import Dataloader
 from utils.model import Model
 from utils.fcrn import ResNet50UpProj
 from utils.train import EarlyStopping
@@ -76,7 +75,7 @@ def createSaveFolder():
 # ========= #
 def predict(model_data_path, image_path):
     print('[%s] Selected mode: Predict' % appName)
-    print('[%s] Selected Params: \n\n%s' % (appName, args))
+    print('[%s] Selected Params: \n\n%s\n' % (appName, args))
 
     # Default input size
     height = 228
@@ -128,7 +127,7 @@ def predict(model_data_path, image_path):
 # ===================== #
 def train(args):
     print('[%s] Selected mode: Train' % appName)
-    print('[%s] Selected Params: \n\n%s' % (appName, args))
+    print('[%s] Selected Params: \n\n%s\n' % (appName, args))
 
     # Local Variables
     save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
@@ -139,7 +138,7 @@ def train(args):
     graph = tf.Graph()
     with graph.as_default():
         # TODO: Separar algumas imagens para o subset de Validação
-        data = Dataloader_new(args)  # TODO: Mudar nome
+        data = Dataloader(args)
         model = Model(args)
 
         # Searches dataset images filenames
@@ -156,7 +155,7 @@ def train(args):
                                                                                       tf_depth_resized, args.batch_size)
 
         # Build Network Model
-        model.build_model(tf_batch_data, tf_batch_labels)
+        model.build_model(data.image_size, data.depth_size, tf_batch_data, tf_batch_labels)
         model.build_losses()
         model.build_optimizer()
         model.build_summaries()
@@ -242,17 +241,18 @@ def train(args):
 
             # Validation
             # FIXME: Uses only one image as validation!
+            # FIXME: Thats is wrong
             valid_image = plt.imread(
                 "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
             valid_depth = plt.imread(
                 "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
 
             # FIXME: valid_loss = -1
-            feed_dict_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
+            feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
                                model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
             valid_image, valid_pred, valid_labels, valid_log_labels = sess.run(
                 [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
-                 model.valid.tf_log_depth_resized], feed_dict=feed_dict_valid)
+                 model.valid.tf_log_depth_resized], feed_dict=feed_valid)
             # -----
 
             if ENABLE_TENSORBOARD:
@@ -313,7 +313,7 @@ def train(args):
 # ========= #
 def test(args):
     print('[%s] Selected mode: Test' % appName)
-    print('[%s] Selected Params: \n\n%s' % (appName, args))
+    print('[%s] Selected Params: \n\n%s\n' % (appName, args))
 
     # Default input size
     height = 228

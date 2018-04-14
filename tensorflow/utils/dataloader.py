@@ -26,7 +26,7 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 #  Class Declaration
 # ===================
 # TODO: Criar rotina que subdivide os dados disponívels em train/valid
-class Dataloader_new:
+class Dataloader:
     def __init__(self, args):
         # Detects which dataset was selected and creates the 'datasetObj'.
         self.selectedDataset = args.dataset

@@ -322,16 +322,16 @@ def train(args):
                 batch_labels[i] = depth
                 batch_data_crop[i] = image_crop
 
-            feed_dict_train = {tf_image: batch_data, tf_labels: batch_labels}
+            feed_train = {tf_image: batch_data, tf_labels: batch_labels}
 
-            feed_dict_valid = {tf_image: valid_data_o, tf_labels: valid_labels_o}
+            feed_valid = {tf_image: valid_data_o, tf_labels: valid_labels_o}
 
             # ----- Session Run! ----- #
             # Training
-            _, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_log_labels, net.get_output(), tf_loss],feed_dict=feed_dict_train)
+            _, batch_log_labels, batch_pred, train_loss = sess.run([trainer, tf_log_labels, net.get_output(), tf_loss],feed_dict=feed_train)
 
             # Validation
-            valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss], feed_dict=feed_dict_valid)
+            valid_log_labels, valid_pred, valid_loss = sess.run([tf_log_labels, net.get_output(), tf_loss], feed_dict=feed_valid)
             # -----
 
 

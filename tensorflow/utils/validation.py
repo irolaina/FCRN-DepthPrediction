@@ -13,16 +13,14 @@ LOSS_LOG_INITIAL_VALUE = 0.1
 #  Class Declaration
 # ===================
 class Validation:
-    def __init__(self, inputSize, outputSize):
+    def __init__(self, image_size, depth_size, input_size, output_size):
         # Raw Input/Output
-        self.tf_image = tf.placeholder(tf.float32,
-                                       shape=(None, 375, 1242, 3))  # TODO: Usar variáveis com essas informações
-        self.tf_depth = tf.placeholder(tf.float32,
-                                       shape=(None, 375, 1242, 1))  # TODO: Usar variáveis com essas informações
+        self.tf_image = tf.placeholder(tf.float32, shape=(None, image_size.height, image_size.width, image_size.nchannels))
+        self.tf_depth = tf.placeholder(tf.float32, shape=(None, depth_size.height, depth_size.width, depth_size.nchannels))
 
         # Network Input/Output
-        self.tf_image_resized = tf.image.resize_images(self.tf_image, [inputSize.height, inputSize.width])
-        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [outputSize.height, outputSize.width])
+        self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
+        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
         self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32))
 
         self.loss = -1

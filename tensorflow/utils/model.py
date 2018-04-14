@@ -40,7 +40,7 @@ class Model(object):
         # self.build_summaries()
         # self.countParams()
 
-    def build_model(self, tf_image, tf_labels):
+    def build_model(self, image_size, depth_size, tf_image, tf_labels):
         print("\n[Network/Model] Build Network Model...")
 
         # =============================================
@@ -53,7 +53,7 @@ class Model(object):
             tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.input_size, self.output_size)
+            self.valid = Validation(image_size, depth_size, self.input_size, self.output_size)
             self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image_resized}, self.args.batch_size, 1, False)
 
     def build_losses(self):

@@ -21,7 +21,7 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image, tf_labels, inputSize, outputSize):
+    def __init__(self, args, tf_image, tf_labels, input_size, output_size):
         with tf.name_scope('Inputs'):
             # Raw Input/Output
             self.tf_image = tf_image
