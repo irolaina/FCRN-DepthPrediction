@@ -8,7 +8,7 @@ import tensorflow as tf
 #  Global Variables
 # ==================
 TRAINING_L2NORM_BETA = 1e-3
-LOSS_LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 0.1
 
 
 # ===========
@@ -26,11 +26,6 @@ def np_maskOutInvalidPixels(y, y_):
 
 
 def tf_maskOutInvalidPixels(tf_pred, tf_labels):
-    # Values Range
-    # NyuDepth - ]0, ~4000]
-    # Kitti 2012/2015 - [0, ~30000]
-    # Kittiraw Continuous (Vitor) - [0, 255]
-
     # Identify Pixels to be masked out.
     tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
 
@@ -41,6 +36,14 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
 
     return tf_valid_pred, tf_valid_labels, tf_valid_log_labels
 
+# ======
+#  Loss
+# ======
+# Attention! The maximum range that the Network can predict depends on the maximum distance recorded in the dataset.
+# NYU-Depth v2: ~10 m               / Data range: ]0, ~4000] # TODO: Validar data range values
+# Make3D: ~70 m                     / Data range:
+# Kitti 2012/2015: ???              / Data range: [0, ~30000] # TODO: Descobrir o range em metros e validar data range values
+# KittiRaw Continuous (Vitor): ~80m / Data range: [0, 240]
 
 # -------------------- #
 #  Mean Squared Error  #
@@ -58,7 +61,7 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
     if valid_pixels:
         tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
     else:
-        tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
+        tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                            name='log_labels')  # Just for displaying Image
 
     # npixels value depends on valid_pixels flag:
@@ -78,7 +81,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
-    tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
+    tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                        name='log_labels')  # Just for displaying Image
     tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
     tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
