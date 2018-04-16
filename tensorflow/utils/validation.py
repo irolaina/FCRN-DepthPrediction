@@ -6,7 +6,7 @@ import tensorflow as tf
 # ==================
 #  Global Variables
 # ==================
-LOSS_LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 0.1
 
 
 # ===================
@@ -21,7 +21,7 @@ class Validation:
         # Network Input/Output
         self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
         self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
-        self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32))
+        self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32))
 
         self.loss = -1
 

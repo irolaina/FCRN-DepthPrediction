@@ -14,7 +14,7 @@ from .nyudepth import NyuDepth
 # ==================
 #  Global Variables
 # ==================
-LOSS_LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 0.1
 
 
 # ===========
@@ -105,8 +105,6 @@ class Dataloader:
 
     # TODO: Terminar
     def splitData(self, ratio=0.8):
-
-
         print("Terminar")
 
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):

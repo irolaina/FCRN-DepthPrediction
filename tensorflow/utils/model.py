@@ -14,7 +14,7 @@ from utils.fcrn import ResNet50UpProj
 # ==================
 #  Global Variables
 # ==================
-LOSS_LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 0.1
 
 
 # ===========

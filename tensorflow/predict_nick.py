@@ -71,7 +71,7 @@ APPLY_BILINEAR_OUTPUT = False
 AVG_SIZE = 20
 MIN_EVALUATIONS = 1000
 MAX_STEPS_AFTER_STABILIZATION = 10000
-LOSS_LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 0.1
 
 
 # ===========
@@ -200,7 +200,7 @@ def train(args):
                                    shape=(None, dataloader.outputSize[1], dataloader.outputSize[2]),
                                    name='labels')  # (?, 96, 288)
 
-        tf_log_labels = tf.log(tf_labels + LOSS_LOG_INITIAL_VALUE,
+        tf_log_labels = tf.log(tf_labels + LOG_INITIAL_VALUE,
                                name='log_labels')  # Just for displaying Image
 
         tf_global_step = tf.Variable(0, trainable=False,
@@ -500,7 +500,7 @@ def test(args):
             for i in range(dataloader.numTestSamples):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
-                                             log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE), # TODO: utilizar tf_log_label
+                                             log_label=np.log(test_labels_o[i] + LOG_INITIAL_VALUE), # TODO: utilizar tf_log_label
                                              pred=pred[i], i=i)
 
 # ======
