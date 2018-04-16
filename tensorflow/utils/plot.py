@@ -20,7 +20,6 @@ def updateColorBar(cbar, img):
     # new_cbar_ticks = np.linspace(vmin, vmax, num=6, endpoint=True)
     # cbar.set_ticks(new_cbar_ticks)
 
-
 # ===================
 #  Class Declaration
 # ===================
@@ -75,7 +74,7 @@ class Plot(object):
             self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
             self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
             self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
-            self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
+            # self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
 
             self.isFirstTime = False
         else:
@@ -83,7 +82,7 @@ class Plot(object):
             updateColorBar(self.cbar2, label)
             updateColorBar(self.cbar3, log_label)
             updateColorBar(self.cbar4, pred)
-            updateColorBar(self.cbar5, predMSE)
+            # updateColorBar(self.cbar5, predMSE)
 
             # Updates Images
             self.cax1.set_data(raw)
@@ -109,7 +108,7 @@ class Plot(object):
             self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
             self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
             self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
-            self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
+            # self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
 
             self.isFirstTime = False
 
@@ -118,7 +117,7 @@ class Plot(object):
             updateColorBar(self.cbar2, label)
             updateColorBar(self.cbar3, log_label)
             updateColorBar(self.cbar4, pred)
-            updateColorBar(self.cbar5, predMSE)
+            # updateColorBar(self.cbar5, predMSE)
 
             # Updates Images
             self.cax1.set_data(raw)

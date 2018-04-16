@@ -186,8 +186,8 @@ def train(args):
     step = 0
     stop = EarlyStopping()
 
-    print("\n[Network/Training] Running built graph...")
     with tf.Session(graph=graph) as sess:
+        print("\n[Network/Training] Initializing graph's variables...")
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         # Check Dataset Integrity
@@ -197,33 +197,21 @@ def train(args):
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)
         print('\nTrain with approximately %d epochs' % epochs)
 
-        # =================
+        # ===============
         #  Training Loop
-        # =================
-        start = time.time()
-
+        # ===============
         if args.show_train_progress:
             train_plotObj = Plot(args.mode, title='Train Predictions')
 
         if args.show_valid_progress:
             valid_plotObj = Plot(args.mode, title='Validation Prediction')
 
-        # TODO: Adaptar
-        # for i in range((len(dataloader.valid_dataset))):
-        #     image, depth, image_crop, _ = dataloader.readImage(dataloader.valid_dataset[i],
-        #                                               dataloader.valid_labels[i],
-        #                                               mode='valid',
-        #                                               showImages=False)
-
-        #     valid_data_o[i] = image
-        #     valid_labels_o[i] = depth
-        #     valid_data_crop_o[i] = image_crop
-
         print("[Network/Training] Training Initialized!\n")
 
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(coord=coord)
 
+        start = time.time()
         for step in range(args.max_steps):
             start2 = time.time()
 
