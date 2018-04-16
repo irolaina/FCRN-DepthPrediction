@@ -56,23 +56,18 @@ class Model(object):
             self.valid = Validation(image_size, depth_size, self.input_size, self.output_size)
             self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image_resized}, self.args.batch_size, 1, False)
 
-    def build_losses(self):
+    def build_losses(self, selectedLoss, valid_pixels):
         with tf.name_scope("Losses"):
-            # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-            valid_pixels = True
-
             # Select Loss Function:
-            # ----- MSE ----- #
-            # self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.train.tf_labels, valid_pixels=valid_pixels)  # Default, only valid pixels
-
-            # self.loss_name, tf_loss = loss.tf_MSE(net.get_output(), self.tf_log_labels)       # Don't Use! Regress all pixels, even the sky!
-
-            # ----- Eigen's Log Depth ----- #
-            # self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, valid_pixels=valid_pixels, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
-
-            # ----- BerHu ----- #
-            self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.train.tf_labels,
-                                                         valid_pixels=valid_pixels)
+            if selectedLoss == 0:
+                self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.train.tf_labels, valid_pixels=valid_pixels)
+            elif selectedLoss == 1:
+                self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, valid_pixels=valid_pixels, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
+            elif selectedLoss == 2:
+                self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.train.tf_labels, valid_pixels=valid_pixels)
+            else:
+                print("[Network/Loss] Invalid Loss Function Selected!")
+                raise SystemExit
 
             if self.args.l2norm:
                 self.tf_loss += loss.calculateL2norm()
