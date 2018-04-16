@@ -9,7 +9,7 @@ from collections import deque
 # ==================
 #  Global Variables
 # ==================
-LOSS_LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 0.1
 
 # Early Stop Configuration
 AVG_SIZE = 20
@@ -33,7 +33,7 @@ class Train:
             self.tf_labels = self.tf_batch_labels
 
             # Network Input/Output
-            self.tf_log_labels = tf.log(self.tf_labels + tf.constant(LOSS_LOG_INITIAL_VALUE, dtype=tf.float32),
+            self.tf_log_labels = tf.log(self.tf_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                 name='log_labels')  # Just for displaying Image
 
             self.loss = -1
@@ -99,14 +99,16 @@ class Train:
         tf_image_proc = tf_image_resized
         tf_depth_proc = tf_depth_resized
 
-        # randomly augment images
-        do_augment = tf.random_uniform([], 0, 1)
-        tf_image_proc, tf_depth_proc = tf.cond(do_augment > 0.5,
-                                               lambda: self.augment_image_pair(tf_image_resized, tf_depth_resized),
-                                               lambda: (tf_image_resized, tf_depth_resized))
-
-        # Normalizes Input
-        tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
+        # TODO: Reativar
+        # # randomly augment images
+        # do_augment = tf.random_uniform([], 0, 1)
+        # tf_image_proc, tf_depth_proc = tf.cond(do_augment > 0.5,
+        #                                        lambda: self.augment_image_pair(tf_image_resized, tf_depth_resized),
+        #                                        lambda: (tf_image_resized, tf_depth_resized))
+        #
+        # # Normalizes Input
+        # tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
+        #
 
         tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
 
