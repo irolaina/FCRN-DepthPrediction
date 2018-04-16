@@ -14,7 +14,7 @@ from .nyudepth import NyuDepth
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 1
 
 
 # ===========

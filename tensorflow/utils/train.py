@@ -9,7 +9,7 @@ from collections import deque
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 0.1
+LOG_INITIAL_VALUE = 1
 
 # Early Stop Configuration
 AVG_SIZE = 20
