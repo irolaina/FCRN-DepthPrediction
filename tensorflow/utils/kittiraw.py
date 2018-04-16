@@ -11,6 +11,7 @@ from .size import Size
 # ==================
 LOG_INITIAL_VALUE = 1
 
+
 # ===================
 #  Class Declaration
 # ===================
@@ -34,7 +35,7 @@ class KittiRaw(object):
         # Data Range/Plot ColorSpace
         self.vmin = 0
         self.vmax = 240
-        self.log_vmin = np.log(self.vmin+LOG_INITIAL_VALUE)
+        self.log_vmin = np.log(self.vmin + LOG_INITIAL_VALUE)
         self.log_vmax = np.log(self.vmax)
 
         print("[Dataloader] KittiRaw object created.")

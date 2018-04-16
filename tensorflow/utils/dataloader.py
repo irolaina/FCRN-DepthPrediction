@@ -69,7 +69,6 @@ class Dataloader:
             image_filenames, depth_filenames = self.datasetObj.getFilenamesLists()
             tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
 
-
         try:
             print("\nSummary - Dataset Inputs")
             print("image_filenames: ", len(image_filenames))
@@ -111,8 +110,10 @@ class Dataloader:
         try:
             image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames])
 
-            image_filenames_aux = [item.replace(self.datasetObj.image_replace[0], self.datasetObj.image_replace[1]) for item in image_filenames]
-            depth_filenames_aux = [item.replace(self.datasetObj.depth_replace[0], self.datasetObj.depth_replace[1]) for item in depth_filenames]
+            image_filenames_aux = [item.replace(self.datasetObj.image_replace[0], self.datasetObj.image_replace[1]) for
+                                   item in image_filenames]
+            depth_filenames_aux = [item.replace(self.datasetObj.depth_replace[0], self.datasetObj.depth_replace[1]) for
+                                   item in depth_filenames]
 
             # print(image_filenames)
             # input("oi1")

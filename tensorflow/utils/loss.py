@@ -36,6 +36,7 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
 
     return tf_valid_pred, tf_valid_labels, tf_valid_log_labels
 
+
 # ======
 #  Loss
 # ======

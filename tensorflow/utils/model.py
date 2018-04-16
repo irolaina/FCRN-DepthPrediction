@@ -60,11 +60,18 @@ class Model(object):
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selectedLoss == 0:
-                self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(), self.train.tf_labels, valid_pixels=valid_pixels)
+                self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(),
+                                                           self.train.tf_labels,
+                                                           valid_pixels)
             elif selectedLoss == 1:
-                self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(), self.tf_log_labels, valid_pixels=valid_pixels, gamma=0.5) # Internal Mask Out, because of calculation of gradients.
+                self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(),
+                                                         self.tf_log_labels,
+                                                         valid_pixels,
+                                                         gamma=0.5)
             elif selectedLoss == 2:
-                self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(), self.train.tf_labels, valid_pixels=valid_pixels)
+                self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(),
+                                                             self.train.tf_labels,
+                                                             valid_pixels)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
                 raise SystemExit

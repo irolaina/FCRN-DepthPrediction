@@ -24,9 +24,10 @@ class Train:
     def __init__(self, args, tf_image_resized, tf_depth_resized, input_size, output_size):
         with tf.name_scope('Inputs'):
             # Create Tensors for Batch Training
-            self.tf_batch_data_resized, self.tf_batch_data, self.tf_batch_labels = self.prepareTrainData(tf_image_resized,
-                                                                                                 tf_depth_resized,
-                                                                                                 args.batch_size)
+            self.tf_batch_data_resized, self.tf_batch_data, self.tf_batch_labels = self.prepareTrainData(
+                tf_image_resized,
+                tf_depth_resized,
+                args.batch_size)
 
             # Raw Input/Output
             self.tf_image = self.tf_batch_data
@@ -34,7 +35,7 @@ class Train:
 
             # Network Input/Output
             self.tf_log_labels = tf.log(self.tf_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                name='log_labels')  # Just for displaying Image
+                                        name='log_labels')  # Just for displaying Image
 
             self.loss = -1
 
@@ -89,7 +90,8 @@ class Train:
 
         return image_aug, depth_aug
 
-    def prepareTrainData(self, tf_image_resized, tf_depth_resized, batch_size):
+    @staticmethod
+    def prepareTrainData(tf_image_resized, tf_depth_resized, batch_size):
         # TODO: Neste Ponto, os dados de entrada ja deveriam estar seperados em treinamento e validação, acredito que imagens de validação não devem sofrer data augmentation
 
         # ------------------- #
@@ -122,6 +124,7 @@ class Train:
             min_after_dequeue=0)
 
         return tf_batch_data_resized, tf_batch_data, tf_batch_labels
+
 
 # TODO: Validar
 class EarlyStopping:

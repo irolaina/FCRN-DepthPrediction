@@ -17,6 +17,8 @@ import utils.loss as loss
 def updateColorBar(cbar, img):
     vmin, vmax = np.min(img), np.max(img)
     cbar.set_clim(vmin, vmax)
+    # new_cbar_ticks = np.linspace(vmin, vmax, num=6, endpoint=True)
+    # cbar.set_ticks(new_cbar_ticks)
 
 
 # ===================
@@ -55,7 +57,7 @@ class Plot(object):
             self.axes[3].set_title("Pred")
 
         self.fig.canvas.set_window_title(title)
-        self.fig.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)  # Fix Subplots Spacing
+        self.fig.tight_layout(pad=0.4, w_pad=2, h_pad=1.0)  # Fix Subplots Spacing
 
         self.isFirstTime = True
 

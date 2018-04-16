@@ -43,7 +43,16 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 
-ENABLE_EARLY_STOP = True
+# Select the Loss Function:
+# 0 - MSE
+# 1 - Eigen's Log Depth
+# 2 - BerHu
+LOSS_FUNCTION = 0
+
+# Select to consider only the valid Pixels (True) OR ALL Pixels (False)
+VALID_PIXELS = False
+TRAIN_ON_SINGLE_IMAGE = True
+ENABLE_EARLY_STOP = False  # TODO: Ativar
 SAVE_TRAINED_MODEL = True
 ENABLE_TENSORBOARD = True
 SAVE_TEST_DISPARITIES = True
@@ -143,19 +152,26 @@ def train(args):
         # Searches dataset images filenames
         train_image_filenames, train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainInputs(
             args)
+
+        # If enabled, the framework will train the network for only one image!!!
+        if TRAIN_ON_SINGLE_IMAGE:
+            tf_train_image_filenames = tf.expand_dims(tf_train_image_filenames[0], axis=0)
+            tf_train_depth_filenames = tf.expand_dims(tf_train_depth_filenames[0], axis=0)
+
         tf_image, tf_depth = data.readData(tf_train_image_filenames, tf_train_depth_filenames)
 
         # TODO: Separar algumas imagens para o subset de Validação
         # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
         data.splitData()
 
+        # TODO: Move
         # Downsizes Input and Depth Images
         tf_image_resized = tf.image.resize_images(tf_image, [model.input_size.height, model.input_size.width])
         tf_depth_resized = tf.image.resize_images(tf_depth, [model.output_size.height, model.output_size.width])
 
         # Build Network Model
         model.build_model(data.image_size, data.depth_size, tf_image_resized, tf_depth_resized)
-        model.build_losses()
+        model.build_losses(LOSS_FUNCTION, VALID_PIXELS)
         model.build_optimizer()
         model.build_summaries()
         model.countParams()
@@ -214,7 +230,8 @@ def train(args):
             # ----- Session Run! ----- #
             # Training
             _, batch_data_raw, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data, model.train.tf_batch_labels, model.train.tf_log_labels,
+                [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
+                 model.train.tf_batch_labels, model.train.tf_log_labels,
                  model.fcrn.get_output(), model.tf_loss, model.summary_op])
 
             def debug_data_augmentation():
@@ -238,20 +255,21 @@ def train(args):
 
             # debug_data_augmentation()
 
-            # Validation
-            # FIXME: Uses only one image as validation!
-            # FIXME: Thats is wrong
-            valid_image = plt.imread(
-                "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
-            valid_depth = plt.imread(
-                "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
-
-            # FIXME: valid_loss = -1
-            feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
-                               model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
-            valid_image, valid_pred, valid_labels, valid_log_labels = sess.run(
-                [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
-                 model.valid.tf_log_depth_resized], feed_dict=feed_valid)
+            # TODO: Reativar Validação
+            # # Validation
+            # # FIXME: Uses only one image as validation!
+            # # FIXME: Thats is wrong
+            # valid_image = plt.imread(
+            #     "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
+            # valid_depth = plt.imread(
+            #     "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
+            #
+            # # FIXME: valid_loss = -1
+            # feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
+            #                    model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+            # valid_image, valid_pred, valid_labels, valid_log_labels = sess.run(
+            #     [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
+            #      model.valid.tf_log_depth_resized], feed_dict=feed_valid)
             # -----
 
             if ENABLE_TENSORBOARD:
@@ -270,7 +288,8 @@ def train(args):
                     train_plotObj.showTrainResults(raw=batch_data_raw[0],
                                                    label=batch_labels[0, :, :, 0],
                                                    log_label=batch_log_labels[0, :, :, 0],
-                                                   pred=batch_pred[0, :, :, 0])
+                                                   pred=batch_pred[0, :, :, 0],
+                                                   cbar_range=data.datasetObj)
 
                 if args.show_valid_progress:
                     valid_plotObj.showValidResults(raw=valid_image[0, :, :],
@@ -420,7 +439,7 @@ def test(args):
             for i in range(dataloader.numTestSamples):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
-                                             log_label=np.log(test_labels_o[i] + LOSS_LOG_INITIAL_VALUE),
+                                             log_label=np.log(test_labels_o[i] + LOG_INITIAL_VALUE),
                                              pred=pred[i], i=i)
 
 
