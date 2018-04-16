@@ -1,6 +1,7 @@
 # ===========
 #  Libraries
 # ===========
+import numpy as np
 import matplotlib.pyplot as plt
 import utils.loss as loss
 
@@ -8,6 +9,15 @@ import utils.loss as loss
 # ==================
 #  Global Variables
 # ==================
+
+
+# ===========
+#  Functions
+# ===========
+def updateColorBar(cbar, img):
+    vmin, vmax = np.min(img), np.max(img)
+    cbar.set_clim(vmin, vmax)
+
 
 # ===================
 #  Class Declaration
@@ -49,48 +59,40 @@ class Plot(object):
 
         self.isFirstTime = True
 
-    # TODO: Add colorbar
-    # TODO: Otimizar
-    def showTrainResults(self, raw, label, log_label, pred):
+    def showTrainResults(self, raw, label, log_label, pred, cbar_range):
         predMSE = loss.np_MSE(y=pred, y_=log_label)
 
         if self.isFirstTime:
             self.cax1 = self.axes[0].imshow(raw)
-            self.cax2 = self.axes[1].imshow(label)
-            self.cax3 = self.axes[2].imshow(log_label)
-            self.cax4 = self.axes[3].imshow(pred)
+            self.cax2 = self.axes[1].imshow(label, vmin=cbar_range.vmin, vmax=cbar_range.vmax)
+            self.cax3 = self.axes[2].imshow(log_label, vmin=cbar_range.log_vmin, vmax=cbar_range.log_vmax)
+            self.cax4 = self.axes[3].imshow(pred, vmin=cbar_range.log_vmin, vmax=cbar_range.log_vmax)
             self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
-            # cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
-            # # self.axes[1].set_aspect('auto')
-            #
-            # cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
-            # # self.axes[2].set_aspect('auto')
-            #
-            # cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
-            # # self.axes[3].set_aspect('auto')
-            #
-            # cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
-            # # self.axes[4].set_aspect('auto')
+            # Creates ColorBars
+            self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
+            self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
+            self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
+            self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
 
             self.isFirstTime = False
         else:
-            # self.cax1.set_data(raw)
-            # self.cax2.set_data(label)
-            # self.cax3.set_data(log_label)
-            # self.cax4.set_data(pred)
-            # self.cax5.set_data(predMSE)
-            # plt.draw()
+            # Updates Colorbars
+            updateColorBar(self.cbar2, label)
+            updateColorBar(self.cbar3, log_label)
+            updateColorBar(self.cbar4, pred)
+            updateColorBar(self.cbar5, predMSE)
 
-            self.cax1 = self.axes[0].imshow(raw)
-            self.cax2 = self.axes[1].imshow(label)
-            self.cax3 = self.axes[2].imshow(log_label)
-            self.cax4 = self.axes[3].imshow(pred)
-            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
+            # Updates Images
+            self.cax1.set_data(raw)
+            self.cax2.set_data(label)
+            self.cax3.set_data(log_label)
+            self.cax4.set_data(pred)
+            self.cax5.set_data(predMSE)
+            plt.draw()
 
         plt.pause(0.001)
 
-    # TODO: Add colorbar
     def showValidResults(self, raw, label, log_label, pred):
         predMSE = loss.np_MSE(y=pred, y_=log_label)
 
@@ -101,33 +103,28 @@ class Plot(object):
             self.cax4 = self.axes[3].imshow(pred)
             self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
-            # cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
-            # # self.axes[1].set_aspect('auto')
-            #
-            # cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
-            # # self.axes[2].set_aspect('auto')
-            #
-            # cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
-            # # self.axes[3].set_aspect('auto')
-            #
-            # cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
-            # # self.axes[4].set_aspect('auto')
+            # Creates ColorBars
+            self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
+            self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
+            self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
+            self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
 
             self.isFirstTime = False
 
         else:
-            # self.cax1.set_data(raw)
-            # self.cax2.set_data(label)
-            # self.cax3.set_data(log_label)
-            # self.cax4.set_data(pred)
-            # self.cax5.set_data(predMSE)
-            # plt.draw()
+            # Updates Colorbars
+            updateColorBar(self.cbar2, label)
+            updateColorBar(self.cbar3, log_label)
+            updateColorBar(self.cbar4, pred)
+            updateColorBar(self.cbar5, predMSE)
 
-            self.cax1 = self.axes[0].imshow(raw)
-            self.cax2 = self.axes[1].imshow(label)
-            self.cax3 = self.axes[2].imshow(log_label)
-            self.cax4 = self.axes[3].imshow(pred)
-            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
+            # Updates Images
+            self.cax1.set_data(raw)
+            self.cax2.set_data(label)
+            self.cax3.set_data(log_label)
+            self.cax4.set_data(pred)
+            self.cax5.set_data(predMSE)
+            plt.draw()
 
         plt.pause(0.001)
 
