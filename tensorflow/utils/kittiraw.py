@@ -1,10 +1,15 @@
 # ===========
 #  Libraries
 # ===========
+import numpy as np
 import tensorflow as tf
 
 from .size import Size
 
+# ==================
+#  Global Variables
+# ==================
+LOG_INITIAL_VALUE = 1
 
 # ===================
 #  Class Declaration
@@ -25,6 +30,12 @@ class KittiRaw(object):
 
         self.image_replace = [b'/imgs/', b'']
         self.depth_replace = [b'/dispc/', b'']
+
+        # Data Range/Plot ColorSpace
+        self.vmin = 0
+        self.vmax = 240
+        self.log_vmin = np.log(self.vmin+LOG_INITIAL_VALUE)
+        self.log_vmax = np.log(self.vmax)
 
         print("[Dataloader] KittiRaw object created.")
 
