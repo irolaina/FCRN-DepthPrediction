@@ -48,22 +48,21 @@ datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 0
+LOSS_FUNCTION = 2
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False
-TRAIN_ON_SINGLE_IMAGE = True
-ENABLE_EARLY_STOP = False  # TODO: Ativar
-SAVE_TRAINED_MODEL = True
-ENABLE_TENSORBOARD = True
-SAVE_TEST_DISPARITIES = True
-APPLY_BILINEAR_OUTPUT = False
+VALID_PIXELS = False            # Default: True
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+ENABLE_EARLY_STOP = False       # Default: True # TODO: Ativar
+SAVE_TRAINED_MODEL = True       # Default: True
+ENABLE_TENSORBOARD = True       # Default: True
+SAVE_TEST_DISPARITIES = True    # Default: True
+APPLY_BILINEAR_OUTPUT = False   # Default: False
 
 
 # ===========
 #  Functions
 # ===========
-# TODO: Move
 def createSaveFolder():
     save_path = None
     save_restore_path = None
@@ -153,7 +152,6 @@ def train(args):
         # Searches dataset images filenames
         image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames = data.getTrainData(args)
 
-        # TODO: Separar algumas imagens para o subset de Validação
         # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
         data.splitData(image_filenames, depth_filenames)
 
@@ -243,7 +241,7 @@ def train(args):
 
             # Validation
             # FIXME: Uses only one image as validation!
-            # FIXME: valid_loss = -1
+            # FIXME: valid_loss value may is wrong
             feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
                                model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
             valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(

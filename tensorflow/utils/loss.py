@@ -62,7 +62,7 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
     if valid_pixels:
         tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
     else:
-        tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
+        tf_log_y_ = tf.log(tf_y_ + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                            name='log_labels')  # Just for displaying Image
 
     # npixels value depends on valid_pixels flag:
@@ -82,7 +82,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
-    tf_log_y_ = tf.log(tf.cast(tf_y_, tf.float32) + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
+    tf_log_y_ = tf.log(tf_y_ + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                        name='log_labels')  # Just for displaying Image
     tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
     tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
