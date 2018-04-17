@@ -41,7 +41,7 @@ class Model(object):
         # self.build_summaries()
         # self.countParams()
 
-    def build_model(self, image_size, depth_size, tf_image_resized, tf_depth_resized):
+    def build_model(self, image_size, depth_size, tf_train_image, tf_train_depth):
         print("\n[Network/Model] Build Network Model...")
 
         # =============================================
@@ -49,7 +49,7 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope('model') as scope:
-            self.train = Train(self.args, tf_image_resized, tf_depth_resized, self.input_size, self.output_size)
+            self.train = Train(self.args, tf_train_image, tf_train_depth, self.input_size, self.output_size)
             self.fcrn = ResNet50UpProj({'data': self.train.tf_batch_data}, self.args.batch_size, 1, False)
             tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
@@ -62,7 +62,7 @@ class Model(object):
             # Select Loss Function:
             if selectedLoss == 0:
                 self.loss_name, self.train.tf_loss = loss.tf_MSE(self.fcrn.get_output(),
-                                                           self.train.tf_labels,
+                                                           self.train.tf_batch_labels,
                                                            valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_MSE(self.fcrn_valid.get_output(),
@@ -76,7 +76,7 @@ class Model(object):
                                                          gamma=0.5)
             elif selectedLoss == 2:
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.fcrn.get_output(),
-                                                             self.train.tf_labels,
+                                                             self.train.tf_batch_labels,
                                                              valid_pixels)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")

@@ -167,13 +167,8 @@ def train(args):
 
         tf_train_image, tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
-        # TODO: Move
-        # Downsizes Input and Depth Images
-        tf_train_data = tf.image.resize_images(tf_train_image, [model.input_size.height, model.input_size.width])
-        tf_train_labels = tf.image.resize_images(tf_train_depth, [model.output_size.height, model.output_size.width])
-
         # Build Network Model
-        model.build_model(data.image_size, data.depth_size, tf_train_data, tf_train_labels)
+        model.build_model(data.image_size, data.depth_size, tf_train_image, tf_train_depth)
         model.build_losses(LOSS_FUNCTION, VALID_PIXELS)
         model.build_optimizer()
         model.build_summaries()
@@ -220,9 +215,9 @@ def train(args):
 
             # ----- Session Run! ----- #
             # Training
-            _, batch_data_raw, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
+            _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
                 [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
-                 model.train.tf_batch_labels, model.train.tf_log_labels,
+                 model.train.tf_batch_labels, model.train.tf_log_batch_labels,
                  model.fcrn.get_output(), model.train.tf_loss, model.summary_op])
 
             def debug_data_augmentation():
@@ -271,7 +266,7 @@ def train(args):
                 if args.show_train_progress:
                     train_plotObj.showResults(raw=batch_data_raw[0],
                                               label=batch_labels[0, :, :, 0],
-                                              log_label=batch_log_labels[0, :, :, 0],
+                                              log_label=log_batch_labels[0, :, :, 0],
                                               pred=batch_pred[0, :, :, 0],
                                               cbar_range=data.datasetObj)
 
