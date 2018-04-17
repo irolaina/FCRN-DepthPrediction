@@ -54,7 +54,7 @@ class Dataloader:
         print("[Dataloader] dataloader object created.")
 
     # TODO: Ler outros Datasets
-    def getTrainInputs(self, args):
+    def getTrainData(self, args):
         if args.machine == 'olorin':
             # KittiRaw Residential Continuous
             # Image: (375, 1242, 3) uint8
@@ -74,13 +74,15 @@ class Dataloader:
             print("\nSummary - Dataset Inputs")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
+
+            self.numSamples = len(image_filenames)
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
     # TODO: Terminar
-    # def getTestInputs(self, args):
+    # def getTestData(self, args):
     #     if args.machine == 'olorin':
     #         # KittiRaw Residential Continuous
     #         # Image: (375, 1242, 3) uint8
@@ -130,9 +132,27 @@ class Dataloader:
 
         return tf_image, tf_depth
 
-    # TODO: Terminar
-    def splitData(self, ratio=0.8):
-        print("Terminar")
+    def splitData(self,  image_filenames, depth_filenames, ratio=0.8):
+        # Divides the Processed train data into training set and validation set
+        print('\n[Dataloader] Dividing available data into training and validation sets...')
+        divider = int(ratio * self.numSamples)
+
+        """Training"""
+        self.train_data = image_filenames[:divider]
+        self.train_labels = depth_filenames[:divider]
+
+        """Validation"""
+        self.valid_data = image_filenames[divider:]
+        self.valid_labels = depth_filenames[divider:]
+
+        """Final"""
+        print("\nSummary")
+        print("len(train_dataset):", len(self.train_data))
+        print("len(train_labels):", len(self.train_labels))
+        print("len(valid_dataset):", len(self.valid_data))
+        print("len(valid_labels):", len(self.valid_labels))
+        # print("len(test_dataset)", len(self.test_dataset))
+        # print("len(test_labels)", len(self.test_labels))
 
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):
         try:
@@ -153,7 +173,7 @@ class Dataloader:
             # print(depth_filenames_aux)
             # input("oi4")
 
-            numSamples = len(image_filenames_aux)
+            numSamples = len(image_filenames_aux) # TODO: Checar se já tiver o valor de self.numSamples, se sim pode tirar essa linha e o return num samples!
 
             print("[Dataloader] Checking if RGB and Depth images are paired... ")
             if image_filenames_aux == depth_filenames_aux:

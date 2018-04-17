@@ -52,6 +52,9 @@ class Train:
         self.trainCollection()
 
         print("\n[Network/Train] Training Tensors Created.")
+        print(self.tf_batch_data)
+        print(self.tf_batch_data_resized)
+        print(self.tf_batch_labels)
         print(self.tf_image)
         print(self.tf_labels)
         print(self.tf_log_labels)

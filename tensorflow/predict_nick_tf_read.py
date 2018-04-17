@@ -151,27 +151,29 @@ def train(args):
         model = Model(args)
 
         # Searches dataset images filenames
-        train_image_filenames, train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainInputs(
-            args)
-
-        # If enabled, the framework will train the network for only one image!!!
-        if TRAIN_ON_SINGLE_IMAGE:
-            tf_train_image_filenames = tf.expand_dims(tf_train_image_filenames[0], axis=0)
-            tf_train_depth_filenames = tf.expand_dims(tf_train_depth_filenames[0], axis=0)
-
-        tf_image, tf_depth = data.readData(tf_train_image_filenames, tf_train_depth_filenames)
+        image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames = data.getTrainData(args)
 
         # TODO: Separar algumas imagens para o subset de Validação
         # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
-        data.splitData()
+        data.splitData(image_filenames, depth_filenames)
+
+        # TODO: Dividir train/valid as variaveis images_filenames, tf_images_filenames, tf_image, tf_image_resized?
+        # TODO: Dividir train/valid as variaveis images_filenames, tf_images_filenames, tf_image, tf_image_resized?
+
+        # If enabled, the framework will train the network for only one image!!!
+        if TRAIN_ON_SINGLE_IMAGE:
+            data.train_data = tf.expand_dims(data.train_data[0], axis=0)
+            data.train_labels = tf.expand_dims(data.train_labels[0], axis=0)
+
+        tf_train_image, tf_train_depth = data.readData(data.train_data, data.train_labels)
 
         # TODO: Move
         # Downsizes Input and Depth Images
-        tf_image_resized = tf.image.resize_images(tf_image, [model.input_size.height, model.input_size.width])
-        tf_depth_resized = tf.image.resize_images(tf_depth, [model.output_size.height, model.output_size.width])
+        tf_train_image_resized = tf.image.resize_images(tf_train_image, [model.input_size.height, model.input_size.width])
+        tf_train_depth_resized = tf.image.resize_images(tf_train_depth, [model.output_size.height, model.output_size.width])
 
         # Build Network Model
-        model.build_model(data.image_size, data.depth_size, tf_image_resized, tf_depth_resized)
+        model.build_model(data.image_size, data.depth_size, tf_train_image_resized, tf_train_depth_resized)
         model.build_losses(LOSS_FUNCTION, VALID_PIXELS)
         model.build_optimizer()
         model.build_summaries()
@@ -192,7 +194,7 @@ def train(args):
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         # Check Dataset Integrity
-        numSamples = data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames)
+        numSamples = data.checkIntegrity(sess, tf_image_filenames, tf_depth_filenames)
 
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / numSamples)
