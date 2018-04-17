@@ -3,9 +3,16 @@
 # ===========
 import glob
 import os
+import numpy as np
 import tensorflow as tf
+import sys
 
 from .size import Size
+
+# ==================
+#  Global Variables
+# ==================
+LOG_INITIAL_VALUE = 1
 
 
 # ===================
@@ -16,7 +23,7 @@ from .size import Size
 # Depth: (480, 640)    ?
 class NyuDepth(object):
     def __init__(self):
-        self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/training/"
+        self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/"
         self.name = 'nyudepth'
 
         self.image_size = Size(480, 640, 3)
@@ -36,9 +43,16 @@ class NyuDepth(object):
 
         print("[Dataloader] NyuDepth object created.")
 
-    def getFilenamesLists(self):
+    def getFilenamesLists(self, mode):
+        if mode == 'train':
+            dataset_path_aux = self.dataset_path + "training/*/"
+        elif mode == 'test':
+            dataset_path_aux = self.dataset_path + "testing/*/"
+        else:
+            sys.exit()
+
         # Finds input images and labels inside list of folders.
-        for folder in glob.glob(self.dataset_path + "*/"):
+        for folder in glob.glob(dataset_path_aux):
             # print(folder)
             os.chdir(folder)
 
@@ -51,10 +65,6 @@ class NyuDepth(object):
                 self.depth_filenames.append(folder + file)
 
             # print()
-
-        print("\nSummary")
-        print("image_filenames: ", len(self.image_filenames))
-        print("depth_filenames: ", len(self.depth_filenames))
 
         return self.image_filenames, self.depth_filenames
 

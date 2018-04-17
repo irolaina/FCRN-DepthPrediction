@@ -4,6 +4,7 @@
 import numpy as np
 import tensorflow as tf
 import os
+import sys
 import utils.loss as loss
 
 from utils.size import Size
@@ -74,7 +75,7 @@ class Model(object):
                                                              valid_pixels)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
-                raise SystemExit
+                sys.exit()
 
             if self.args.l2norm:
                 self.tf_loss += loss.calculateL2norm()

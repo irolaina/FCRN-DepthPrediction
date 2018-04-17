@@ -5,6 +5,7 @@ import tensorflow as tf
 import random
 import glob
 import os
+import sys
 
 from .size import Size
 from .kitti import Kitti
@@ -42,7 +43,7 @@ class Dataloader:
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. Check the list of supported datasets." % self.selectedDataset)
-            raise SystemExit
+            sys.exit()
 
         # Collects Dataset Info
         self.dataset_name = self.datasetObj.name
@@ -66,7 +67,7 @@ class Dataloader:
                 tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
 
         elif args.machine == 'xps':
-            image_filenames, depth_filenames = self.datasetObj.getFilenamesLists()
+            image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(args.mode)
             tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
 
         try:
@@ -77,6 +78,33 @@ class Dataloader:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+
+    # TODO: Terminar
+    # def getTestInputs(self, args):
+    #     if args.machine == 'olorin':
+    #         # KittiRaw Residential Continuous
+    #         # Image: (375, 1242, 3) uint8
+    #         # Depth: (375, 1242)    uint8
+    #         if args.dataset == 'kittiraw_residential_continuous':
+    #             search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/imgs/*.png"
+    #             search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/dispc/*.png"
+    #
+    #             tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
+    #             tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
+    #
+    #     elif args.machine == 'xps':
+    #         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists()
+    #         tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
+    #
+    #     try:
+    #         print("\nSummary - Dataset Inputs")
+    #         print("image_filenames: ", len(image_filenames))
+    #         print("depth_filenames: ", len(depth_filenames))
+    #     except TypeError:
+    #         print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
+    #
+    #     return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+
 
     def readData(self, tf_image_filenames, tf_depth_filenames):
         # Creates Inputs Queue.
@@ -137,4 +165,4 @@ class Dataloader:
 
         except ValueError:
             print("[Dataloader] Check Integrity: Failed")
-            raise SystemExit
+            sys.exit()

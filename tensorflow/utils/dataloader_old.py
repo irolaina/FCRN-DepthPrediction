@@ -44,7 +44,7 @@ def checkArgumentsIntegrity(dataset):
               "' is not a valid name! Please select one of the following datasets: "
               "'kitti<dataset_identification>' or 'nyudepth'", sep='')
         print("e.g: python3 ", os.path.splitext(sys.argv[0])[0], ".py -s kitti2012", sep='')
-        raise SystemExit
+        sys.exit()
 
 
 def selectedDataset(DATASET_PATH_ROOT, dataset):

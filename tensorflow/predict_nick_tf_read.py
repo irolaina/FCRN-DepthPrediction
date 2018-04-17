@@ -10,6 +10,7 @@
 
 # TODO: Implementar Bilinear
 # TODO: If detect Ctrl+C, save training state.
+# TODO: Estou aplicando a normalização da entrada em todos os módulos (predict, test, train, valid)?
 
 # ===========
 #  Libraries
@@ -331,7 +332,10 @@ def test(args):
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
     # Loads the dataset and restores a specified trained model.
-    dataloader = Dataloader(args.data_path, args.dataset, args.mode)  # TODO: Usar leitura pelo Tensorflow
+    data = Dataloader(args)  # TODO: Usar leitura pelo Tensorflow
+
+    # Searches dataset images filenames
+    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestInputs(args)
 
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
@@ -341,18 +345,19 @@ def test(args):
 
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
-    pred = np.zeros((dataloader.numTestSamples, dataloader.outputSize[1], dataloader.outputSize[2]),
+
+    pred = np.zeros((data.numTestSamples, data.outputSize[1], data.outputSize[2]),
                     dtype=np.float32)  # (?, 43, 144)
 
-    test_labels_o = np.zeros((len(dataloader.test_dataset), dataloader.outputSize[1], dataloader.outputSize[2]),
+    test_labels_o = np.zeros((len(data.test_dataset), data.outputSize[1], data.outputSize[2]),
                              dtype=np.int32)  # (?, 43, 144)
 
     test_data_o = np.zeros(
-        (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]),
+        (len(data.test_dataset), data.inputSize[1], data.inputSize[2], data.inputSize[3]),
         dtype=np.uint8)  # (?, 172, 576, 3)
 
     test_data_crop_o = np.zeros(
-        (len(dataloader.test_dataset), dataloader.inputSize[1], dataloader.inputSize[2], dataloader.inputSize[3]),
+        (len(data.test_dataset), data.inputSize[1], data.inputSize[2], data.inputSize[3]),
         dtype=np.uint8)  # (?, 172, 576, 3)
 
     with tf.Session() as sess:
@@ -370,18 +375,18 @@ def test(args):
         #  Testing Loop
         # ==============
         start = time.time()
-        for i, image_path in enumerate(dataloader.test_dataset):
+        for i, image_path in enumerate(data.test_dataset):
             start2 = time.time()
 
-            if dataloader.test_labels:  # It's not empty
-                image, depth, image_crop, depth_bilinear = dataloader.readImage(dataloader.test_dataset[i],
-                                                                                dataloader.test_labels[i],
+            if data.test_labels:  # It's not empty
+                image, depth, image_crop, depth_bilinear = data.readImage(data.test_dataset[i],
+                                                                                data.test_labels[i],
                                                                                 mode='test')
 
                 test_labels_o[i] = depth
                 # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
             else:
-                image, _, image_crop, _ = dataloader.readImage(dataloader.test_dataset[i], None, mode='test')
+                image, _, image_crop, _ = data.readImage(data.test_dataset[i], None, mode='test')
 
             test_data_o[i] = image
             test_data_crop_o[i] = image_crop
@@ -393,7 +398,7 @@ def test(args):
 
             # Prints Testing Progress
             end2 = time.time()
-            print('step: %d/%d | t: %f' % (i + 1, dataloader.numTestSamples, end2 - start2))
+            print('step: %d/%d | t: %f' % (i + 1, data.numTestSamples, end2 - start2))
             # break # Test
 
         # Testing Finished.
@@ -415,7 +420,7 @@ def test(args):
             np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path
 
         # Calculate Metrics
-        if dataloader.test_labels:
+        if data.test_labels:
             metricsLib.evaluateTesting(pred, test_labels_o)
         else:
             print(
@@ -424,7 +429,7 @@ def test(args):
         # Show Results
         if args.show_test_results:
             test_plotObj = Plot(args.mode, title='Test Predictions')
-            for i in range(dataloader.numTestSamples):
+            for i in range(data.numTestSamples):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
                                              log_label=np.log(test_labels_o[i] + LOG_INITIAL_VALUE),
