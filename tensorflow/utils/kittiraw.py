@@ -43,7 +43,6 @@ class KittiRaw(object):
 
         print("[Dataloader] KittiRaw object created.")
 
-    # TODO: Terminar
     def getFilenamesLists(self):
         return self.image_filenames, self.depth_filenames
 

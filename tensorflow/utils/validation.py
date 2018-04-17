@@ -2,6 +2,7 @@
 #  Libraries
 # ===========
 import tensorflow as tf
+import utils.loss as loss
 
 # ==================
 #  Global Variables
@@ -23,6 +24,7 @@ class Validation:
         self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
         self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32))
 
+        self.tf_loss = None
         self.loss = -1
 
         print("\n[Network/Validation] Validation Tensors Created.")

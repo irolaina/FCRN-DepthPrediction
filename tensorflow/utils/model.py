@@ -61,16 +61,21 @@ class Model(object):
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selectedLoss == 0:
-                self.loss_name, self.tf_loss = loss.tf_MSE(self.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_MSE(self.fcrn.get_output(),
                                                            self.train.tf_labels,
                                                            valid_pixels)
+
+                _, self.valid.tf_loss = loss.tf_MSE(self.fcrn_valid.get_output(),
+                                                    self.valid.tf_log_depth_resized,
+                                                    valid_pixels)
+
             elif selectedLoss == 1:
-                self.loss_name, self.tf_loss = loss.tf_L(self.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_L(self.fcrn.get_output(),
                                                          self.tf_log_labels,
                                                          valid_pixels,
                                                          gamma=0.5)
             elif selectedLoss == 2:
-                self.loss_name, self.tf_loss = loss.tf_BerHu(self.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.fcrn.get_output(),
                                                              self.train.tf_labels,
                                                              valid_pixels)
             else:
@@ -78,7 +83,7 @@ class Model(object):
                 sys.exit()
 
             if self.args.l2norm:
-                self.tf_loss += loss.calculateL2norm()
+                self.train.tf_loss += loss.calculateL2norm()
 
             print("\n[Network/Loss] Loss Function: %s" % self.loss_name)
             if valid_pixels:
@@ -88,10 +93,10 @@ class Model(object):
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
-            # optimizer = tf.train.GradientDescentOptimizer(self.learningRate).minimize(self.tf_loss,
+            # optimizer = tf.train.GradientDescentOptimizer(self.learningRate).minimize(self.train.tf_loss,
             #                                                global_step=self.global_step)
             optimizer = tf.train.AdamOptimizer(self.train.tf_learningRate)
-            self.train_step = optimizer.minimize(self.tf_loss, global_step=self.train.tf_global_step)
+            self.train_step = optimizer.minimize(self.train.tf_loss, global_step=self.train.tf_global_step)
             tf.add_to_collection("train_step", self.train_step)
 
     # TODO: Adicionar mais summaries das variaveis internas do modelo
@@ -99,7 +104,7 @@ class Model(object):
         # Filling Summary Obj
         with tf.name_scope("Summaries"):
             tf.summary.scalar('learning_rate', self.train.tf_learningRate, collections=self.model_collection)
-            tf.summary.scalar('loss', self.tf_loss, collections=self.model_collection)
+            tf.summary.scalar('loss', self.train.tf_loss, collections=self.model_collection)
 
     @staticmethod
     def countParams():
