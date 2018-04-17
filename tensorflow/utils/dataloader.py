@@ -138,21 +138,19 @@ class Dataloader:
         divider = int(ratio * self.numSamples)
 
         """Training"""
-        self.train_data = image_filenames[:divider]
-        self.train_labels = depth_filenames[:divider]
+        self.train_image_filenames = image_filenames[:divider]
+        self.train_depth_filenames = depth_filenames[:divider]
 
         """Validation"""
-        self.valid_data = image_filenames[divider:]
-        self.valid_labels = depth_filenames[divider:]
+        self.valid_image_filenames = image_filenames[divider:]
+        self.valid_depth_filenames = depth_filenames[divider:]
 
         """Final"""
         print("\nSummary")
-        print("len(train_dataset):", len(self.train_data))
-        print("len(train_labels):", len(self.train_labels))
-        print("len(valid_dataset):", len(self.valid_data))
-        print("len(valid_labels):", len(self.valid_labels))
-        # print("len(test_dataset)", len(self.test_dataset))
-        # print("len(test_labels)", len(self.test_labels))
+        print("len(train_image_filenames):", len(self.train_image_filenames))
+        print("len(train_depth_filenames):", len(self.train_depth_filenames))
+        print("len(valid_image_filenames):", len(self.valid_image_filenames))
+        print("len(depth_filenames):", len(self.valid_depth_filenames))
 
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):
         try:
