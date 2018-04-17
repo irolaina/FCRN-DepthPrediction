@@ -162,18 +162,18 @@ def train(args):
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
-            data.train_data = tf.expand_dims(data.train_data[0], axis=0)
-            data.train_labels = tf.expand_dims(data.train_labels[0], axis=0)
+            data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
+            data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
 
-        tf_train_image, tf_train_depth = data.readData(data.train_data, data.train_labels)
+        tf_train_image, tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # TODO: Move
         # Downsizes Input and Depth Images
-        tf_train_image_resized = tf.image.resize_images(tf_train_image, [model.input_size.height, model.input_size.width])
-        tf_train_depth_resized = tf.image.resize_images(tf_train_depth, [model.output_size.height, model.output_size.width])
+        tf_train_data = tf.image.resize_images(tf_train_image, [model.input_size.height, model.input_size.width])
+        tf_train_labels = tf.image.resize_images(tf_train_depth, [model.output_size.height, model.output_size.width])
 
         # Build Network Model
-        model.build_model(data.image_size, data.depth_size, tf_train_image_resized, tf_train_depth_resized)
+        model.build_model(data.image_size, data.depth_size, tf_train_data, tf_train_labels)
         model.build_losses(LOSS_FUNCTION, VALID_PIXELS)
         model.build_optimizer()
         model.build_summaries()
@@ -223,7 +223,7 @@ def train(args):
             _, batch_data_raw, batch_data, batch_labels, batch_log_labels, batch_pred, model.train.loss, summary_str = sess.run(
                 [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
                  model.train.tf_batch_labels, model.train.tf_log_labels,
-                 model.fcrn.get_output(), model.tf_loss, model.summary_op])
+                 model.fcrn.get_output(), model.train.tf_loss, model.summary_op])
 
             def debug_data_augmentation():
                 fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -246,21 +246,14 @@ def train(args):
 
             # debug_data_augmentation()
 
-            # TODO: Reativar Validação
-            # # Validation
-            # # FIXME: Uses only one image as validation!
-            # # FIXME: Thats is wrong
-            # valid_image = plt.imread(
-            #     "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/imgs/residential_2011_09_26_drive_0019_sync_0000000384.png")
-            # valid_depth = plt.imread(
-            #     "/home/nicolas/Downloads/workspace/nicolas/data/residential_continuous/testing/dispc/residential_2011_09_26_drive_0019_sync_0000000384.png")
-            #
-            # # FIXME: valid_loss = -1
-            # feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
-            #                    model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
-            # valid_image, valid_pred, valid_labels, valid_log_labels = sess.run(
-            #     [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
-            #      model.valid.tf_log_depth_resized], feed_dict=feed_valid)
+            # Validation
+            # FIXME: Uses only one image as validation!
+            # FIXME: valid_loss = -1
+            feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
+                               model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+            valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
+                [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
+                 model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
             # -----
 
             if ENABLE_TENSORBOARD:
@@ -276,17 +269,18 @@ def train(args):
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
-                    train_plotObj.showTrainResults(raw=batch_data_raw[0],
-                                                   label=batch_labels[0, :, :, 0],
-                                                   log_label=batch_log_labels[0, :, :, 0],
-                                                   pred=batch_pred[0, :, :, 0],
-                                                   cbar_range=data.datasetObj)
+                    train_plotObj.showResults(raw=batch_data_raw[0],
+                                              label=batch_labels[0, :, :, 0],
+                                              log_label=batch_log_labels[0, :, :, 0],
+                                              pred=batch_pred[0, :, :, 0],
+                                              cbar_range=data.datasetObj)
 
                 if args.show_valid_progress:
-                    valid_plotObj.showValidResults(raw=valid_image[0, :, :],
-                                                   label=valid_labels[0, :, :, 0],
-                                                   log_label=valid_log_labels[0, :, :, 0],
-                                                   pred=valid_pred[0, :, :, 0])
+                    valid_plotObj.showResults(raw=valid_image[0, :, :],
+                                              label=valid_labels[0, :, :, 0],
+                                              log_label=valid_log_labels[0, :, :, 0],
+                                              pred=valid_pred[0, :, :, 0],
+                                              cbar_range=data.datasetObj)
 
                 end2 = time.time()
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,

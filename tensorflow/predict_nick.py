@@ -349,16 +349,16 @@ def train(args):
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
-                    train_plotObj.showTrainResults(raw=batch_data_crop[0, :, :],
-                                                   label=batch_labels[0, :, :],
-                                                   log_label=batch_log_labels[0, :, :],
-                                                   pred=batch_pred[0, :, :, 0])
+                    train_plotObj.showResults(raw=batch_data_crop[0, :, :],
+                                              label=batch_labels[0, :, :],
+                                              log_label=batch_log_labels[0, :, :],
+                                              pred=batch_pred[0, :, :, 0])
 
                     # Plot.plotTrainingProgress(raw=batch_data_crop[0, :, :], label=batch_labels[0, :, :],log_label=log_labels[0, :, :], coarse=train_PredCoarse[0, :, :],fine=train_PredFine[0, :, :], fig_id=3)
                     pass
 
                 if args.show_valid_progress:
-                    valid_plotObj.showValidResults(raw=valid_data_crop_o[0, :, :, :],
+                    valid_plotObj.showResults(raw=valid_data_crop_o[0, :, :, :],
                                                    label=valid_labels_o[0],
                                                    log_label=valid_log_labels[0, :, :],
                                                    pred=valid_pred[0,:,:,0])
