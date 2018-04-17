@@ -23,7 +23,7 @@ LOG_INITIAL_VALUE = 1
 # Depth: (375, 1242)    uint8
 class KittiRaw(object):
     def __init__(self):
-        self.dataset_path = ''  # TODO: Terminar
+        self.dataset_path = "../../data/residential_continuous/"
         self.name = 'kittiraw'
 
         self.image_size = Size(375, 1242, 3)
@@ -43,14 +43,22 @@ class KittiRaw(object):
 
         print("[Dataloader] KittiRaw object created.")
 
-    def getFilenamesLists(self):
+    def getFilenamesLists(self, mode):
+        if mode == 'train':
+            dataset_path_aux = self.dataset_path + "training/"
+        elif mode == 'test':
+            dataset_path_aux = self.dataset_path + "testing/"
+        else:
+            sys.exit()
+
+        # Finds input images and labels inside list of folders.
+        self.image_filenames = glob.glob(dataset_path_aux + "imgs/*")
+        self.depth_filenames = glob.glob(dataset_path_aux + "dispc/*")
+
         return self.image_filenames, self.depth_filenames
 
     def getFilenamesTensors(self):
-        search_image_files_str = "../../data/residential_continuous/training/imgs/*.png"
-        search_depth_files_str = "../../data/residential_continuous/training/dispc/*.png"
-
-        self.tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
-        self.tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
+        self.tf_image_filenames = tf.constant(self.image_filenames)
+        self.tf_depth_filenames = tf.constant(self.depth_filenames)
 
         return self.tf_image_filenames, self.tf_depth_filenames
