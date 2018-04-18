@@ -56,6 +56,8 @@ class Model(object):
         with tf.variable_scope("model", reuse=True):
             self.valid = Validation(image_size, depth_size, self.input_size, self.output_size)
             self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image_resized}, self.args.batch_size, 1, False)
+            # self.fcrn_valid = ResNet50UpProj({'data': tf.expand_dims(self.valid.tf_image_resized,axis=0)}, self.args.batch_size, 1, False) # TODO: Usar?
+            # self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_batch_data}, self.args.batch_size, 1, False) # TODO: Usar?
 
     def build_losses(self, selectedLoss, valid_pixels):
         with tf.name_scope("Losses"):

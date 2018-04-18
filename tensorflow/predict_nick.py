@@ -155,7 +155,6 @@ def train(args):
         # Searches dataset images filenames
         image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames = data.getTrainData(args)
 
-        # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
         data.splitData(image_filenames, depth_filenames)
 
         # If enabled, the framework will train the network for only one image!!!
@@ -164,6 +163,7 @@ def train(args):
             data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
 
         tf_train_image, tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
+        # tf_valid_image, tf_valid_depth = data.readDataValid(data.valid_image_filenames, data.valid_depth_filenames) # TODO: Posso realmente utilizar essa funcao para validacao?
 
         # Build Network Model
         model.build_model(data.image_size, data.depth_size, tf_train_image, tf_train_depth)
@@ -213,6 +213,7 @@ def train(args):
 
             # ----- Session Run! ----- #
             # Training
+            # TODO: Create train_ops variable
             _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
                 [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
                  model.train.tf_batch_labels, model.train.tf_log_batch_labels,
@@ -239,6 +240,47 @@ def train(args):
 
             # debug_data_augmentation()
 
+            # Validation
+            # TODO: Create valid_ops variable
+
+            # # ----- Validation - Method 1 ----- #
+            # Uses all validation images for evaluation!
+            # # Resets Validation Auxilary Variables
+            # i, l = 0, []
+            # valid_batch_size = 2 # TODO: Move
+            # while i <= len(data.valid_image_filenames):
+            #     valid_batch_data_resized, valid_batch_labels, valid_batch_pred, valid_batch_loss = sess.run([model.valid.tf_batch_data_resized, model.valid.tf_batch_labels, model.fcrn_valid.get_output(), model.valid.tf_loss])
+            #     l.append(valid_batch_loss)
+            #     i += valid_batch_size
+            #
+            #     valid_image =
+            #     valid_labels =
+            #     valid_log_labels =
+            #     valid_pred =
+            #
+            #
+            #     # print(valid_batch_data_resized.shape)
+            #     # print(valid_batch_labels.shape)
+            #     # print(valid_batch_pred.shape)
+            #     # plt.figure(10)
+            #     # plt.imshow(valid_batch_data_resized[0])
+            #     # plt.figure(11)
+            #     # plt.imshow(valid_batch_labels[0,:,:,0])
+            #     # plt.figure(12)
+            #     # plt.imshow(valid_batch_pred[0,:,:,0])
+            #     # plt.draw()
+            #     # plt.pause(0.1)
+            #
+            #     # print(valid_batch_loss)
+            #     # print()
+            #
+            # model.valid.loss = np.mean(l)
+            #
+            # # print(l)
+            # # print(len(l))
+            # # print("mean:", model.valid.loss)
+
+            
             # Validation
             # FIXME: Uses only one image as validation!
             # FIXME: valid_loss value may is wrong

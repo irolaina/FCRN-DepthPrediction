@@ -109,10 +109,8 @@ class Dataloader:
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
         seed = random.randint(0, 2 ** 31 - 1)
-        tf_train_image_filename_queue = tf.train.string_input_producer(tf_image_filenames, shuffle=False,
-                                                                       seed=seed)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_depth_filenames, shuffle=False,
-                                                                       seed=seed)
+        tf_train_image_filename_queue = tf.train.string_input_producer(tf_image_filenames, shuffle=False, seed=seed)
+        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_depth_filenames, shuffle=False, seed=seed)
 
         # Reads images
         image_reader = tf.WholeFileReader()
