@@ -196,12 +196,6 @@ def train(args):
         # ===============
         #  Training Loop
         # ===============
-        if args.show_train_progress:
-            train_plotObj = Plot(args.mode, title='Train Predictions')
-
-        if args.show_valid_progress:
-            valid_plotObj = Plot(args.mode, title='Validation Prediction')
-
         print("[Network/Training] Training Initialized!\n")
 
         coord = tf.train.Coordinator()
@@ -217,7 +211,7 @@ def train(args):
             _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
                 [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
                  model.train.tf_batch_labels, model.train.tf_log_batch_labels,
-                 model.fcrn.get_output(), model.train.tf_loss, model.summary_op])
+                 model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
 
             def debug_data_augmentation():
                 fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -288,7 +282,7 @@ def train(args):
                           model.valid.tf_depth: np.expand_dims(
                               np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
             valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
-                [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
+                [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
                  model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
             # -----
 
@@ -305,14 +299,14 @@ def train(args):
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
-                    train_plotObj.showResults(raw=batch_data_raw[0],
+                    model.train.plot.showResults(raw=batch_data_raw[0],
                                               label=batch_labels[0, :, :, 0],
                                               log_label=log_batch_labels[0, :, :, 0],
                                               pred=batch_pred[0, :, :, 0],
                                               cbar_range=data.datasetObj)
 
                 if args.show_valid_progress:
-                    valid_plotObj.showResults(raw=valid_image[0, :, :],
+                    model.valid.plot.showResults(raw=valid_image[0, :, :],
                                               label=valid_labels[0, :, :, 0],
                                               log_label=valid_log_labels[0, :, :, 0],
                                               pred=valid_pred[0, :, :, 0],

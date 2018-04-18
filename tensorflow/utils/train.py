@@ -5,6 +5,8 @@ import numpy as np
 import tensorflow as tf
 
 from collections import deque
+from .fcrn import ResNet50UpProj
+from .plot import Plot
 
 # ==================
 #  Global Variables
@@ -37,8 +39,9 @@ class Train:
             self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                                               name='log_labels')  # Just for displaying Image
 
-            self.tf_loss = None
-            self.loss = -1
+
+        self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, args.batch_size, 1, False)
+        tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
         with tf.name_scope('Train'):
             # Count the number of steps taken.
@@ -50,15 +53,23 @@ class Train:
                                                                   staircase=True,
                                                                   name='ldecay')
 
+            self.tf_loss = None
+            self.loss = -1
+
         self.trainCollection()
 
-        print("\n[Network/Train] Training Tensors Created.")
+        if args.show_train_progress:
+            self.plot = Plot(args.mode, title='Train Predictions')
+
+
+        print("\n[Network/Train] Training Tensors created.")
         print(self.tf_batch_data)
         print(self.tf_batch_data_resized)
         print(self.tf_batch_labels)
         print(self.tf_log_batch_labels)
         print(self.tf_global_step)
         print(self.tf_learningRate)
+        print()
 
     def trainCollection(self):
         tf.add_to_collection('image', self.tf_batch_data)

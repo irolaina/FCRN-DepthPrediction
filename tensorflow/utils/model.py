@@ -10,7 +10,6 @@ import utils.loss as loss
 from utils.size import Size
 from utils.train import Train
 from utils.validation import Validation
-from utils.fcrn import ResNet50UpProj
 
 # ==================
 #  Global Variables
@@ -48,45 +47,40 @@ class Model(object):
         #  FCRN (Fully Convolutional Residual Network)
         # =============================================
         # Construct the network graphs
-        with tf.variable_scope('model') as scope:
+        with tf.variable_scope("model"):
             self.train = Train(self.args, tf_train_image, tf_train_depth, self.input_size, self.output_size)
-            self.fcrn = ResNet50UpProj({'data': self.train.tf_batch_data}, self.args.batch_size, 1, False)
-            tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(image_size, depth_size, self.input_size, self.output_size)
-            self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_image_resized}, self.args.batch_size, 1, False)
-            # self.fcrn_valid = ResNet50UpProj({'data': tf.expand_dims(self.valid.tf_image_resized,axis=0)}, self.args.batch_size, 1, False) # TODO: Usar?
-            # self.fcrn_valid = ResNet50UpProj({'data': self.valid.tf_batch_data}, self.args.batch_size, 1, False) # TODO: Usar?
+            self.valid = Validation(self.args, image_size, depth_size, self.input_size, self.output_size)
 
     def build_losses(self, selectedLoss, valid_pixels):
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selectedLoss == 0:
-                self.loss_name, self.train.tf_loss = loss.tf_MSE(self.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.fcrn.get_output(),
                                                                  self.train.tf_log_batch_labels,
                                                                  valid_pixels)
 
-                _, self.valid.tf_loss = loss.tf_MSE(self.fcrn_valid.get_output(),
+                _, self.valid.tf_loss = loss.tf_MSE(self.valid.fcrn.get_output(),
                                                     self.valid.tf_log_depth_resized,
                                                     valid_pixels)
 
             elif selectedLoss == 1:
-                self.loss_name, self.train.tf_loss = loss.tf_L(self.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_L(self.train.fcrn.get_output(),
                                                                self.train.tf_log_batch_labels,
                                                                valid_pixels,
                                                                gamma=0.5)
 
-                _, self.valid.tf_loss = loss.tf_L(self.fcrn_valid.get_output(),
+                _, self.valid.tf_loss = loss.tf_L(self.valid.fcrn.get_output(),
                                                   self.valid.tf_log_depth_resized,
                                                   valid_pixels)
             elif selectedLoss == 2:
                 # FIXME: BerHu está aproximando para y e não log(y)
-                self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.fcrn.get_output(),
                                                                    self.train.tf_batch_labels,
                                                                    valid_pixels)
 
-                _, self.valid.tf_loss = loss.tf_BerHu(self.fcrn_valid.get_output(),
+                _, self.valid.tf_loss = loss.tf_BerHu(self.valid.fcrn.get_output(),
                                                       self.valid.tf_depth_resized,
                                                       valid_pixels)
             else:

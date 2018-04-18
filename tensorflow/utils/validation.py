@@ -4,6 +4,9 @@
 import tensorflow as tf
 import utils.loss as loss
 
+from .fcrn import ResNet50UpProj
+from .plot import Plot
+
 # ==================
 #  Global Variables
 # ==================
@@ -14,7 +17,7 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 class Validation:
-    def __init__(self, image_size, depth_size, input_size, output_size):
+    def __init__(self, args, image_size, depth_size, input_size, output_size):
         # Raw Input/Output
         self.tf_image = tf.placeholder(tf.float32, shape=(None, image_size.height, image_size.width, image_size.nchannels))
         self.tf_depth = tf.placeholder(tf.float32, shape=(None, depth_size.height, depth_size.width, depth_size.nchannels))
@@ -38,10 +41,18 @@ class Validation:
         #     capacity=16,
         #     min_after_dequeue=0)
 
-        self.tf_loss = None
-        self.loss = -1
+        self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, args.batch_size, 1, False)
+        # self.fcrn_valid = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized,axis=0)}, self.args.batch_size, 1, False) # TODO: Usar?
+        # self.fcrn_valid = ResNet50UpProj({'data': self.tf_batch_data}, self.args.batch_size, 1, False) # TODO: Usar?
 
-        print("\n[Network/Validation] Validation Tensors Created.")
+        with tf.name_scope('Valid'):
+            self.tf_loss = None
+            self.loss = -1
+
+        if args.show_valid_progress:
+            self.plot = Plot(args.mode, title='Validation Prediction')
+
+        print("\n[Network/Validation] Validation Tensors created.")
         print(self.tf_image)
         print(self.tf_depth)
         print(self.tf_image_resized)
