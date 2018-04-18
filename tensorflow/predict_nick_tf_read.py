@@ -51,13 +51,13 @@ datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 LOSS_FUNCTION = 2
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False            # Default: True
-TRAIN_ON_SINGLE_IMAGE = False   # Default: False
-ENABLE_EARLY_STOP = False       # Default: True # TODO: Ativar
-SAVE_TRAINED_MODEL = True       # Default: True
-ENABLE_TENSORBOARD = True       # Default: True
-SAVE_TEST_DISPARITIES = True    # Default: True
-APPLY_BILINEAR_OUTPUT = False   # Default: False
+VALID_PIXELS = True  # Default: True
+TRAIN_ON_SINGLE_IMAGE = True  # Default: False
+ENABLE_EARLY_STOP = False  # Default: True # TODO: Ativar
+SAVE_TRAINED_MODEL = True  # Default: True
+ENABLE_TENSORBOARD = True  # Default: True
+SAVE_TEST_DISPARITIES = True  # Default: True
+APPLY_BILINEAR_OUTPUT = False  # Default: False
 
 
 # ===========
@@ -187,10 +187,10 @@ def train(args):
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         # Check Dataset Integrity
-        numSamples = data.checkIntegrity(sess, tf_image_filenames, tf_depth_filenames)
+        data.checkIntegrity(sess, tf_image_filenames, tf_depth_filenames)
 
         # Proclaim the epochs
-        epochs = np.floor(args.batch_size * args.max_steps / numSamples)
+        epochs = np.floor(args.batch_size * args.max_steps / data.numSamples)
         print('\nTrain with approximately %d epochs' % epochs)
 
         # ===============
@@ -243,7 +243,8 @@ def train(args):
             # FIXME: Uses only one image as validation!
             # FIXME: valid_loss value may is wrong
             feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                               model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+                          model.valid.tf_depth: np.expand_dims(
+                              np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
             valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
                 [model.valid.tf_image_resized, model.fcrn_valid.get_output(), model.valid.tf_depth_resized,
                  model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
@@ -324,7 +325,8 @@ def test(args):
     data = Dataloader(args)  # TODO: Usar leitura pelo Tensorflow
 
     # Searches dataset images filenames
-    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestInputs(args)
+    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestInputs(
+        args)
 
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
@@ -369,8 +371,8 @@ def test(args):
 
             if data.test_labels:  # It's not empty
                 image, depth, image_crop, depth_bilinear = data.readImage(data.test_dataset[i],
-                                                                                data.test_labels[i],
-                                                                                mode='test')
+                                                                          data.test_labels[i],
+                                                                          mode='test')
 
                 test_labels_o[i] = depth
                 # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?

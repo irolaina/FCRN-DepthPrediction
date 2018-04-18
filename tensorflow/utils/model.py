@@ -62,8 +62,8 @@ class Model(object):
             # Select Loss Function:
             if selectedLoss == 0:
                 self.loss_name, self.train.tf_loss = loss.tf_MSE(self.fcrn.get_output(),
-                                                           self.train.tf_log_batch_labels,
-                                                           valid_pixels)
+                                                                 self.train.tf_log_batch_labels,
+                                                                 valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_MSE(self.fcrn_valid.get_output(),
                                                     self.valid.tf_log_depth_resized,
@@ -71,22 +71,22 @@ class Model(object):
 
             elif selectedLoss == 1:
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.fcrn.get_output(),
-                                                         self.train.tf_log_batch_labels,
-                                                         valid_pixels,
-                                                         gamma=0.5)
+                                                               self.train.tf_log_batch_labels,
+                                                               valid_pixels,
+                                                               gamma=0.5)
 
                 _, self.valid.tf_loss = loss.tf_L(self.fcrn_valid.get_output(),
-                                                    self.valid.tf_log_depth_resized,
-                                                    valid_pixels)
+                                                  self.valid.tf_log_depth_resized,
+                                                  valid_pixels)
             elif selectedLoss == 2:
                 # FIXME: BerHu está aproximando para y e não log(y)
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.fcrn.get_output(),
-                                                             self.train.tf_batch_labels,
-                                                             valid_pixels)
+                                                                   self.train.tf_batch_labels,
+                                                                   valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_BerHu(self.fcrn_valid.get_output(),
-                                                  self.valid.tf_depth_resized,
-                                                  valid_pixels)
+                                                      self.valid.tf_depth_resized,
+                                                      valid_pixels)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
                 sys.exit()

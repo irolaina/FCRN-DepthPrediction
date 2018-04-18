@@ -35,7 +35,7 @@ class Train:
 
             # Network Input/Output
             self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                                        name='log_labels')  # Just for displaying Image
+                                              name='log_labels')  # Just for displaying Image
 
             self.tf_loss = None
             self.loss = -1

@@ -52,7 +52,7 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
 def np_MSE(y, y_):
     numPixels = y_.size
 
-    return np.power(y_ - y, 2) / numPixels  # MSE calculated for each pixel
+    return np.square(y_ - y) / numPixels  # MSE calculated for each pixel
 
 
 def tf_MSE(tf_y, tf_y_, valid_pixels=True):

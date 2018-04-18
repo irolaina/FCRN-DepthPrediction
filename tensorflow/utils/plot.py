@@ -20,6 +20,7 @@ def updateColorBar(cbar, img):
     # new_cbar_ticks = np.linspace(vmin, vmax, num=6, endpoint=True)
     # cbar.set_ticks(new_cbar_ticks)
 
+
 # ===================
 #  Class Declaration
 # ===================

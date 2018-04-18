@@ -107,7 +107,6 @@ class Dataloader:
     #
     #     return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
-
     def readData(self, tf_image_filenames, tf_depth_filenames):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
@@ -132,7 +131,7 @@ class Dataloader:
 
         return tf_image, tf_depth
 
-    def splitData(self,  image_filenames, depth_filenames, ratio=0.8):
+    def splitData(self, image_filenames, depth_filenames, ratio=0.8):
         # Divides the Processed train data into training set and validation set
         print('\n[Dataloader] Dividing available data into training and validation sets...')
         divider = int(ratio * self.numSamples)
@@ -161,25 +160,11 @@ class Dataloader:
             depth_filenames_aux = [item.replace(self.datasetObj.depth_replace[0], self.datasetObj.depth_replace[1]) for
                                    item in depth_filenames]
 
-            # print(image_filenames)
-            # input("oi1")
-            # print(depth_filenames)
-            # input("oi2")
-            #
-            # print(image_filenames_aux)
-            # input("oi3")
-            # print(depth_filenames_aux)
-            # input("oi4")
-
-            numSamples = len(image_filenames_aux) # TODO: Checar se já tiver o valor de self.numSamples, se sim pode tirar essa linha e o return num samples!
-
             print("[Dataloader] Checking if RGB and Depth images are paired... ")
             if image_filenames_aux == depth_filenames_aux:
                 print("[Dataloader] Check Integrity: Pass")
             else:
                 raise ValueError
-
-            return numSamples
 
         except ValueError:
             print("[Dataloader] Check Integrity: Failed")
