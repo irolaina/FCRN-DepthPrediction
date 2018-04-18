@@ -59,7 +59,7 @@ ENABLE_TENSORBOARD = True  # Default: True
 SAVE_TEST_DISPARITIES = True  # Default: True
 APPLY_BILINEAR_OUTPUT = False  # Default: False
 
-
+LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
@@ -325,35 +325,28 @@ def test(args):
     data = Dataloader(args)  # TODO: Usar leitura pelo Tensorflow
 
     # Searches dataset images filenames
-    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestInputs(
-        args)
+    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData(args)
 
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
     # Construct the network
-    net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+    with tf.variable_scope('model'):
+        # Construct the network
+        net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+        input_size = Size(228, 304, 3)
+        output_size = Size(128, 160, 1)
 
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
-
-    pred = np.zeros((data.numTestSamples, data.outputSize[1], data.outputSize[2]),
-                    dtype=np.float32)  # (?, 43, 144)
-
-    test_labels_o = np.zeros((len(data.test_dataset), data.outputSize[1], data.outputSize[2]),
-                             dtype=np.int32)  # (?, 43, 144)
-
-    test_data_o = np.zeros(
-        (len(data.test_dataset), data.inputSize[1], data.inputSize[2], data.inputSize[3]),
-        dtype=np.uint8)  # (?, 172, 576, 3)
-
-    test_data_crop_o = np.zeros(
-        (len(data.test_dataset), data.inputSize[1], data.inputSize[2], data.inputSize[3]),
-        dtype=np.uint8)  # (?, 172, 576, 3)
+    test_data_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels), dtype=np.uint8)  # (?, 172, 576, 3)
+    test_data_crop_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels), dtype=np.uint8)  # (?, 172, 576, 3)
+    pred = np.zeros((data.numSamples, output_size.height, output_size.width), dtype=np.float32)  # (?, 43, 144)
+    test_labels_o = np.zeros((data.numSamples, output_size.height, output_size.width), dtype=np.int32)  # (?, 43, 144)
 
     with tf.Session() as sess:
         # Load the converted parameters
-        print('\n[network/Testing] Loading the model')
+        print('\n[network/Testing] Loading the model...')
 
         # Use to load from ckpt file
         saver = tf.train.Saver()
@@ -366,15 +359,18 @@ def test(args):
         #  Testing Loop
         # ==============
         start = time.time()
-        for i, image_path in enumerate(data.test_dataset):
+
+        for i, image_path in enumerate(test_image_filenames):
             start2 = time.time()
 
-            if data.test_labels:  # It's not empty
-                image, depth, image_crop, depth_bilinear = data.readImage(data.test_dataset[i],
-                                                                          data.test_labels[i],
+            if test_depth_filenames:  # It's not empty
+                image, depth, image_crop, depth_bilinear = data.readImage(test_image_filenames[i],
+                                                                          test_depth_filenames[i],
+                                                                          input_size,
+                                                                          output_size,
                                                                           mode='test')
 
-                test_labels_o[i] = depth
+                test_labels_o[i] = depth[:, :, 0]
                 # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
             else:
                 image, _, image_crop, _ = data.readImage(data.test_dataset[i], None, mode='test')
@@ -383,13 +379,12 @@ def test(args):
             test_data_crop_o[i] = image_crop
 
             # Evalute the network for the given image
-            pred_temp = sess.run(net.get_output(),
-                                 feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
+            pred_temp = sess.run(net.get_output(), feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
             pred[i] = pred_temp[:, :, :, 0]
 
             # Prints Testing Progress
             end2 = time.time()
-            print('step: %d/%d | t: %f' % (i + 1, data.numTestSamples, end2 - start2))
+            print('step: %d/%d | t: %f' % (i + 1, data.numSamples, end2 - start2))
             # break # Test
 
         # Testing Finished.
@@ -411,7 +406,7 @@ def test(args):
             np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path
 
         # Calculate Metrics
-        if data.test_labels:
+        if test_depth_filenames:
             metricsLib.evaluateTesting(pred, test_labels_o)
         else:
             print(
@@ -420,7 +415,7 @@ def test(args):
         # Show Results
         if args.show_test_results:
             test_plotObj = Plot(args.mode, title='Test Predictions')
-            for i in range(data.numTestSamples):
+            for i in range(data.numSamples):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
                                              log_label=np.log(test_labels_o[i] + LOG_INITIAL_VALUE),

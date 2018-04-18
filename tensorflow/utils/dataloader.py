@@ -1,6 +1,7 @@
 # ===========
 #  Libraries
 # ===========
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import random
 import glob
@@ -11,6 +12,8 @@ from .size import Size
 from .kitti import Kitti
 from .kittiraw import KittiRaw
 from .nyudepth import NyuDepth
+from scipy import misc as scp
+from skimage import transform
 
 # ==================
 #  Global Variables
@@ -26,7 +29,6 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-# TODO: Criar rotina que subdivide os dados disponívels em train/valid
 class Dataloader:
     def __init__(self, args):
         # Detects which dataset was selected and creates the 'datasetObj'.
@@ -34,11 +36,11 @@ class Dataloader:
         # print(selectedDataset)
 
         if self.selectedDataset == 'kittiraw_residential_continuous':
-            self.datasetObj = KittiRaw()  # TODO: Terminar
+            self.datasetObj = KittiRaw()
             pass
 
         elif self.selectedDataset == 'nyudepth':
-            self.datasetObj = NyuDepth()  # TODO: Terminar
+            self.datasetObj = NyuDepth()
             pass
 
         else:
@@ -81,31 +83,32 @@ class Dataloader:
 
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
-    # TODO: Terminar
-    # def getTestData(self, args):
-    #     if args.machine == 'olorin':
-    #         # KittiRaw Residential Continuous
-    #         # Image: (375, 1242, 3) uint8
-    #         # Depth: (375, 1242)    uint8
-    #         if args.dataset == 'kittiraw_residential_continuous':
-    #             search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/imgs/*.png"
-    #             search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/dispc/*.png"
-    #
-    #             tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
-    #             tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
-    #
-    #     elif args.machine == 'xps':
-    #         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists()
-    #         tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
-    #
-    #     try:
-    #         print("\nSummary - Dataset Inputs")
-    #         print("image_filenames: ", len(image_filenames))
-    #         print("depth_filenames: ", len(depth_filenames))
-    #     except TypeError:
-    #         print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
-    #
-    #     return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+    def getTestData(self, args):
+        if args.machine == 'olorin':
+            # KittiRaw Residential Continuous
+            # Image: (375, 1242, 3) uint8
+            # Depth: (375, 1242)    uint8
+            if args.dataset == 'kittiraw_residential_continuous':
+                search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/imgs/*.png"
+                search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/dispc/*.png"
+
+                tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
+                tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
+
+        elif args.machine == 'xps':
+            image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(args.mode)
+            tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
+
+        try:
+            print("\nSummary - Dataset Inputs")
+            print("image_filenames: ", len(image_filenames))
+            print("depth_filenames: ", len(depth_filenames))
+
+            self.numSamples = len(image_filenames)
+        except TypeError:
+            print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
+
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
     def readData(self, tf_image_filenames, tf_depth_filenames):
         # Creates Inputs Queue.
@@ -169,3 +172,177 @@ class Dataloader:
         except ValueError:
             print("[Dataloader] Check Integrity: Failed")
             sys.exit()
+
+    def readImage(self, colors_path, depth_path, input_size, output_size, mode, showImages=False):
+        # The DataAugmentation Transforms should be done before the Image Normalization!!!
+        # Kitti RGB Image: (375, 1242, 3) uint8     #   NyuDepth RGB Image: (480, 640, 3) uint8 #
+        #     Depth Image: (375, 1242)    int32     #          Depth Image: (480, 640)    int32 #
+
+        if mode == 'train' or mode == 'valid':
+            img_colors = scp.imread(os.path.join(colors_path))
+            img_depth = scp.imread(os.path.join(depth_path))
+
+            # Data Augmentation
+            img_colors_aug, img_depth_aug = self.augment_image_pair(img_colors, img_depth)
+
+            # TODO: Implementar Random Crops
+            # Crops Image
+            img_colors_crop = self.cropImage(img_colors_aug, size=input_size.getSize())
+            img_depth_crop = self.cropImage(img_depth_aug, size=input_size.getSize())
+
+            # Normalizes RGB Image and Downsizes Depth Image
+            img_colors_normed = self.normalizeImage(img_colors_crop)
+
+            img_depth_downsized = self.np_resizeImage(img_depth_crop, size=output_size.getSize())
+
+            # Results
+            if showImages:
+                def plot1():
+                    scp.imshow(img_colors)
+                    scp.imshow(img_depth)
+                    scp.imshow(img_colors_aug)
+                    scp.imshow(img_depth_aug)
+                    scp.imshow(img_colors_crop)
+                    scp.imshow(img_depth_crop)
+                    scp.imshow(img_colors_normed)
+                    scp.imshow(img_depth_downsized)
+
+                def plot2():
+                    fig, axarr = plt.subplots(4, 2)
+                    axarr[0, 0].set_title("colors")
+                    axarr[0, 0].imshow(img_colors)
+                    axarr[0, 1].set_title("depth")
+                    axarr[0, 1].imshow(img_depth)
+                    axarr[1, 0].set_title("colors_aug")
+                    axarr[1, 0].imshow(img_colors_aug)
+                    axarr[1, 1].set_title("depth_aug")
+                    axarr[1, 1].imshow(img_depth_aug)
+                    axarr[2, 0].set_title("colors_crop")
+                    axarr[2, 0].imshow(img_colors_crop)
+                    axarr[2, 1].set_title("depth_crop")
+                    axarr[2, 1].imshow(img_depth_crop)
+                    axarr[3, 0].set_title("colors_normed")
+                    axarr[3, 0].imshow(img_colors_normed)
+                    axarr[3, 1].set_title("depth_downsized")
+                    axarr[3, 1].imshow(img_depth_downsized)
+
+                    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
+
+                # plot1()
+                plot2()
+
+                plt.show()  # Display it
+
+            # Debug
+            # print(img_colors.shape, img_colors.dtype)
+            # print(img_depth.shape, img_depth.dtype)
+            # input()
+
+            return img_colors_normed, img_depth_downsized, img_colors_crop, img_depth_crop
+
+        elif mode == 'test':
+            img_colors = scp.imread(os.path.join(colors_path))
+            img_colors_crop = self.cropImage(img_colors, size=input_size.getSize())
+            img_colors_normed = self.normalizeImage(img_colors_crop)
+
+            img_depth = None
+            img_depth_crop = None
+            img_depth_downsized = None
+            img_depth_bilinear = None
+
+            if depth_path is not None:
+                img_depth = scp.imread(
+                    os.path.join(depth_path))
+                img_depth_crop = self.cropImage(img_depth,
+                                           size=input_size.getSize())  # Same cropSize as the colors image
+
+                img_depth_downsized = self.np_resizeImage(img_depth_crop, size=output_size.getSize())
+                img_depth_bilinear = img_depth_crop  # Copy
+
+            return img_colors_normed, img_depth_downsized, img_colors_crop, img_depth_bilinear
+
+    def cropImage(self, img, x_min=None, x_max=None, y_min=None, y_max=None, size=None):
+        try:
+            if size is None:
+                raise ValueError
+        except ValueError:
+            print("[ValueError] Oops! Empty cropSize list. Please sets the desired cropSize.\n")
+
+        if len(img.shape) == 3:
+            lx, ly, _ = img.shape
+        else:
+            lx, ly = img.shape
+
+        # Debug
+        # print("img.shape:", img.shape)
+        # print("lx:",lx,"ly:",ly)
+
+        if (x_min is None) and (x_max is None) and (y_min is None) and (y_max is None):
+            # Crop
+            # (y_min,x_min)----------(y_max,x_min)
+            #       |                      |
+            #       |                      |
+            #       |                      |
+            # (y_min,x_max)----------(y_max,x_max)
+            x_min = round((lx - size[0]) / 2)
+            x_max = round((lx + size[0]) / 2)
+            y_min = round((ly - size[1]) / 2)
+            y_max = round((ly + size[1]) / 2)
+
+            crop = img[x_min: x_max, y_min: y_max]
+
+            # Debug
+            # print("x_min:",x_min,"x_max:", x_max, "y_min:",y_min,"y_max:", y_max)
+            # print("crop.shape:",crop.shape)
+
+            # TODO: Draw cropping Rectangle
+
+        else:
+            crop = img[x_min: x_max, y_min: y_max]
+
+        return crop
+
+    def np_resizeImage(self, img, size):
+        try:
+            if size is None:
+                raise ValueError
+        except ValueError:
+            print("[ValueError] Oops! Empty resizeSize list. Please sets the desired resizeSize.\n")
+
+        # TODO: Qual devo usar?
+        # resized = scp.imresize(img, size, interp='bilinear')  # Attention! This method doesn't maintain the original depth range!!!
+        # resized = transform.resize(image=img,output_shape=size, preserve_range=True, order=0)  # 0: Nearest - neighbor
+        resized = transform.resize(image=img, output_shape=size, preserve_range=True,
+                                   order=1)  # 1: Bi - linear(default)
+
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=2) # 2: Bi - quadratic
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=3) # 3: Bi - cubic
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=4) # 4: Bi - quartic
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=5) # 5: Bi - quintic
+
+        # Debug
+        def debug():
+            print(img)
+            print(resized)
+            plt.figure()
+            plt.imshow(img)
+            plt.title("img")
+            plt.figure()
+            plt.imshow(resized)
+            plt.title("resized")
+            plt.show()
+
+        # debug()
+
+        return resized
+
+    def normalizeImage(self, img):
+        pixel_depth = 255
+
+        normed = (img - pixel_depth / 2) / pixel_depth
+
+        # Debug
+        # print("img[0,0,0]:", img[0, 0, 0], "img[0,0,1]:", img[0, 0, 1], "img[0,0,2]:", img[0, 0, 2])
+        # print("normed[0,0,0]:", normed[0, 0, 0], "normed[0,0,1]:", normed[0, 0, 1], "normed[0,0,2]:", normed[0, 0, 2])
+
+        return normed

@@ -96,24 +96,36 @@ class Plot(object):
 
         plt.pause(0.001)
 
-    # TODO: Add colorbar
     def showTestResults(self, raw, label, log_label, pred, i):
+        # predMSE = loss.np_MSE(y=pred, y_=log_label)
+
         if self.isFirstTime:
             self.cax1 = self.axes[0].imshow(raw)
             self.cax2 = self.axes[1].imshow(label)
             self.cax3 = self.axes[2].imshow(log_label)
             self.cax4 = self.axes[3].imshow(pred)
+            # self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
-            # self.fig.colorbar(self.cax2, ax=self.axes[1])
-            # self.fig.colorbar(self.cax3, ax=self.axes[2])
-            # self.fig.colorbar(self.cax4, ax=self.axes[3])
+
+            # Creates ColorBars
+            self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
+            self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
+            self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
 
             self.isFirstTime = False
         else:
+            # Updates Colorbars
+            updateColorBar(self.cbar2, label)
+            updateColorBar(self.cbar3, log_label)
+            updateColorBar(self.cbar4, pred)
+            # updateColorBar(self.cbar5, predMSE)
+
+            # Updates Images
             self.cax1.set_data(raw)
             self.cax2.set_data(label)
             self.cax3.set_data(log_label)
             self.cax4.set_data(pred)
+            # self.cax5.set_data(predMSE)
             plt.draw()
 
         self.fig.canvas.set_window_title("Test Predictions [%d]" % i)
