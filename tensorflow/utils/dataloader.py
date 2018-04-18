@@ -12,6 +12,7 @@ from skimage import transform
 
 from .kittiraw import KittiRaw
 from .nyudepth import NyuDepth
+from .apolloscape import Apolloscape
 
 # ==================
 #  Global Variables
@@ -35,11 +36,12 @@ class Dataloader:
 
         if self.selectedDataset == 'kittiraw_residential_continuous':
             self.datasetObj = KittiRaw(args.machine)
-            pass
 
         elif self.selectedDataset == 'nyudepth':
             self.datasetObj = NyuDepth(args.machine)
-            pass
+
+        elif self.selectedDataset == 'apolloscape':
+            self.datasetObj = Apolloscape(args.machine)
 
         else:
             print(
@@ -145,7 +147,7 @@ class Dataloader:
         print("len(train_image_filenames):", len(self.train_image_filenames))
         print("len(train_depth_filenames):", len(self.train_depth_filenames))
         print("len(valid_image_filenames):", len(self.valid_image_filenames))
-        print("len(depth_filenames):", len(self.valid_depth_filenames))
+        print("len(valid_depth_filenames):", len(self.valid_depth_filenames))
 
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):
         try:

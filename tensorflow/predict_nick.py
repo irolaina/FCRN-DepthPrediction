@@ -10,6 +10,7 @@
 # TODO: Implementar Bilinear
 # TODO: If detect Ctrl+C, save training state.
 # TODO: Estou aplicando a normalização da entrada em todos os módulos (predict, test, train, valid)?
+# FIXME: Qualidade dos labels de treinamento menos discretizado que os labels de validação
 
 # ===========
 #  Libraries
@@ -46,7 +47,7 @@ LOSS_FUNCTION = 0
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = True    # Default: False
+TRAIN_ON_SINGLE_IMAGE = False    # Default: False
 ENABLE_EARLY_STOP = False       # Default: True # TODO: Ativar
 SAVE_TRAINED_MODEL = True       # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
@@ -279,8 +280,7 @@ def train(args):
             # FIXME: Uses only one image as validation!
             # FIXME: valid_loss value may is wrong
             feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                          model.valid.tf_depth: np.expand_dims(
-                              np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+                          model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
             valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
                 [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
                  model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
@@ -300,17 +300,17 @@ def train(args):
             if step % 10 == 0:
                 if args.show_train_progress:
                     model.train.plot.showResults(raw=batch_data_raw[0],
-                                              label=batch_labels[0, :, :, 0],
-                                              log_label=log_batch_labels[0, :, :, 0],
-                                              pred=batch_pred[0, :, :, 0],
-                                              cbar_range=data.datasetObj)
+                                                 label=batch_labels[0, :, :, 0],
+                                                 log_label=log_batch_labels[0, :, :, 0],
+                                                 pred=batch_pred[0, :, :, 0],
+                                                 cbar_range=data.datasetObj)
 
                 if args.show_valid_progress:
                     model.valid.plot.showResults(raw=valid_image[0, :, :],
-                                              label=valid_labels[0, :, :, 0],
-                                              log_label=valid_log_labels[0, :, :, 0],
-                                              pred=valid_pred[0, :, :, 0],
-                                              cbar_range=data.datasetObj)
+                                                 label=valid_labels[0, :, :, 0],
+                                                 log_label=valid_log_labels[0, :, :, 0],
+                                                 pred=valid_pred[0, :, :, 0],
+                                                 cbar_range=data.datasetObj)
 
                 end2 = time.time()
                 print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,

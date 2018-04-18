@@ -33,8 +33,8 @@ class KittiRaw(object):
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
 
-        self.image_filenames = None
-        self.depth_filenames = None
+        self.image_filenames = []
+        self.depth_filenames = []
 
         self.image_replace = [b'/imgs/', b'']
         self.depth_replace = [b'/dispc/', b'']
