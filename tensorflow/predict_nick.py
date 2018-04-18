@@ -35,14 +35,8 @@ from utils.size import Size
 from utils.plot import Plot
 
 # ==================
-#  Global Variables
+#  Framework Config
 # ==================
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-warnings.filterwarnings("ignore")  # Suppress Warnings
-
-appName = 'fcrn'
-datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
-
 # Select the Loss Function:
 # 0 - MSE
 # 1 - Eigen's Log Depth
@@ -51,14 +45,24 @@ LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
-TRAIN_ON_SINGLE_IMAGE = True  # Default: False
-ENABLE_EARLY_STOP = False  # Default: True # TODO: Ativar
-SAVE_TRAINED_MODEL = True  # Default: True
-ENABLE_TENSORBOARD = True  # Default: True
-SAVE_TEST_DISPARITIES = True  # Default: True
-APPLY_BILINEAR_OUTPUT = False  # Default: False
 
+TRAIN_ON_SINGLE_IMAGE = True    # Default: False
+ENABLE_EARLY_STOP = False       # Default: True # TODO: Ativar
+SAVE_TRAINED_MODEL = True       # Default: True
+ENABLE_TENSORBOARD = True       # Default: True
+SAVE_TEST_DISPARITIES = True    # Default: True
+APPLY_BILINEAR_OUTPUT = False   # Default: False
+
+# ==================
+#  Global Variables
+# ==================
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+warnings.filterwarnings("ignore")  # Suppress Warnings
+
+appName = 'fcrn'
+datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 LOG_INITIAL_VALUE = 1
+
 # ===========
 #  Functions
 # ===========

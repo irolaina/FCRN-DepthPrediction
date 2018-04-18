@@ -1,19 +1,17 @@
 # ===========
 #  Libraries
 # ===========
-import matplotlib.pyplot as plt
-import tensorflow as tf
-import random
-import glob
 import os
+import random
 import sys
 
-from .size import Size
-from .kitti import Kitti
-from .kittiraw import KittiRaw
-from .nyudepth import NyuDepth
+import matplotlib.pyplot as plt
+import tensorflow as tf
 from scipy import misc as scp
 from skimage import transform
+
+from .kittiraw import KittiRaw
+from .nyudepth import NyuDepth
 
 # ==================
 #  Global Variables
@@ -36,15 +34,16 @@ class Dataloader:
         # print(selectedDataset)
 
         if self.selectedDataset == 'kittiraw_residential_continuous':
-            self.datasetObj = KittiRaw()
+            self.datasetObj = KittiRaw(args.machine)
             pass
 
         elif self.selectedDataset == 'nyudepth':
-            self.datasetObj = NyuDepth()
+            self.datasetObj = NyuDepth(args.machine)
             pass
 
         else:
-            print("[Dataloader] The typed dataset '%s' is invalid. Check the list of supported datasets." % self.selectedDataset)
+            print(
+                "[Dataloader] The typed dataset '%s' is invalid. Check the list of supported datasets." % self.selectedDataset)
             sys.exit()
 
         # Collects Dataset Info
@@ -53,24 +52,20 @@ class Dataloader:
         self.image_size = self.datasetObj.image_size
         self.depth_size = self.datasetObj.depth_size
 
+        # Filenames Lists
+        self.train_image_filenames = None
+        self.train_depth_filenames = None
+        self.valid_image_filenames = None
+        self.valid_depth_filenames = None
+
+        self.numSamples = None
+
         print("[Dataloader] dataloader object created.")
 
     # TODO: Ler outros Datasets
     def getTrainData(self, args):
-        if args.machine == 'olorin':
-            # KittiRaw Residential Continuous
-            # Image: (375, 1242, 3) uint8
-            # Depth: (375, 1242)    uint8
-            if args.dataset == 'kittiraw_residential_continuous':
-                search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/imgs/*.png"
-                search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/training/dispc/*.png"
-
-                tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
-                tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
-
-        elif args.machine == 'xps':
-            image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(args.mode)
-            tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
+        image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(args.mode)
+        tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
 
         try:
             print("\nSummary - Dataset Inputs")
@@ -183,7 +178,7 @@ class Dataloader:
             img_depth = scp.imread(os.path.join(depth_path))
 
             # Data Augmentation
-            img_colors_aug, img_depth_aug = self.augment_image_pair(img_colors, img_depth)
+            img_colors_aug, img_depth_aug = self.train.augment_image_pair(img_colors, img_depth)
 
             # TODO: Implementar Random Crops
             # Crops Image
@@ -254,14 +249,15 @@ class Dataloader:
                 img_depth = scp.imread(
                     os.path.join(depth_path))
                 img_depth_crop = self.cropImage(img_depth,
-                                           size=input_size.getSize())  # Same cropSize as the colors image
+                                                size=input_size.getSize())  # Same cropSize as the colors image
 
                 img_depth_downsized = self.np_resizeImage(img_depth_crop, size=output_size.getSize())
                 img_depth_bilinear = img_depth_crop  # Copy
 
             return img_colors_normed, img_depth_downsized, img_colors_crop, img_depth_bilinear
 
-    def cropImage(self, img, x_min=None, x_max=None, y_min=None, y_max=None, size=None):
+    @staticmethod
+    def cropImage(img, x_min=None, x_max=None, y_min=None, y_max=None, size=None):
         try:
             if size is None:
                 raise ValueError
@@ -302,7 +298,8 @@ class Dataloader:
 
         return crop
 
-    def np_resizeImage(self, img, size):
+    @staticmethod
+    def np_resizeImage(img, size):
         try:
             if size is None:
                 raise ValueError
@@ -336,7 +333,8 @@ class Dataloader:
 
         return resized
 
-    def normalizeImage(self, img):
+    @staticmethod
+    def normalizeImage(img):
         pixel_depth = 255
 
         normed = (img - pixel_depth / 2) / pixel_depth

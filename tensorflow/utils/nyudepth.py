@@ -22,8 +22,12 @@ LOG_INITIAL_VALUE = 1
 # Image: (480, 640, 3) ?
 # Depth: (480, 640)    ?
 class NyuDepth(object):
-    def __init__(self):
-        self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/"
+    def __init__(self, machine):
+        if machine == 'olorin':
+            self.dataset_path = ''
+        elif machine == 'xps':
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/"
+
         self.name = 'nyudepth'
 
         self.image_size = Size(480, 640, 3)

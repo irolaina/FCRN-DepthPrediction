@@ -22,8 +22,12 @@ LOG_INITIAL_VALUE = 1
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint8
 class KittiRaw(object):
-    def __init__(self):
-        self.dataset_path = "../../data/residential_continuous/"
+    def __init__(self, machine):
+        if machine == 'olorin':
+            self.dataset_path = ''
+        elif machine == 'xps':
+            self.dataset_path = "../../data/residential_continuous/"
+
         self.name = 'kittiraw'
 
         self.image_size = Size(375, 1242, 3)
