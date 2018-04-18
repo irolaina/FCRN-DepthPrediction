@@ -94,8 +94,6 @@ class Train:
 
     @staticmethod
     def prepareTrainData(tf_image_resized, tf_depth_resized, batch_size):
-        # TODO: Neste Ponto, os dados de entrada ja deveriam estar seperados em treinamento e validação, acredito que imagens de validação não devem sofrer data augmentation
-
         # ------------------- #
         #  Data Augmentation  #
         # ------------------- #

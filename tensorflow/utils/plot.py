@@ -131,21 +131,3 @@ class Plot(object):
         self.fig.canvas.set_window_title("Test Predictions [%d]" % i)
 
         plt.pause(0.5)
-
-    # TODO: Remover Deprecated
-    @staticmethod
-    # TODO: Add raw, log_labels, coarse
-    def showValidationProgress(label, fine, figId):
-        fig = plt.figure(figId)
-        fig.clf()
-        ax = fig.add_subplot(2, 1, 1)
-        cax = ax.imshow(label, cmap='gray')
-        plt.title("valid_labels[0,:,:]")
-        fig.colorbar(cax)
-
-        ax = fig.add_subplot(2, 1, 2)
-        cax = ax.imshow(fine, cmap='gray')
-        plt.title("vPredictions_f[0,:,:]")
-        fig.colorbar(cax)
-
-        plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)

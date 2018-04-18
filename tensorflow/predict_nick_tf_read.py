@@ -4,7 +4,6 @@
 # ============
 #  To-Do FCRN
 # ============
-# TODO: Implementar leitura das imagens pelo Tensorflow - Validação
 # TODO: Implementar leitura das imagens pelo Tensorflow - Teste
 # TODO: Validar Métricas.
 
@@ -48,7 +47,7 @@ datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 2
+LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
@@ -154,9 +153,6 @@ def train(args):
 
         # TODO: mudar nome das variaveis para algo do tipo dataset.train.image_filenames e dataset.train.depth_filenames
         data.splitData(image_filenames, depth_filenames)
-
-        # TODO: Dividir train/valid as variaveis images_filenames, tf_images_filenames, tf_image, tf_image_resized?
-        # TODO: Dividir train/valid as variaveis images_filenames, tf_images_filenames, tf_image, tf_image_resized?
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
