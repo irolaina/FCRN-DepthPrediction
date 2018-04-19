@@ -65,39 +65,29 @@ class Dataloader:
         print("[Dataloader] dataloader object created.")
 
     # TODO: Ler outros Datasets
-    def getTrainData(self, args):
-        image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(args.mode)
-        tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
+    def getTrainData(self, mode='train'):
+        image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
+        tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
-            print("\nSummary - Dataset Inputs")
+            print("\nSummary - TrainData")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
 
-            self.numSamples = len(image_filenames)
+            self.numTrainSamples = len(image_filenames)
+            self.numTestSamples = len(image_filenames)
+
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
-    def getTestData(self, args):
-        if args.machine == 'olorin':
-            # KittiRaw Residential Continuous
-            # Image: (375, 1242, 3) uint8
-            # Depth: (375, 1242)    uint8
-            if args.dataset == 'kittiraw_residential_continuous':
-                search_image_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/imgs/*.png"
-                search_depth_files_str = "../../mestrado_code/monodeep/data/residential_continuous/testing/dispc/*.png"
-
-                tf_image_filenames = tf.train.match_filenames_once(search_image_files_str)
-                tf_depth_filenames = tf.train.match_filenames_once(search_depth_files_str)
-
-        elif args.machine == 'xps':
-            image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(args.mode)
-            tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors()
+    def getTestData(self, mode='test'):
+        image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
+        tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
-            print("\nSummary - Dataset Inputs")
+            print("\nSummary - TestData (Validation Set)")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
 
@@ -149,7 +139,7 @@ class Dataloader:
         print("len(valid_image_filenames):", len(self.valid_image_filenames))
         print("len(valid_depth_filenames):", len(self.valid_depth_filenames))
 
-    def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames):
+    def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames, mode):
         try:
             image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames])
 
@@ -158,14 +148,22 @@ class Dataloader:
             depth_filenames_aux = [item.replace(self.datasetObj.depth_replace[0], self.datasetObj.depth_replace[1]) for
                                    item in depth_filenames]
 
-            print("[Dataloader] Checking if RGB and Depth images are paired... ")
+            # flag = False
+            # for i in range(len(image_filenames)):
+            #     if image_filenames_aux[i] == depth_filenames_aux[i]:
+            #         flag = True
+            #     else:
+            #         flag = False
+            #
+            #     print(i, image_filenames[i], depth_filenames[i], flag)
+
             if image_filenames_aux == depth_filenames_aux:
-                print("[Dataloader] Check Integrity: Pass")
+                print("[Dataloader/%s] Check Integrity: Pass" % mode)
             else:
                 raise ValueError
 
         except ValueError:
-            print("[Dataloader] Check Integrity: Failed")
+            print("[Dataloader/%s] Check Integrity: Failed" % mode)
             sys.exit()
 
     def readImage(self, colors_path, depth_path, input_size, output_size, mode, showImages=False):

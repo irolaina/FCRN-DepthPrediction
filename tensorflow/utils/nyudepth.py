@@ -33,9 +33,6 @@ class NyuDepth(object):
         self.image_size = Size(480, 640, 3)
         self.depth_size = Size(480, 640, 1)
 
-        self.image_filenames = []
-        self.depth_filenames = []
-
         self.image_replace = [b'_colors.png', b'']
         self.depth_replace = [b'_depth.png', b'']
 
@@ -48,6 +45,9 @@ class NyuDepth(object):
         print("[Dataloader] NyuDepth object created.")
 
     def getFilenamesLists(self, mode):
+        image_filenames = []
+        depth_filenames = []
+
         if mode == 'train':
             dataset_path_aux = self.dataset_path + "training/*/"
         elif mode == 'test':
@@ -62,18 +62,22 @@ class NyuDepth(object):
 
             for file in glob.glob('*_colors.png'):
                 # print(file)
-                self.image_filenames.append(folder + file)
+                image_filenames.append(folder + file)
 
             for file in glob.glob('*_depth.png'):
                 # print(file)
-                self.depth_filenames.append(folder + file)
+                depth_filenames.append(folder + file)
 
             # print()
 
-        return self.image_filenames, self.depth_filenames
+        # Alphabelly Sort the List of Strings
+        image_filenames.sort()
+        depth_filenames.sort()
 
-    def getFilenamesTensors(self):
-        self.tf_image_filenames = tf.constant(self.image_filenames)
-        self.tf_depth_filenames = tf.constant(self.depth_filenames)
+        return image_filenames, depth_filenames
 
-        return self.tf_image_filenames, self.tf_depth_filenames
+    def getFilenamesTensors(self, image_filenames, depth_filenames):
+        tf_image_filenames = tf.constant(image_filenames)
+        tf_depth_filenames = tf.constant(depth_filenames)
+
+        return tf_image_filenames, tf_depth_filenames

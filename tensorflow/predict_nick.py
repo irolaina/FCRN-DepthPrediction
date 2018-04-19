@@ -4,6 +4,7 @@
 # ============
 #  To-Do FCRN
 # ============
+# TODO: As usual, we validate per epoch, not per gradient step. Validation is always just the validation set of NYDepth, no augmentations.
 # TODO: Implementar leitura das imagens pelo Tensorflow - Teste
 # TODO: Validar Métricas.
 
@@ -154,9 +155,10 @@ def train(args):
         model = Model(args)
 
         # Searches dataset images filenames
-        image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames = data.getTrainData(args)
+        data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
+        data.valid_image_filenames, data.valid_depth_filenames, tf_valid_image_filenames, tf_valid_depth_filenames = data.getTestData()
 
-        data.splitData(image_filenames, depth_filenames)
+        # data.splitData(image_filenames, depth_filenames) # TODO: Remover
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
@@ -188,7 +190,9 @@ def train(args):
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         # Check Dataset Integrity
-        data.checkIntegrity(sess, tf_image_filenames, tf_depth_filenames)
+        print("[Dataloader] Checking if RGB and Depth images are paired... ")
+        data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames, 'TrainData')
+        data.checkIntegrity(sess, tf_valid_image_filenames, tf_valid_depth_filenames, 'TestData')
 
         # Proclaim the epochs
         epochs = np.floor(args.batch_size * args.max_steps / data.numSamples)

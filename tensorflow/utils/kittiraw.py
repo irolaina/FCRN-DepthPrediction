@@ -33,9 +33,6 @@ class KittiRaw(object):
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
 
-        self.image_filenames = []
-        self.depth_filenames = []
-
         self.image_replace = [b'/imgs/', b'']
         self.depth_replace = [b'/dispc/', b'']
 
@@ -48,6 +45,9 @@ class KittiRaw(object):
         print("[Dataloader] KittiRaw object created.")
 
     def getFilenamesLists(self, mode):
+        image_filenames = []
+        depth_filenames = []
+
         if mode == 'train':
             dataset_path_aux = self.dataset_path + "training/"
         elif mode == 'test':
@@ -56,13 +56,17 @@ class KittiRaw(object):
             sys.exit()
 
         # Finds input images and labels inside list of folders.
-        self.image_filenames = glob.glob(dataset_path_aux + "imgs/*")
-        self.depth_filenames = glob.glob(dataset_path_aux + "dispc/*")
+        image_filenames = glob.glob(dataset_path_aux + "imgs/*")
+        depth_filenames = glob.glob(dataset_path_aux + "dispc/*")
 
-        return self.image_filenames, self.depth_filenames
+        # Alphabelly Sort the List of Strings
+        image_filenames.sort()
+        depth_filenames.sort()
 
-    def getFilenamesTensors(self):
-        self.tf_image_filenames = tf.constant(self.image_filenames)
-        self.tf_depth_filenames = tf.constant(self.depth_filenames)
+        return image_filenames, depth_filenames
 
-        return self.tf_image_filenames, self.tf_depth_filenames
+    def getFilenamesTensors(self, image_filenames, depth_filenames):
+        tf_image_filenames = tf.constant(image_filenames)
+        tf_depth_filenames = tf.constant(depth_filenames)
+
+        return tf_image_filenames, tf_depth_filenames
