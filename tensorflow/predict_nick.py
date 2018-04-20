@@ -4,7 +4,6 @@
 # ============
 #  To-Do FCRN
 # ============
-# TODO: As usual, we validate per epoch, not per gradient step. Validation is always just the validation set of NYDepth, no augmentations.
 # TODO: Implementar leitura das imagens pelo Tensorflow - Teste
 # TODO: Validar Métricas.
 
@@ -184,7 +183,7 @@ def train(args):
     #  Network Training Model - Running Graph  #
     # ---------------------------------------- #
     # Local Variables and Memory Allocation
-    step = 0
+    epoch, step = 0, 0
     stop = EarlyStopping()
 
     with tf.Session(graph=graph) as sess:
@@ -197,8 +196,8 @@ def train(args):
         data.checkIntegrity(sess, tf_valid_image_filenames, tf_valid_depth_filenames, 'TestData')
 
         # Proclaim the epochs
-        epochs = np.floor(args.batch_size * args.max_steps / data.numTrainSamples)
-        print('\nTrain with approximately %d epochs' % epochs)
+        max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
+        print('\nTrain with approximately %d epochs' % max_epochs)
 
         # ===============
         #  Training Loop
@@ -208,7 +207,7 @@ def train(args):
         threads = tf.train.start_queue_runners(coord=coord)
 
         start = time.time()
-        for step in range(args.max_steps):
+        for step in range(args.max_steps+1):
             start2 = time.time()
 
             # TODO: Se não precisa mostrar as imagens, o número de tensores avaliados pode ser reduzido (Otimização)
@@ -241,66 +240,10 @@ def train(args):
 
             # debug_data_augmentation()
 
-            # Validation
-            # TODO: Create valid_ops variable
-
-            # # ----- Validation - Method 1 ----- #
-            # Uses all validation images for evaluation!
-            # # Resets Validation Auxilary Variables
-            # i, l = 0, []
-            # valid_batch_size = 2 # TODO: Move
-            # while i <= len(data.valid_image_filenames):
-            #     valid_batch_data_resized, valid_batch_labels, valid_batch_pred, valid_batch_loss = sess.run([model.valid.tf_batch_data_resized, model.valid.tf_batch_labels, model.fcrn_valid.get_output(), model.valid.tf_loss])
-            #     l.append(valid_batch_loss)
-            #     i += valid_batch_size
-            #
-            #     valid_image =
-            #     valid_labels =
-            #     valid_log_labels =
-            #     valid_pred =
-            #
-            #
-            #     # print(valid_batch_data_resized.shape)
-            #     # print(valid_batch_labels.shape)
-            #     # print(valid_batch_pred.shape)
-            #     # plt.figure(10)
-            #     # plt.imshow(valid_batch_data_resized[0])
-            #     # plt.figure(11)
-            #     # plt.imshow(valid_batch_labels[0,:,:,0])
-            #     # plt.figure(12)
-            #     # plt.imshow(valid_batch_pred[0,:,:,0])
-            #     # plt.draw()
-            #     # plt.pause(0.1)
-            #
-            #     # print(valid_batch_loss)
-            #     # print()
-            #
-            # model.valid.loss = np.mean(l)
-            #
-            # # print(l)
-            # # print(len(l))
-            # # print("mean:", model.valid.loss)
-
-            # Validation
-            # FIXME: Uses only one image as validation!
-            # FIXME: valid_loss value may is wrong
-            feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                          model.valid.tf_depth: np.expand_dims(
-                              np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
-            valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
-                [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
-                 model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
-            # -----
-
             if ENABLE_TENSORBOARD:
                 # Write information to TensorBoard
                 model.summary_writer.add_summary(summary_str, step)
                 model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
-
-            # TODO: Validar
-            if ENABLE_EARLY_STOP:
-                if stop.check(step, model.valid.loss):
-                    break
 
             # Prints Training Progress
             if step % 10 == 0:
@@ -311,6 +254,69 @@ def train(args):
                                                  pred=batch_pred[0, :, :, 0],
                                                  cbar_range=data.datasetObj)
 
+                end2 = time.time()
+
+                print('epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(epoch,
+                                                                                                                                 max_epochs,
+                                                                                                                                 step,
+                                                                                                                                 args.max_steps,
+                                                                                                                                 end2 - start2,
+                                                                                                                                 model.train.loss,
+                                                                                                                                 model.valid.loss))
+
+            # Detects the end of a epoch
+            if np.floor((step * args.batch_size) / data.numTrainSamples) != epoch:
+                # Validation
+                # TODO: Create valid_ops variable
+
+                # # ----- Validation - Method 1 ----- #
+                # Uses all validation images for evaluation!
+                # # Resets Validation Auxilary Variables
+                # i, l = 0, []
+                # valid_batch_size = 2 # TODO: Move
+                # while i <= len(data.valid_image_filenames):
+                #     valid_batch_data_resized, valid_batch_labels, valid_batch_pred, valid_batch_loss = sess.run([model.valid.tf_batch_data_resized, model.valid.tf_batch_labels, model.fcrn_valid.get_output(), model.valid.tf_loss])
+                #     l.append(valid_batch_loss)
+                #     i += valid_batch_size
+                #
+                #     valid_image =
+                #     valid_labels =
+                #     valid_log_labels =
+                #     valid_pred =
+                #
+                #
+                #     # print(valid_batch_data_resized.shape)
+                #     # print(valid_batch_labels.shape)
+                #     # print(valid_batch_pred.shape)
+                #     # plt.figure(10)
+                #     # plt.imshow(valid_batch_data_resized[0])
+                #     # plt.figure(11)
+                #     # plt.imshow(valid_batch_labels[0,:,:,0])
+                #     # plt.figure(12)
+                #     # plt.imshow(valid_batch_pred[0,:,:,0])
+                #     # plt.draw()
+                #     # plt.pause(0.1)
+                #
+                #     # print(valid_batch_loss)
+                #     # print()
+                #
+                # model.valid.loss = np.mean(l)
+                #
+                # # print(l)
+                # # print(len(l))
+                # # print("mean:", model.valid.loss)
+                # -----
+
+                # Validation
+                # FIXME: Uses only one image as validation!
+                # FIXME: valid_loss value may is wrong
+                feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
+                              model.valid.tf_depth: np.expand_dims(
+                                  np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+                valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
+                    [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
+                     model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
+
                 if args.show_valid_progress:
                     model.valid.plot.showResults(raw=valid_image[0, :, :],
                                                  label=valid_labels[0, :, :, 0],
@@ -318,12 +324,12 @@ def train(args):
                                                  pred=valid_pred[0, :, :, 0],
                                                  cbar_range=data.datasetObj)
 
-                end2 = time.time()
-                print('step: {0:d}/{1:d} | t: {2:f} | Batch trLoss: {3:>16.4f} | vLoss: {4:>16.4f} '.format(step,
-                                                                                                            args.max_steps,
-                                                                                                            end2 - start2,
-                                                                                                            model.train.loss,
-                                                                                                            model.valid.loss))
+                # TODO: Validar
+                if ENABLE_EARLY_STOP:
+                    if stop.check(step, model.valid.loss):
+                        break
+
+            epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
 
         coord.request_stop()
         coord.join(threads)
