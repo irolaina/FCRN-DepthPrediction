@@ -51,7 +51,7 @@ class Validation:
         if args.show_valid_progress:
             self.plot = Plot(args.mode, title='Validation Prediction')
 
-        print("\n[Network/Validation] Validation Tensors created.")
+        print("[Network/Validation] Validation Tensors created.")
         print(self.tf_image)
         print(self.tf_depth)
         print(self.tf_image_resized)

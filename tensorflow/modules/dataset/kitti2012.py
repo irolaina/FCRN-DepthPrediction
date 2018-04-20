@@ -15,49 +15,27 @@ from ..size import Size
 LOG_INITIAL_VALUE = 1
 
 
-# ===========
-#  Functions
-# ===========
-def saveLists(image_filenames, depth_filenames):
-    print(type(image_filenames))
-    print(type(depth_filenames))
-
-    filenames = list(zip(image_filenames, depth_filenames))
-    filenames = np.array(filenames)
-
-    # for i in filenames:
-    #     print(i)
-
-    input("oi")
-    print(filenames.shape)
-
-    np.savetxt('nyudepth.txt', filenames, fmt='%s')
-    input("oi2")
-
-    raise SystemExit
-
-
 # ===================
 #  Class Declaration
 # ===================
-# NYU Depth v2
+# Kitti Stereo 2012
 # TODO: Add info
-# Image: (480, 640, 3) ?
-# Depth: (480, 640)    ?
-class NyuDepth(object):
+# Image: (?, ?, 3) ?
+# Depth: (?, ?)    ?
+class Kitti2012(object):
     def __init__(self, machine):
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/stereo/stereo2012/data_stereo_flow/"
 
-        self.name = 'nyudepth'
+        self.name = 'kitti2012'
 
-        self.image_size = Size(480, 640, 3)
-        self.depth_size = Size(480, 640, 1)
+        self.image_size = Size(376, 1241, 3)  # TODO: Validar
+        self.depth_size = Size(376, 1226, 1)  # TODO: Validar
 
-        self.image_replace = [b'_colors.png', b'']
-        self.depth_replace = [b'_depth.png', b'']
+        self.image_replace = [b'_colors.png', b'']  # TODO: Terminar
+        self.depth_replace = [b'_depth.png', b'']  # TODO: Terminar
 
         # Data Range/Plot ColorSpace
         self.vmin = None
@@ -65,8 +43,9 @@ class NyuDepth(object):
         self.log_vmin = None
         self.log_vmax = None
 
-        print("[Dataloader] NyuDepth object created.")
+        print("[Dataloader] Kitti2012 object created.")
 
+    # TODO: Terminar
     def getFilenamesLists(self, mode):
         image_filenames = []
         depth_filenames = []

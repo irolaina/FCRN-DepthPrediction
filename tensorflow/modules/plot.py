@@ -28,7 +28,7 @@ class Plot(object):
     def __init__(self, mode, title):
         self.fig, self.axes = None, None
 
-        if mode == 'train':  # Or Validation
+        if mode == 'train':  # and Validation
             self.fig, self.axes = plt.subplots(5, 1)
             self.axes[0] = plt.subplot(231)
             self.axes[1] = plt.subplot(232)

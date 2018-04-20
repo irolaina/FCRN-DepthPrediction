@@ -8,6 +8,8 @@
 # TODO: Implementar leitura das imagens pelo Tensorflow - Teste
 # TODO: Validar Métricas.
 
+# TODO: Dar suporte a outros Datasets
+
 # TODO: Implementar Bilinear
 # TODO: If detect Ctrl+C, save training state.
 # TODO: Estou aplicando a normalização da entrada em todos os módulos (predict, test, train, valid)?
@@ -91,7 +93,6 @@ def createSaveFolder():
 # ========= #
 def predict(model_data_path, image_path):
     print('[%s] Selected mode: Predict' % appName)
-    print('[%s] Selected Params: \n\n%s\n' % (appName, args))
 
     # Default input size
     height = 228
@@ -143,7 +144,6 @@ def predict(model_data_path, image_path):
 # ===================== #
 def train(args):
     print('[%s] Selected mode: Train' % appName)
-    print('[%s] Selected Params: \n\n%s\n' % (appName, args))
 
     # Local Variables
     save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
@@ -352,7 +352,6 @@ def train(args):
 # ========= #
 def test(args):
     print('[%s] Selected mode: Test' % appName)
-    print('[%s] Selected Params: \n\n%s\n' % (appName, args))
 
     # Default input size
     height = 228
@@ -472,6 +471,8 @@ def test(args):
 #  Main
 # ======
 def main(args):
+    print('\n[%s] Selected Params: \n\n%s\n' % (appName, args))
+
     if args.mode == 'train':
         train(args)
     elif args.mode == 'test':

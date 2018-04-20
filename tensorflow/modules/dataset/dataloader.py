@@ -70,7 +70,6 @@ class Dataloader:
 
         print("[Dataloader] dataloader object created.")
 
-    # TODO: Ler outros Datasets
     def getTrainData(self, mode='train'):
         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
         tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)

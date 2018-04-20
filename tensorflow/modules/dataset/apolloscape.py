@@ -19,6 +19,7 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 # Apollo Scape
+# TODO: Add Info
 # Image: (2710, 3384, 3) ?
 # Depth: (2710, 3384)    ?
 class Apolloscape(object):
