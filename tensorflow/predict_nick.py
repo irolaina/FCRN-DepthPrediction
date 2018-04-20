@@ -210,14 +210,16 @@ def train(args):
         for step in range(args.max_steps+1):
             start2 = time.time()
 
-            # TODO: Se não precisa mostrar as imagens, o número de tensores avaliados pode ser reduzido (Otimização)
             # ----- Session Run! ----- #
             # Training
             # TODO: Create train_ops variable
-            _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
-                 model.train.tf_batch_labels, model.train.tf_log_batch_labels,
-                 model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
+            if args.show_train_progress:
+                _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
+                    [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
+                     model.train.tf_batch_labels, model.train.tf_log_batch_labels,
+                     model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
+            else:
+                _, model.train.loss, summary_str = sess.run([model.train_step, model.train.tf_loss, model.summary_op])
 
             def debug_data_augmentation():
                 fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -263,7 +265,6 @@ def train(args):
                                                                                                                                  end2 - start2,
                                                                                                                                  model.train.loss,
                                                                                                                                  model.valid.loss))
-
             # Detects the end of a epoch
             if np.floor((step * args.batch_size) / data.numTrainSamples) != epoch:
                 # Validation
@@ -309,24 +310,24 @@ def train(args):
 
                 # Validation
                 # FIXME: Uses only one image as validation!
-                # FIXME: valid_loss value may is wrong
                 feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                              model.valid.tf_depth: np.expand_dims(
-                                  np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
-                valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
-                    [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
-                     model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
+                              model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
 
                 if args.show_valid_progress:
+                    valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
+                        [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
+                         model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
+
                     model.valid.plot.showResults(raw=valid_image[0, :, :],
                                                  label=valid_labels[0, :, :, 0],
                                                  log_label=valid_log_labels[0, :, :, 0],
                                                  pred=valid_pred[0, :, :, 0],
                                                  cbar_range=data.datasetObj)
+                else:
+                    model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
 
-                # TODO: Validar
                 if ENABLE_EARLY_STOP:
-                    if stop.check(step, model.valid.loss):
+                    if stop.check(step, model.valid.loss): # TODO: Validar
                         break
 
             epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
