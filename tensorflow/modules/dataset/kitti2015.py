@@ -20,8 +20,8 @@ LOG_INITIAL_VALUE = 1
 # ===================
 # Kitti Stereo 2015
 # TODO: Add info
-# Image: (?, ?, 3) ?
-# Depth: (?, ?)    ?
+# Image: (375, 1242, 3) ?
+# Depth: (375, 1242)    ?
 class Kitti2015(object):
     def __init__(self, machine):
         if machine == 'olorin':
@@ -31,13 +31,13 @@ class Kitti2015(object):
 
         self.name = 'kitti2015'
 
-        self.image_size = Size(376, 1241, 3)  # TODO: Validar
-        self.depth_size = Size(376, 1226, 1)  # TODO: Validar
+        self.image_size = Size(375, 1242, 3)
+        self.depth_size = Size(375, 1242, 1)
 
-        self.image_replace = [b'_colors.png', b'']  # TODO: Terminar
-        self.depth_replace = [b'_depth.png', b'']  # TODO: Terminar
+        self.image_replace = [b'_colors.png', b'']  # FIXME
+        self.depth_replace = [b'_depth.png', b'']   # FIXME
 
-        # Data Range/Plot ColorSpace
+        # Data Range/Plot ColorSpace # TODO: Terminar
         self.vmin = None
         self.vmax = None
         self.log_vmin = None
@@ -45,8 +45,8 @@ class Kitti2015(object):
 
         print("[Dataloader] Kitti2015 object created.")
 
-    # TODO: Terminar
-    def getFilenamesLists(self, mode):
+
+    def getFilenamesLists(self, mode): # FIXME
         image_filenames = []
         depth_filenames = []
 

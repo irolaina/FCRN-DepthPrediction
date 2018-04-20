@@ -96,6 +96,7 @@ class Dataloader:
             print("depth_filenames: ", len(depth_filenames))
 
             self.numTestSamples = len(image_filenames)
+
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 
