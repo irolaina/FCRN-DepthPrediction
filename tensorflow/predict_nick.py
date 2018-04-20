@@ -30,8 +30,8 @@ import utils.args as argsLib
 
 from PIL import Image
 from utils.dataset.dataloader import Dataloader
-from utils.model import Model
-from utils.fcrn import ResNet50UpProj
+from utils.framework import Model
+from utils.model.fcrn import ResNet50UpProj
 from utils.train import EarlyStopping
 from utils.size import Size
 from utils.plot import Plot

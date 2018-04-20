@@ -3,7 +3,7 @@
 # ===========
 import tensorflow as tf
 
-from .fcrn import ResNet50UpProj
+from .model.fcrn import ResNet50UpProj
 from .plot import Plot
 
 # ==================
