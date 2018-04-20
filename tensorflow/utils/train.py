@@ -39,7 +39,6 @@ class Train:
             self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                                               name='log_labels')  # Just for displaying Image
 
-
         self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, args.batch_size, 1, False)
         tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
@@ -60,7 +59,6 @@ class Train:
 
         if args.show_train_progress:
             self.plot = Plot(args.mode, title='Train Predictions')
-
 
         print("\n[Network/Train] Training Tensors created.")
         print(self.tf_batch_data)

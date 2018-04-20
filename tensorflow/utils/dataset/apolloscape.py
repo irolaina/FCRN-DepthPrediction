@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 import sys
 
-from .size import Size
+from ..size import Size
 
 # ==================
 #  Global Variables
@@ -56,8 +56,8 @@ class Apolloscape(object):
         #     sys.exit()
 
         # Finds input images and labels inside list of folders.
-        self.image_filenames = glob.glob(self.dataset_path + "ColorImage/*/*/*") # ...ColorImage/Record*/Camera */*.png
-        self.depth_filenames = glob.glob(self.dataset_path + "Depth/*/*/*")      # ...Depth/Record*/Camera */*.png
+        self.image_filenames = glob.glob(self.dataset_path + "ColorImage/*/*/*")  # ...ColorImage/Record*/Camera */*.png
+        self.depth_filenames = glob.glob(self.dataset_path + "Depth/*/*/*")  # ...Depth/Record*/Camera */*.png
 
         print(self.image_filenames[0])
         print(self.depth_filenames[0])
@@ -66,9 +66,3 @@ class Apolloscape(object):
         input("apollo")
 
         return self.image_filenames, self.depth_filenames
-
-    def getFilenamesTensors(self):
-        self.tf_image_filenames = tf.constant(self.image_filenames)
-        self.tf_depth_filenames = tf.constant(self.depth_filenames)
-
-        return self.tf_image_filenames, self.tf_depth_filenames

@@ -3,11 +3,11 @@
 # ===========
 import glob
 import os
-import numpy as np
 import tensorflow as tf
 import sys
+import numpy as np
 
-from .size import Size
+from ..size import Size
 
 # ==================
 #  Global Variables
@@ -21,6 +21,25 @@ LOG_INITIAL_VALUE = 1
 # NYU Depth v2
 # Image: (480, 640, 3) ?
 # Depth: (480, 640)    ?
+def saveLists(image_filenames, depth_filenames):
+    print(type(image_filenames))
+    print(type(depth_filenames))
+
+    filenames = list(zip(image_filenames, depth_filenames))
+    filenames = np.array(filenames)
+
+    # for i in filenames:
+    #     print(i)
+
+    input("oi")
+    print(filenames.shape)
+
+    np.savetxt('nyudepth.txt', filenames, fmt='%s')
+    input("oi2")
+
+    raise SystemExit
+
+
 class NyuDepth(object):
     def __init__(self, machine):
         if machine == 'olorin':
@@ -74,10 +93,6 @@ class NyuDepth(object):
         image_filenames.sort()
         depth_filenames.sort()
 
+        # self.saveLists(image_filenames, depth_filenames) # FIXME: Doesn't Save
+
         return image_filenames, depth_filenames
-
-    def getFilenamesTensors(self, image_filenames, depth_filenames):
-        tf_image_filenames = tf.constant(image_filenames)
-        tf_depth_filenames = tf.constant(depth_filenames)
-
-        return tf_image_filenames, tf_depth_filenames

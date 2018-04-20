@@ -1,7 +1,7 @@
 # ===========
 #  Libraries
 # ===========
-from .size import Size
+from ..size import Size
 
 
 # ===================

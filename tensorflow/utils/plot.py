@@ -106,7 +106,6 @@ class Plot(object):
             self.cax4 = self.axes[3].imshow(pred)
             # self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
-
             # Creates ColorBars
             self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
             self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])

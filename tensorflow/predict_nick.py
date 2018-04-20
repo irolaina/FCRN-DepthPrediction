@@ -29,12 +29,13 @@ import utils.metrics as metricsLib
 import utils.args as argsLib
 
 from PIL import Image
-from utils.dataloader import Dataloader
+from utils.dataset.dataloader import Dataloader
 from utils.model import Model
 from utils.fcrn import ResNet50UpProj
 from utils.train import EarlyStopping
 from utils.size import Size
 from utils.plot import Plot
+
 
 # ==================
 #  Framework Config
@@ -48,12 +49,12 @@ LOSS_FUNCTION = 0
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = False    # Default: False
-ENABLE_EARLY_STOP = False       # Default: True # TODO: Ativar
-SAVE_TRAINED_MODEL = True       # Default: True
-ENABLE_TENSORBOARD = True       # Default: True
-SAVE_TEST_DISPARITIES = True    # Default: True
-APPLY_BILINEAR_OUTPUT = False   # Default: False
+TRAIN_ON_SINGLE_IMAGE = False  # Default: False
+ENABLE_EARLY_STOP = False  # Default: True # TODO: Ativar
+SAVE_TRAINED_MODEL = True  # Default: True
+ENABLE_TENSORBOARD = True  # Default: True
+SAVE_TEST_DISPARITIES = True  # Default: True
+APPLY_BILINEAR_OUTPUT = False  # Default: False
 
 # ==================
 #  Global Variables
@@ -64,6 +65,7 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 LOG_INITIAL_VALUE = 1
+
 
 # ===========
 #  Functions
@@ -195,14 +197,13 @@ def train(args):
         data.checkIntegrity(sess, tf_valid_image_filenames, tf_valid_depth_filenames, 'TestData')
 
         # Proclaim the epochs
-        epochs = np.floor(args.batch_size * args.max_steps / data.numSamples)
+        epochs = np.floor(args.batch_size * args.max_steps / data.numTrainSamples)
         print('\nTrain with approximately %d epochs' % epochs)
 
         # ===============
         #  Training Loop
         # ===============
         print("[Network/Training] Training Initialized!\n")
-
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(coord=coord)
 
@@ -279,12 +280,12 @@ def train(args):
             # # print(len(l))
             # # print("mean:", model.valid.loss)
 
-            
             # Validation
             # FIXME: Uses only one image as validation!
             # FIXME: valid_loss value may is wrong
             feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                          model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+                          model.valid.tf_depth: np.expand_dims(
+                              np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
             valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
                 [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
                  model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
@@ -365,7 +366,8 @@ def test(args):
     data = Dataloader(args)  # TODO: Usar leitura pelo Tensorflow
 
     # Searches dataset images filenames
-    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData(args)
+    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData(
+        args)
 
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
@@ -379,8 +381,10 @@ def test(args):
 
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
-    test_data_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels), dtype=np.uint8)  # (?, 172, 576, 3)
-    test_data_crop_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels), dtype=np.uint8)  # (?, 172, 576, 3)
+    test_data_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels),
+                           dtype=np.uint8)  # (?, 172, 576, 3)
+    test_data_crop_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels),
+                                dtype=np.uint8)  # (?, 172, 576, 3)
     pred = np.zeros((data.numSamples, output_size.height, output_size.width), dtype=np.float32)  # (?, 43, 144)
     test_labels_o = np.zeros((data.numSamples, output_size.height, output_size.width), dtype=np.int32)  # (?, 43, 144)
 
@@ -419,7 +423,8 @@ def test(args):
             test_data_crop_o[i] = image_crop
 
             # Evalute the network for the given image
-            pred_temp = sess.run(net.get_output(), feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
+            pred_temp = sess.run(net.get_output(),
+                                 feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
             pred[i] = pred_temp[:, :, :, 0]
 
             # Prints Testing Progress

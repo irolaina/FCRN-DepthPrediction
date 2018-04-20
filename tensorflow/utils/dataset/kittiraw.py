@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 import sys
 
-from .size import Size
+from ..size import Size
 
 # ==================
 #  Global Variables
@@ -64,9 +64,3 @@ class KittiRaw(object):
         depth_filenames.sort()
 
         return image_filenames, depth_filenames
-
-    def getFilenamesTensors(self, image_filenames, depth_filenames):
-        tf_image_filenames = tf.constant(image_filenames)
-        tf_depth_filenames = tf.constant(depth_filenames)
-
-        return tf_image_filenames, tf_depth_filenames

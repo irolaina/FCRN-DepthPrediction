@@ -23,6 +23,11 @@ LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
+def getFilenamesTensors(image_filenames, depth_filenames):
+    tf_image_filenames = tf.constant(image_filenames)
+    tf_depth_filenames = tf.constant(depth_filenames)
+
+    return tf_image_filenames, tf_depth_filenames
 
 
 # ===================
@@ -60,14 +65,15 @@ class Dataloader:
         self.valid_image_filenames = None
         self.valid_depth_filenames = None
 
-        self.numSamples = None
+        self.numTrainSamples = -1
+        self.numTestSamples = -1
 
         print("[Dataloader] dataloader object created.")
 
     # TODO: Ler outros Datasets
     def getTrainData(self, mode='train'):
         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
-        tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors(image_filenames, depth_filenames)
+        tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
             print("\nSummary - TrainData")
@@ -75,7 +81,6 @@ class Dataloader:
             print("depth_filenames: ", len(depth_filenames))
 
             self.numTrainSamples = len(image_filenames)
-            self.numTestSamples = len(image_filenames)
 
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
@@ -84,14 +89,14 @@ class Dataloader:
 
     def getTestData(self, mode='test'):
         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
-        tf_image_filenames, tf_depth_filenames = self.datasetObj.getFilenamesTensors(image_filenames, depth_filenames)
+        tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
             print("\nSummary - TestData (Validation Set)")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
 
-            self.numSamples = len(image_filenames)
+            self.numTestSamples = len(image_filenames)
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 

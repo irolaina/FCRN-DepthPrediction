@@ -2,7 +2,6 @@
 #  Libraries
 # ===========
 import tensorflow as tf
-import utils.loss as loss
 
 from .fcrn import ResNet50UpProj
 from .plot import Plot

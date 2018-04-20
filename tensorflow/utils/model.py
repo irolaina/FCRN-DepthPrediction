@@ -34,6 +34,11 @@ class Model(object):
         model_index = 0
         self.model_collection = ['model_' + str(model_index)]
 
+        self.train = None
+        self.valid = None
+
+        self.loss_name = ''
+
         # self.build_model(tf_image, labels)
         # self.build_losses()
         # self.build_optimizer()

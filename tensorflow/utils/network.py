@@ -296,21 +296,21 @@ class Network(object):
     def dropout(self, input_data, keep_prob, name):
         return tf.nn.dropout(input_data, keep_prob, name=name)
 
-    def unpool_as_conv(self, size, input_data, id, stride=1, ReLU=False, BN=True):
+    def unpool_as_conv(self, size, input_data, l_id, stride=1, ReLU=False, BN=True):
 
         # Model upconvolutions (unpooling + convolution) as interleaving feature
         # maps of four convolutions (A,B,C,D). Building block for up-projections.
 
         # Convolution A (3x3)
         # --------------------------------------------------
-        layerName = "layer%s_ConvA" % id
+        layerName = "layer%s_ConvA" % l_id
         self.feed(input_data)
         self.conv(3, 3, size[3], stride, stride, name=layerName, padding='SAME', relu=False)
         outputA = self.get_output()
 
         # Convolution B (2x3)
         # --------------------------------------------------
-        layerName = "layer%s_ConvB" % id
+        layerName = "layer%s_ConvB" % l_id
         padded_input_B = tf.pad(input_data, [[0, 0], [1, 0], [1, 1], [0, 0]], "CONSTANT")
         self.feed(padded_input_B)
         self.conv(2, 3, size[3], stride, stride, name=layerName, padding='VALID', relu=False)
@@ -318,7 +318,7 @@ class Network(object):
 
         # Convolution C (3x2)
         # --------------------------------------------------
-        layerName = "layer%s_ConvC" % id
+        layerName = "layer%s_ConvC" % l_id
         padded_input_C = tf.pad(input_data, [[0, 0], [1, 1], [1, 0], [0, 0]], "CONSTANT")
         self.feed(padded_input_C)
         self.conv(3, 2, size[3], stride, stride, name=layerName, padding='VALID', relu=False)
@@ -326,7 +326,7 @@ class Network(object):
 
         # Convolution D (2x2)
         # --------------------------------------------------
-        layerName = "layer%s_ConvD" % id
+        layerName = "layer%s_ConvD" % l_id
         padded_input_D = tf.pad(input_data, [[0, 0], [1, 0], [1, 0], [0, 0]], "CONSTANT")
         self.feed(padded_input_D)
         self.conv(2, 2, size[3], stride, stride, name=layerName, padding='VALID', relu=False)
@@ -339,7 +339,7 @@ class Network(object):
         Y = interleave([left, right], axis=2)  # rows
 
         if BN:
-            layerName = "layer%s_BN" % id
+            layerName = "layer%s_BN" % l_id
             self.feed(Y)
             self.batch_normalization(name=layerName, scale_offset=True, relu=False)
             Y = self.get_output()
@@ -349,40 +349,40 @@ class Network(object):
 
         return Y
 
-    def up_project(self, size, id, stride=1, BN=True):
+    def up_project(self, size, l_id, stride=1, BN=True):
 
         # Create residual upsampling layer (UpProjection)
 
         input_data = self.get_output()
 
         # Branch 1
-        id_br1 = "%s_br1" % id
+        id_br1 = "%s_br1" % l_id
 
         # Interleaving Convs of 1st branch
         out = self.unpool_as_conv(size, input_data, id_br1, stride, ReLU=True, BN=True)
 
         # Convolution following the upProjection on the 1st branch
-        layerName = "layer%s_Conv" % id
+        layerName = "layer%s_Conv" % l_id
         self.feed(out)
         self.conv(size[0], size[1], size[3], stride, stride, name=layerName, relu=False)
 
         if BN:
-            layerName = "layer%s_BN" % id
+            layerName = "layer%s_BN" % l_id
             self.batch_normalization(name=layerName, scale_offset=True, relu=False)
 
         # Output of 1st branch
         branch1_output = self.get_output()
 
         # Branch 2
-        id_br2 = "%s_br2" % id
+        id_br2 = "%s_br2" % l_id
         # Interleaving convolutions and output of 2nd branch
         branch2_output = self.unpool_as_conv(size, input_data, id_br2, stride, ReLU=False)
 
         # sum branches
-        layerName = "layer%s_Sum" % id
+        layerName = "layer%s_Sum" % l_id
         output = tf.add_n([branch1_output, branch2_output], name=layerName)
         # ReLU
-        layerName = "layer%s_ReLU" % id
+        layerName = "layer%s_ReLU" % l_id
         output = tf.nn.relu(output, name=layerName)
 
         self.feed(output)
