@@ -3,7 +3,7 @@
 # ===========
 import numpy as np
 import matplotlib.pyplot as plt
-import utils.loss as loss
+import modules.loss as loss
 
 
 # ==================

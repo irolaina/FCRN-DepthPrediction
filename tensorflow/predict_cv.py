@@ -18,7 +18,7 @@ import time
 from matplotlib import pyplot as plt
 from PIL import Image
 
-from utils.fcrn import ResNet50UpProj
+from modules.fcrn import ResNet50UpProj
 
 # ==================
 #  Global Variables

@@ -5,11 +5,11 @@ import numpy as np
 import tensorflow as tf
 import os
 import sys
-import utils.loss as loss
+import modules.loss as loss
 
-from utils.size import Size
-from utils.train import Train
-from utils.validation import Validation
+from modules.size import Size
+from modules.train import Train
+from modules.validation import Validation
 
 # ==================
 #  Global Variables

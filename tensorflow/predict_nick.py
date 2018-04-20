@@ -25,17 +25,17 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-import utils.metrics as metricsLib
-import utils.args as argsLib
+import modules.metrics as metricsLib
+import modules.args as argsLib
 
 from PIL import Image
-from utils.dataset.dataloader import Dataloader
-from utils.framework import Model
-from utils.model.fcrn import ResNet50UpProj
-from utils.train import EarlyStopping
-from utils.size import Size
-from utils.plot import Plot
 
+from modules.dataset.dataloader import Dataloader
+from modules.framework import Model
+from modules.model.fcrn import ResNet50UpProj
+from modules.train import EarlyStopping
+from modules.size import Size
+from modules.plot import Plot
 
 # ==================
 #  Framework Config
@@ -211,6 +211,7 @@ def train(args):
         for step in range(args.max_steps):
             start2 = time.time()
 
+            # TODO: Se não precisa mostrar as imagens, o número de tensores avaliados pode ser reduzido (Otimização)
             # ----- Session Run! ----- #
             # Training
             # TODO: Create train_ops variable
@@ -482,9 +483,6 @@ def main(args):
     sys.exit()
 
 
-# ======
-#  Main
-# ======
 if __name__ == '__main__':
     args = argsLib.argumentHandler()
 

@@ -1,4 +1,4 @@
-from ..network import Network
+from .network import Network
 
 
 class ResNet50UpProj(Network):

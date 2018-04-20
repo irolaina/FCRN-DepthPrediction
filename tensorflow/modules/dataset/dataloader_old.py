@@ -13,8 +13,8 @@ from skimage import exposure
 from skimage import dtype_limits
 from skimage import transform
 
-from utils.kitti import Kitti
-from utils.nyudepth import NyuDepth
+from modules.kitti import Kitti
+from modules.nyudepth import NyuDepth
 
 
 # ==================
