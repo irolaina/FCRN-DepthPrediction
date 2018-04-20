@@ -207,7 +207,7 @@ def train(args):
         threads = tf.train.start_queue_runners(coord=coord)
 
         start = time.time()
-        for step in range(args.max_steps+1):
+        for step in range(args.max_steps + 1):
             start2 = time.time()
 
             # ----- Session Run! ----- #
@@ -242,11 +242,6 @@ def train(args):
 
             # debug_data_augmentation()
 
-            if ENABLE_TENSORBOARD:
-                # Write information to TensorBoard
-                model.summary_writer.add_summary(summary_str, step)
-                model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
-
             # Prints Training Progress
             if step % 10 == 0:
                 if args.show_train_progress:
@@ -258,13 +253,16 @@ def train(args):
 
                 end2 = time.time()
 
-                print('epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(epoch,
-                                                                                                                                 max_epochs,
-                                                                                                                                 step,
-                                                                                                                                 args.max_steps,
-                                                                                                                                 end2 - start2,
-                                                                                                                                 model.train.loss,
-                                                                                                                                 model.valid.loss))
+                print(
+                    'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
+                        epoch,
+                        max_epochs,
+                        step,
+                        args.max_steps,
+                        end2 - start2,
+                        model.train.loss,
+                        model.valid.loss))
+
             # Detects the end of a epoch
             if np.floor((step * args.batch_size) / data.numTrainSamples) != epoch:
                 # Validation
@@ -311,7 +309,8 @@ def train(args):
                 # Validation
                 # FIXME: Uses only one image as validation!
                 feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                              model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+                              model.valid.tf_depth: np.expand_dims(
+                                  np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
 
                 if args.show_valid_progress:
                     valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
@@ -327,8 +326,13 @@ def train(args):
                     model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
 
                 if ENABLE_EARLY_STOP:
-                    if stop.check(step, model.valid.loss): # TODO: Validar
+                    if stop.check(step, model.valid.loss):  # TODO: Validar
                         break
+
+            # Write information to TensorBoard
+            if ENABLE_TENSORBOARD:
+                model.summary_writer.add_summary(summary_str, step)
+                model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
             epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
 
