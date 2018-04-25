@@ -27,7 +27,7 @@ class Apolloscape(object):
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/apolloscape/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/apolloscape/data"
 
         self.name = 'apolloscape'
 

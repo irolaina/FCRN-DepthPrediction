@@ -399,14 +399,7 @@ def train(args):
         if SAVE_TRAINED_MODEL:
             model.saveTrainedModel(save_restore_path, sess, model.train_saver, args.model_name)
 
-        # Logs the obtained simulation results
-        print("[Results] Logging simulation info to 'results.txt' file...")
-        f = open('results.txt', 'a')
-        f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
-            datetime, args.model_name, args.dataset, model.loss_name, step, model.train.loss, model.valid.loss,
-            sim_train)) #FIXME: Salvando valor de 'step' errado, quando o treinamento é abortado.
-        f.close()
-
+        model.saveResults(datetime, step, sim_train)
 
 # ========= #
 #  Testing  #

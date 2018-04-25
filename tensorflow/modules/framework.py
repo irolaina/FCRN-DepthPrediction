@@ -143,3 +143,10 @@ class Model(object):
 
         file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
         print("\n[Results] Model saved in file: %s" % file_path)
+
+    def saveResults(self, datetime, step, sim_train):
+        # Logs the obtained simulation results
+        print("[Results] Logging simulation info to 'results.txt' file...")
+        f = open('results.txt', 'a')
+        f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (datetime, self.args.model_name, self.args.dataset, self.loss_name, step, self.train.loss, self.valid.loss, sim_train))  # FIXME: Salvando valor de 'step' errado, quando o treinamento é abortado.
+        f.close()
