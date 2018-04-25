@@ -35,7 +35,7 @@ class Kitti2012(object):
         self.depth_size = Size(370, 1226, 1)
 
         self.image_replace = [b'_colors.png', b'']  # FIXME
-        self.depth_replace = [b'_depth.png', b'']   # FIXME
+        self.depth_replace = [b'_depth.png', b'']  # FIXME
 
         # Data Range/Plot ColorSpace # TODO: Terminar
         self.vmin = None
@@ -45,8 +45,7 @@ class Kitti2012(object):
 
         print("[Dataloader] Kitti2012 object created.")
 
-
-    def getFilenamesLists(self, mode): # FIXME
+    def getFilenamesLists(self, mode):  # FIXME
         image_filenames = []
         depth_filenames = []
 

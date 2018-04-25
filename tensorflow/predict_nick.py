@@ -4,10 +4,8 @@
 # ============
 #  To-Do FCRN
 # ============
-# TODO: Implementar leitura das imagens pelo Tensorflow - Teste
-# TODO: Validar Métricas.
-
 # TODO: Dar suporte a outros Datasets
+# TODO: Validar Métricas.
 
 # TODO: Implementar Bilinear
 # TODO: Estou aplicando a normalização da entrada em todos os módulos (predict, test, train, valid)?
@@ -38,9 +36,9 @@ from modules.train import EarlyStopping
 from modules.size import Size
 from modules.plot import Plot
 
-# ==================
-#  Framework Config
-# ==================
+# =============================
+#  Framework Config - Training
+# =============================
 # Select the Loss Function:
 # 0 - MSE
 # 1 - Eigen's Log Depth
@@ -52,8 +50,17 @@ VALID_PIXELS = True  # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = False  # Default: True # TODO: Ativar
-SAVE_TRAINED_MODEL = True  # Default: True
 ENABLE_TENSORBOARD = True  # Default: True
+SAVE_TRAINED_MODEL = True  # Default: True
+
+# =============================
+#  Framework Config - Testing
+# =============================
+# Select Subset:
+# 0 - TestData      # Default
+# 1 - TrainData
+TEST_EVALUATE_SUBSET = 0
+
 SAVE_TEST_DISPARITIES = True  # Default: True
 APPLY_BILINEAR_OUTPUT = False  # Default: False
 
@@ -86,15 +93,17 @@ def createSaveFolder():
 
     return save_path, save_restore_path
 
+
 # This function is called every time a key is presssed
 def kbevent(event):
     # print key info
-    print(event)
+    # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
     if event.Ascii == 32:
         global running
         running = False
+
 
 # Create hookmanager
 hookman = pyxhook.HookManager()
@@ -104,6 +113,7 @@ hookman.KeyDown = kbevent
 hookman.HookKeyboard()
 # Start our listener
 hookman.start()
+
 
 # ========= #
 #  Predict  #
@@ -181,7 +191,7 @@ def train(args):
 
         # Searches dataset images filenames
         data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
-        data.valid_image_filenames, data.valid_depth_filenames, tf_valid_image_filenames, tf_valid_depth_filenames = data.getTestData()
+        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData()
 
         # data.splitData(image_filenames, depth_filenames) # TODO: Remover
 
@@ -217,7 +227,7 @@ def train(args):
         # Check Dataset Integrity
         print("[Dataloader] Checking if RGB and Depth images are paired... ")
         data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames, 'TrainData')
-        data.checkIntegrity(sess, tf_valid_image_filenames, tf_valid_depth_filenames, 'TestData')
+        data.checkIntegrity(sess, tf_test_image_filenames, tf_test_depth_filenames, 'TestData')
 
         # Proclaim the epochs
         max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
@@ -244,7 +254,8 @@ def train(args):
                          model.train.tf_batch_labels, model.train.tf_log_batch_labels,
                          model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
                 else:
-                    _, model.train.loss, summary_str = sess.run([model.train_step, model.train.tf_loss, model.summary_op])
+                    _, model.train.loss, summary_str = sess.run(
+                        [model.train_step, model.train.tf_loss, model.summary_op])
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -298,7 +309,7 @@ def train(args):
                     # # Resets Validation Auxilary Variables
                     # i, l = 0, []
                     # valid_batch_size = 2 # TODO: Move
-                    # while i <= len(data.valid_image_filenames):
+                    # while i <= len(data.test_image_filenames):
                     #     valid_batch_data_resized, valid_batch_labels, valid_batch_pred, valid_batch_loss = sess.run([model.valid.tf_batch_data_resized, model.valid.tf_batch_labels, model.fcrn_valid.get_output(), model.valid.tf_loss])
                     #     l.append(valid_batch_loss)
                     #     i += valid_batch_size
@@ -333,9 +344,10 @@ def train(args):
 
                     # Validation
                     # FIXME: Uses only one image as validation!
-                    feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                                  model.valid.tf_depth: np.expand_dims(
-                                      np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+                    feed_valid = {
+                        model.valid.tf_image: np.expand_dims(plt.imread(data.test_image_filenames[0]), axis=0),
+                        model.valid.tf_depth: np.expand_dims(
+                            np.expand_dims(plt.imread(data.test_depth_filenames[0]), axis=0), axis=3)}
 
                     if args.show_valid_progress:
                         valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
@@ -350,12 +362,11 @@ def train(args):
                     else:
                         model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
 
-
                     # TODO: Move
                     model.train.loss_hist.append(model.train.loss)
                     model.valid.loss_hist.append(model.valid.loss)
 
-                    plt.figure(10)
+                    plt.figure(3)
                     plt.plot(range(len(model.train.loss_hist)), model.train.loss_hist, 'b', label='Train Loss')
                     plt.plot(range(len(model.valid.loss_hist)), model.valid.loss_hist, 'r', label='Valid Loss')
 
@@ -401,30 +412,36 @@ def train(args):
 
         model.saveResults(datetime, step, sim_train)
 
+
 # ========= #
 #  Testing  #
 # ========= #
 def test(args):
     print('[%s] Selected mode: Test' % appName)
 
-    # Default input size
-    height = 228
-    width = 304
-    channels = 3
+    # Local Variables
+    input_size = Size(228, 304, 3)
     batch_size = 1
+    numSamples = None
 
     # -----------------------------------------
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
     # Loads the dataset and restores a specified trained model.
-    data = Dataloader(args)  # TODO: Usar leitura pelo Tensorflow
+    data = Dataloader(args)
 
     # Searches dataset images filenames
-    test_image_filenames, test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData(
-        args)
+    # data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
+
+    if TEST_EVALUATE_SUBSET == 0:
+        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData()
+        numSamples = data.numTestSamples
+    elif TEST_EVALUATE_SUBSET == 1:
+        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
+        numSamples = data.numTrainSamples
 
     # Create a placeholder for the input image
-    tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
+    tf_image = tf.placeholder(tf.float32, shape=(None, input_size.height, input_size.width, input_size.nchannels))
 
     # Construct the network
     with tf.variable_scope('model'):
@@ -435,12 +452,12 @@ def test(args):
 
     # Memory Allocation
     # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
-    test_data_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels),
+    test_data_o = np.zeros((numSamples, input_size.height, input_size.width, input_size.nchannels),
                            dtype=np.uint8)  # (?, 172, 576, 3)
-    test_data_crop_o = np.zeros((data.numSamples, input_size.height, input_size.width, input_size.nchannels),
+    test_data_crop_o = np.zeros((numSamples, input_size.height, input_size.width, input_size.nchannels),
                                 dtype=np.uint8)  # (?, 172, 576, 3)
-    pred = np.zeros((data.numSamples, output_size.height, output_size.width), dtype=np.float32)  # (?, 43, 144)
-    test_labels_o = np.zeros((data.numSamples, output_size.height, output_size.width), dtype=np.int32)  # (?, 43, 144)
+    pred = np.zeros((numSamples, output_size.height, output_size.width), dtype=np.float32)  # (?, 43, 144)
+    test_labels_o = np.zeros((numSamples, output_size.height, output_size.width), dtype=np.int32)  # (?, 43, 144)
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -458,12 +475,12 @@ def test(args):
         # ==============
         start = time.time()
 
-        for i, image_path in enumerate(test_image_filenames):
+        for i, image_path in enumerate(data.test_image_filenames):
             start2 = time.time()
 
-            if test_depth_filenames:  # It's not empty
-                image, depth, image_crop, depth_bilinear = data.readImage(test_image_filenames[i],
-                                                                          test_depth_filenames[i],
+            if data.test_depth_filenames:  # It's not empty
+                image, depth, image_crop, depth_bilinear = data.readImage(data.test_image_filenames[i],
+                                                                          data.test_depth_filenames[i],
                                                                           input_size,
                                                                           output_size,
                                                                           mode='test')
@@ -471,7 +488,7 @@ def test(args):
                 test_labels_o[i] = depth[:, :, 0]
                 # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
             else:
-                image, _, image_crop, _ = data.readImage(data.test_dataset[i], None, mode='test')
+                image, _, image_crop, _ = data.readImage(data.test_dataset[i], None, mode='test') #FIXME
 
             test_data_o[i] = image
             test_data_crop_o[i] = image_crop
@@ -483,7 +500,7 @@ def test(args):
 
             # Prints Testing Progress
             end2 = time.time()
-            print('step: %d/%d | t: %f' % (i + 1, data.numSamples, end2 - start2))
+            print('step: %d/%d | t: %f' % (i + 1, numSamples, end2 - start2))
             # break # Test
 
         # Testing Finished.
@@ -505,7 +522,7 @@ def test(args):
             np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path
 
         # Calculate Metrics
-        if test_depth_filenames:
+        if data.test_depth_filenames:
             metricsLib.evaluateTesting(pred, test_labels_o)
         else:
             print(
@@ -514,7 +531,7 @@ def test(args):
         # Show Results
         if args.show_test_results:
             test_plotObj = Plot(args.mode, title='Test Predictions')
-            for i in range(data.numSamples):
+            for i in range(numSamples):
                 test_plotObj.showTestResults(raw=test_data_crop_o[i],
                                              label=test_labels_o[i],
                                              log_label=np.log(test_labels_o[i] + LOG_INITIAL_VALUE),

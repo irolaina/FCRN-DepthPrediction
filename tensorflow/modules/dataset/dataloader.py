@@ -62,8 +62,8 @@ class Dataloader:
         # Filenames Lists
         self.train_image_filenames = None
         self.train_depth_filenames = None
-        self.valid_image_filenames = None
-        self.valid_depth_filenames = None
+        self.test_image_filenames = None
+        self.test_depth_filenames = None
 
         self.numTrainSamples = -1
         self.numTestSamples = -1
@@ -134,15 +134,15 @@ class Dataloader:
         self.train_depth_filenames = depth_filenames[:divider]
 
         """Validation"""
-        self.valid_image_filenames = image_filenames[divider:]
-        self.valid_depth_filenames = depth_filenames[divider:]
+        self.test_image_filenames = image_filenames[divider:]
+        self.test_depth_filenames = depth_filenames[divider:]
 
         """Final"""
         print("\nSummary")
         print("len(train_image_filenames):", len(self.train_image_filenames))
         print("len(train_depth_filenames):", len(self.train_depth_filenames))
-        print("len(valid_image_filenames):", len(self.valid_image_filenames))
-        print("len(valid_depth_filenames):", len(self.valid_depth_filenames))
+        print("len(test_image_filenames):", len(self.test_image_filenames))
+        print("len(test_depth_filenames):", len(self.test_depth_filenames))
 
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames, mode):
         try:
