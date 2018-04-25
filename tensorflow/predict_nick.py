@@ -193,15 +193,12 @@ def train(args):
         data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
         data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData()
 
-        # data.splitData(image_filenames, depth_filenames) # TODO: Remover
-
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
             data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
 
         tf_train_image, tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
-        # tf_valid_image, tf_valid_depth = data.readDataValid(data.valid_image_filenames, data.valid_depth_filenames) # TODO: Posso realmente utilizar essa funcao para validacao?
 
         # Build Network Model
         model.build_model(data.image_size, data.depth_size, tf_train_image, tf_train_depth)
@@ -343,24 +340,33 @@ def train(args):
                     # -----
 
                     # Validation
-                    # FIXME: Uses only one image as validation!
-                    feed_valid = {
-                        model.valid.tf_image: np.expand_dims(plt.imread(data.test_image_filenames[0]), axis=0),
-                        model.valid.tf_depth: np.expand_dims(
-                            np.expand_dims(plt.imread(data.test_depth_filenames[0]), axis=0), axis=3)}
+                    valid_loss_sum = 0
+                    print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
+                    for i in range(data.numTestSamples):
+                        feed_valid = {
+                            model.valid.tf_image: np.expand_dims(plt.imread(data.test_image_filenames[i]), axis=0),
+                            model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.test_depth_filenames[i]), axis=0), axis=3)}
 
-                    if args.show_valid_progress:
-                        valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
-                            [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
-                             model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
+                        if args.show_valid_progress:
+                            valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
+                                [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
+                                 model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
 
-                        model.valid.plot.showResults(raw=valid_image[0, :, :],
-                                                     label=valid_labels[0, :, :, 0],
-                                                     log_label=valid_log_labels[0, :, :, 0],
-                                                     pred=valid_pred[0, :, :, 0],
-                                                     cbar_range=data.datasetObj)
-                    else:
-                        model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
+                            model.valid.plot.showResults(raw=valid_image[0, :, :],
+                                                         label=valid_labels[0, :, :, 0],
+                                                         log_label=valid_log_labels[0, :, :, 0],
+                                                         pred=valid_pred[0, :, :, 0],
+                                                         cbar_range=data.datasetObj)
+                        else:
+                            model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
+
+                        valid_loss_sum += model.valid.loss
+
+                        print("%d/%d\tvalid_loss_sum: %f\tvalid_loss: %f" % (i, data.numTestSamples, valid_loss_sum, model.valid.loss))
+
+                    # Calculate mean value of 'valid_loss'
+                    model.valid.loss = valid_loss_sum/data.numTestSamples # Updates 'Valid_loss' value
+                    print("mean(valid_loss): %f\n" % model.valid.loss)
 
                     # TODO: Move
                     model.train.loss_hist.append(model.train.loss)
@@ -488,7 +494,7 @@ def test(args):
                 test_labels_o[i] = depth[:, :, 0]
                 # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
             else:
-                image, _, image_crop, _ = data.readImage(data.test_dataset[i], None, mode='test') #FIXME
+                image, _, image_crop, _ = data.readImage(data.test_image_filenames[i], None, mode='test') #FIXME
 
             test_data_o[i] = image
             test_data_crop_o[i] = image_crop
