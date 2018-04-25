@@ -15,6 +15,7 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
+# TODO: Organizar name_scopes
 class Validation:
     def __init__(self, args, image_size, depth_size, input_size, output_size):
         # Raw Input/Output
@@ -47,6 +48,7 @@ class Validation:
         with tf.name_scope('Valid'):
             self.tf_loss = None
             self.loss = -1
+            self.loss_hist = []
 
         if args.show_valid_progress:
             self.plot = Plot(args.mode, title='Validation Prediction')

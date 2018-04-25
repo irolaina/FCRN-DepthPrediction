@@ -10,7 +10,6 @@
 # TODO: Dar suporte a outros Datasets
 
 # TODO: Implementar Bilinear
-# TODO: If detect Ctrl+C, save training state.
 # TODO: Estou aplicando a normalização da entrada em todos os módulos (predict, test, train, valid)?
 # FIXME: Qualidade dos labels de treinamento menos discretizado que os labels de validação
 
@@ -21,6 +20,7 @@ import os
 import warnings
 import time
 import sys
+import pyxhook
 
 import tensorflow as tf
 import numpy as np
@@ -86,6 +86,24 @@ def createSaveFolder():
 
     return save_path, save_restore_path
 
+# This function is called every time a key is presssed
+def kbevent(event):
+    # print key info
+    print(event)
+
+    # If the ascii value matches spacebar, terminate the while loop
+    if event.Ascii == 32:
+        global running
+        running = False
+
+# Create hookmanager
+hookman = pyxhook.HookManager()
+# Define our callback to fire when a key is pressed down
+hookman.KeyDown = kbevent
+# Hook the keyboard
+hookman.HookKeyboard()
+# Start our listener
+hookman.start()
 
 # ========= #
 #  Predict  #
@@ -145,6 +163,12 @@ def train(args):
     print('[%s] Selected mode: Train' % appName)
 
     # Local Variables
+    firstTime = True  # TODO: Temp var
+
+    # Create a loop to keep the application running
+    global running
+    running = True
+
     save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
 
     # ----------------------------------------- #
@@ -208,139 +232,165 @@ def train(args):
 
         start = time.time()
         for step in range(args.max_steps + 1):
-            start2 = time.time()
+            if running:
+                start2 = time.time()
 
-            # ----- Session Run! ----- #
-            # Training
-            # TODO: Create train_ops variable
-            if args.show_train_progress:
-                _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                    [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
-                     model.train.tf_batch_labels, model.train.tf_log_batch_labels,
-                     model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
-            else:
-                _, model.train.loss, summary_str = sess.run([model.train_step, model.train.tf_loss, model.summary_op])
-
-            def debug_data_augmentation():
-                fig, axes = plt.subplots(nrows=2, ncols=2)
-
-                axes[0, 0].set_title('images_resized')
-                axes[0, 0].imshow(images_resized)
-
-                axes[0, 1].set_title('depths_resized[:, :, 0]')
-                axes[0, 1].imshow(depths_resized[:, :, 0])
-
-                axes[1, 0].set_title('images_proc')
-                axes[1, 0].imshow(images_proc)
-
-                axes[1, 1].set_title('depths_proc[:,:,0]')
-                axes[1, 1].imshow(depths_proc[:, :, 0])
-                fig.tight_layout()
-
-                plt.pause(0.001)
-                input("proc")
-
-            # debug_data_augmentation()
-
-            # Prints Training Progress
-            if step % 10 == 0:
+                # ----- Session Run! ----- #
+                # Training
+                # TODO: Create train_ops variable
                 if args.show_train_progress:
-                    model.train.plot.showResults(raw=batch_data_raw[0],
-                                                 label=batch_labels[0, :, :, 0],
-                                                 log_label=log_batch_labels[0, :, :, 0],
-                                                 pred=batch_pred[0, :, :, 0],
-                                                 cbar_range=data.datasetObj)
-
-                end2 = time.time()
-
-                print(
-                    'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
-                        epoch,
-                        max_epochs,
-                        step,
-                        args.max_steps,
-                        end2 - start2,
-                        model.train.loss,
-                        model.valid.loss))
-
-            # Detects the end of a epoch
-            if np.floor((step * args.batch_size) / data.numTrainSamples) != epoch:
-                # Validation
-                # TODO: Create valid_ops variable
-
-                # # ----- Validation - Method 1 ----- #
-                # Uses all validation images for evaluation!
-                # # Resets Validation Auxilary Variables
-                # i, l = 0, []
-                # valid_batch_size = 2 # TODO: Move
-                # while i <= len(data.valid_image_filenames):
-                #     valid_batch_data_resized, valid_batch_labels, valid_batch_pred, valid_batch_loss = sess.run([model.valid.tf_batch_data_resized, model.valid.tf_batch_labels, model.fcrn_valid.get_output(), model.valid.tf_loss])
-                #     l.append(valid_batch_loss)
-                #     i += valid_batch_size
-                #
-                #     valid_image =
-                #     valid_labels =
-                #     valid_log_labels =
-                #     valid_pred =
-                #
-                #
-                #     # print(valid_batch_data_resized.shape)
-                #     # print(valid_batch_labels.shape)
-                #     # print(valid_batch_pred.shape)
-                #     # plt.figure(10)
-                #     # plt.imshow(valid_batch_data_resized[0])
-                #     # plt.figure(11)
-                #     # plt.imshow(valid_batch_labels[0,:,:,0])
-                #     # plt.figure(12)
-                #     # plt.imshow(valid_batch_pred[0,:,:,0])
-                #     # plt.draw()
-                #     # plt.pause(0.1)
-                #
-                #     # print(valid_batch_loss)
-                #     # print()
-                #
-                # model.valid.loss = np.mean(l)
-                #
-                # # print(l)
-                # # print(len(l))
-                # # print("mean:", model.valid.loss)
-                # -----
-
-                # Validation
-                # FIXME: Uses only one image as validation!
-                feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
-                              model.valid.tf_depth: np.expand_dims(
-                                  np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
-
-                if args.show_valid_progress:
-                    valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
-                        [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
-                         model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
-
-                    model.valid.plot.showResults(raw=valid_image[0, :, :],
-                                                 label=valid_labels[0, :, :, 0],
-                                                 log_label=valid_log_labels[0, :, :, 0],
-                                                 pred=valid_pred[0, :, :, 0],
-                                                 cbar_range=data.datasetObj)
+                    _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
+                        [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
+                         model.train.tf_batch_labels, model.train.tf_log_batch_labels,
+                         model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
                 else:
-                    model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
+                    _, model.train.loss, summary_str = sess.run([model.train_step, model.train.tf_loss, model.summary_op])
 
-                if ENABLE_EARLY_STOP:
-                    if stop.check(step, model.valid.loss):  # TODO: Validar
-                        break
+                def debug_data_augmentation():
+                    fig, axes = plt.subplots(nrows=2, ncols=2)
 
-            # Write information to TensorBoard
-            if ENABLE_TENSORBOARD:
-                model.summary_writer.add_summary(summary_str, step)
-                model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
+                    axes[0, 0].set_title('images_resized')
+                    axes[0, 0].imshow(images_resized)
 
-            epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
+                    axes[0, 1].set_title('depths_resized[:, :, 0]')
+                    axes[0, 1].imshow(depths_resized[:, :, 0])
+
+                    axes[1, 0].set_title('images_proc')
+                    axes[1, 0].imshow(images_proc)
+
+                    axes[1, 1].set_title('depths_proc[:,:,0]')
+                    axes[1, 1].imshow(depths_proc[:, :, 0])
+                    fig.tight_layout()
+
+                    plt.pause(0.001)
+                    input("proc")
+
+                # debug_data_augmentation()
+
+                # Prints Training Progress
+                if step % 10 == 0:
+                    if args.show_train_progress:
+                        model.train.plot.showResults(raw=batch_data_raw[0],
+                                                     label=batch_labels[0, :, :, 0],
+                                                     log_label=log_batch_labels[0, :, :, 0],
+                                                     pred=batch_pred[0, :, :, 0],
+                                                     cbar_range=data.datasetObj)
+
+                    end2 = time.time()
+
+                    print(
+                        'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
+                            epoch,
+                            max_epochs,
+                            step,
+                            args.max_steps,
+                            end2 - start2,
+                            model.train.loss,
+                            model.valid.loss))
+
+                # Detects the end of a epoch
+                if np.floor((step * args.batch_size) / data.numTrainSamples) != epoch:
+                    # Validation
+                    # TODO: Create valid_ops variable
+
+                    # # ----- Validation - Method 1 ----- #
+                    # Uses all validation images for evaluation!
+                    # # Resets Validation Auxilary Variables
+                    # i, l = 0, []
+                    # valid_batch_size = 2 # TODO: Move
+                    # while i <= len(data.valid_image_filenames):
+                    #     valid_batch_data_resized, valid_batch_labels, valid_batch_pred, valid_batch_loss = sess.run([model.valid.tf_batch_data_resized, model.valid.tf_batch_labels, model.fcrn_valid.get_output(), model.valid.tf_loss])
+                    #     l.append(valid_batch_loss)
+                    #     i += valid_batch_size
+                    #
+                    #     valid_image =
+                    #     valid_labels =
+                    #     valid_log_labels =
+                    #     valid_pred =
+                    #
+                    #
+                    #     # print(valid_batch_data_resized.shape)
+                    #     # print(valid_batch_labels.shape)
+                    #     # print(valid_batch_pred.shape)
+                    #     # plt.figure(10)
+                    #     # plt.imshow(valid_batch_data_resized[0])
+                    #     # plt.figure(11)
+                    #     # plt.imshow(valid_batch_labels[0,:,:,0])
+                    #     # plt.figure(12)
+                    #     # plt.imshow(valid_batch_pred[0,:,:,0])
+                    #     # plt.draw()
+                    #     # plt.pause(0.1)
+                    #
+                    #     # print(valid_batch_loss)
+                    #     # print()
+                    #
+                    # model.valid.loss = np.mean(l)
+                    #
+                    # # print(l)
+                    # # print(len(l))
+                    # # print("mean:", model.valid.loss)
+                    # -----
+
+                    # Validation
+                    # FIXME: Uses only one image as validation!
+                    feed_valid = {model.valid.tf_image: np.expand_dims(plt.imread(data.valid_image_filenames[0]), axis=0),
+                                  model.valid.tf_depth: np.expand_dims(
+                                      np.expand_dims(plt.imread(data.valid_depth_filenames[0]), axis=0), axis=3)}
+
+                    if args.show_valid_progress:
+                        valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
+                            [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
+                             model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
+
+                        model.valid.plot.showResults(raw=valid_image[0, :, :],
+                                                     label=valid_labels[0, :, :, 0],
+                                                     log_label=valid_log_labels[0, :, :, 0],
+                                                     pred=valid_pred[0, :, :, 0],
+                                                     cbar_range=data.datasetObj)
+                    else:
+                        model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
+
+
+                    # TODO: Move
+                    model.train.loss_hist.append(model.train.loss)
+                    model.valid.loss_hist.append(model.valid.loss)
+
+                    plt.figure(10)
+                    plt.plot(range(len(model.train.loss_hist)), model.train.loss_hist, 'b', label='Train Loss')
+                    plt.plot(range(len(model.valid.loss_hist)), model.valid.loss_hist, 'r', label='Valid Loss')
+
+                    if firstTime:
+                        plt.title('Training and Validation Loss')
+                        plt.xlabel('Epochs')
+                        plt.ylabel('Loss')
+                        plt.legend()
+                        plt.draw()
+                        firstTime = False
+                    else:
+                        plt.draw()
+
+                    if ENABLE_EARLY_STOP:
+                        if stop.check(step, model.valid.loss):  # TODO: Validar
+                            break
+
+                # Write information to TensorBoard
+                if ENABLE_TENSORBOARD:
+                    model.summary_writer.add_summary(summary_str, step)
+                    model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
+
+                epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
+            else:
+                print("[KeyEvent] 'SpaceBar' Pressed! Training process aborted!")
 
         coord.request_stop()
         coord.join(threads)
 
         end = time.time()
         sim_train = end - start
+
+        # Close the listener when we are done
+        hookman.cancel()
+
         print("\n[Network/Training] Training FINISHED! Time elapsed: %f s\n" % sim_train)
 
         # ==============
@@ -354,7 +404,7 @@ def train(args):
         f = open('results.txt', 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tsteps: %d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
             datetime, args.model_name, args.dataset, model.loss_name, step, model.train.loss, model.valid.loss,
-            sim_train))
+            sim_train)) #FIXME: Salvando valor de 'step' errado, quando o treinamento é abortado.
         f.close()
 
 

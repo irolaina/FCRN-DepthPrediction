@@ -22,6 +22,7 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 # ===================
 #  Class Declaration
 # ===================
+# TODO: Organizar name_scopes
 class Train:
     def __init__(self, args, tf_train_image, tf_train_depth, input_size, output_size):
         with tf.name_scope('Inputs'):
@@ -54,6 +55,7 @@ class Train:
 
             self.tf_loss = None
             self.loss = -1
+            self.loss_hist = []
 
         self.trainCollection()
 

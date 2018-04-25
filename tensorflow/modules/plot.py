@@ -56,6 +56,13 @@ class Plot(object):
             self.axes[2].set_title("log(Label)")
             self.axes[3].set_title("Pred")
 
+        # TODO: Usar?
+        # self.cax1 = self.axes[0].imshow(np.zeros(shape=(228, 304)))
+        # self.cax2 = self.axes[1].imshow(np.zeros(shape=(228, 304)))
+        # self.cax3 = self.axes[2].imshow(np.zeros(shape=(228, 304)))
+        # self.cax4 = self.axes[3].imshow(np.zeros(shape=(128, 160)))
+        # self.cax5 = self.axes[4].imshow(np.zeros(shape=(128, 160)))
+
         self.fig.canvas.set_window_title(title)
         # self.fig.set_size_inches(9, 5)
         self.fig.tight_layout(pad=0.4, w_pad=2, h_pad=1.0)  # Fix Subplots Spacing
