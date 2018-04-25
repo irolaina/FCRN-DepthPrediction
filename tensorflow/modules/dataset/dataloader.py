@@ -124,26 +124,6 @@ class Dataloader:
 
         return tf_image, tf_depth
 
-    def splitData(self, image_filenames, depth_filenames, ratio=0.8):
-        # Divides the Processed train data into training set and validation set
-        print('\n[Dataloader] Dividing available data into training and validation sets...')
-        divider = int(ratio * self.numSamples)
-
-        """Training"""
-        self.train_image_filenames = image_filenames[:divider]
-        self.train_depth_filenames = depth_filenames[:divider]
-
-        """Validation"""
-        self.test_image_filenames = image_filenames[divider:]
-        self.test_depth_filenames = depth_filenames[divider:]
-
-        """Final"""
-        print("\nSummary")
-        print("len(train_image_filenames):", len(self.train_image_filenames))
-        print("len(train_depth_filenames):", len(self.train_depth_filenames))
-        print("len(test_image_filenames):", len(self.test_image_filenames))
-        print("len(test_depth_filenames):", len(self.test_depth_filenames))
-
     def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames, mode):
         try:
             image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames])
