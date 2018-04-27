@@ -1,4 +1,5 @@
 #!/bin/sh
+# Dependencies: sudo apt-get install ffmpeg
 
 ffmpeg -r 30 -f image2 -s 304x288 -i output/fcrn_cv/frame%06d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p  output/frame.mp4
 ffmpeg -r 30 -f image2 -s 304x288 -i output/fcrn_cv/pred%06d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p  output/pred.mp4
