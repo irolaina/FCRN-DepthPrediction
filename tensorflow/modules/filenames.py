@@ -43,7 +43,7 @@ class FilenamesHandler(object):
         filenames = np.array(filenames)
 
         # Saving the 'filenames' variable to *.txt
-        root_path = os.path.abspath(os.path.join(__file__, "../../.."))
+        root_path = os.path.abspath(os.path.join(__file__, "../..")) # This line may cause 'FileNotFindError'
         relative_path = 'data/' + self.name + '_' + mode + '.txt'
         save_file_path = os.path.join(root_path, relative_path)
 
