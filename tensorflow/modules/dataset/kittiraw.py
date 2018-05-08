@@ -55,22 +55,33 @@ class KittiRaw(FilenamesHandler):
         image_filenames = []
         depth_filenames = []
 
-        if mode == 'train':
-            dataset_path_aux = self.dataset_path + "training/"
-        elif mode == 'test':
-            dataset_path_aux = self.dataset_path + "testing/"
+        file = 'data/' + self.name + '_' + mode + '.txt'
+
+        if os.path.exists(file):
+            data = self.loadList(file)
+
+            # Parsing Data
+            image_filenames = list(data[:, 0])
+            depth_filenames = list(data[:, 1])
         else:
-            sys.exit()
+            print("[Dataloader] '%s' doesn't exist..." % file)
+            print("[Dataloader] Searching files using glob (This may take a while)...")
 
-        # Finds input images and labels inside list of folders.
-        image_filenames = glob.glob(dataset_path_aux + "imgs/*")
-        depth_filenames = glob.glob(dataset_path_aux + "dispc/*")
+            # Finds input images and labels inside list of folders.
+            start = time.time()
+            image_filenames = glob.glob(self.dataset_path + mode + "ing/imgs/*")
+            depth_filenames = glob.glob(self.dataset_path + mode + "ing/dispc/*")
 
-        # TODO: Adicionar Sequential Search
-        # TODO: Fazer shuffle
-        # TODO: Eu acho que não precisa mais disso
-        # Alphabelly Sort the List of Strings
-        image_filenames.sort()
-        depth_filenames.sort()
+            # TODO: Adicionar Sequential Search
+
+            print("time: %f s" % (time.time() - start))
+
+            # TODO: Fazer shuffle
+            # TODO: Eu acho que não precisa mais disso
+            # Alphabelly Sort the List of Strings
+            image_filenames.sort()
+            depth_filenames.sort()
+
+            self.saveList(image_filenames, depth_filenames, mode)
 
         return image_filenames, depth_filenames
