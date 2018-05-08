@@ -46,7 +46,7 @@ from modules.plot import Plot
 LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True  # Default: True
+VALID_PIXELS = False  # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = False  # Default: True # TODO: Ativar
@@ -74,6 +74,8 @@ appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 LOG_INITIAL_VALUE = 1
 
+firstTime = True
+
 
 # ===========
 #  Functions
@@ -100,7 +102,7 @@ def kbevent(event):
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
-    if event.Ascii == 32:
+    if event.Ascii == 27:
         global running
         running = False
 
@@ -172,11 +174,9 @@ def predict(model_data_path, image_path):
 def train(args):
     print('[%s] Selected mode: Train' % appName)
 
-    # Local Variables
-    firstTime = True  # TODO: Temp var
-
     # Create a loop to keep the application running
     global running
+    global firstTime
     running = True
 
     save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
@@ -188,10 +188,6 @@ def train(args):
     with graph.as_default():
         data = Dataloader(args)
         model = Model(args)
-
-        # Searches dataset images filenames
-        data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
-        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData()
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
@@ -223,8 +219,10 @@ def train(args):
 
         # Check Dataset Integrity
         print("[Dataloader] Checking if RGB and Depth images are paired... ")
-        data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames, 'TrainData')
-        data.checkIntegrity(sess, tf_test_image_filenames, tf_test_depth_filenames, 'TestData')
+
+        # FIXME: Tirar checagem do código, fazer ao fazer a leitura do dataset
+        # data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames, 'TrainData')
+        # data.checkIntegrity(sess, tf_test_image_filenames, tf_test_depth_filenames, 'TestData')
 
         # Proclaim the epochs
         max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
@@ -300,57 +298,23 @@ def train(args):
                 if np.floor((step * args.batch_size) / data.numTrainSamples) != epoch:
                     # Validation
                     # TODO: Create valid_ops variable
+                    # TODO: Portar Leitura para o Tensorflow
+                    # TODO: Implementar Leitura por Batches
 
-                    # # ----- Validation - Method 1 ----- #
-                    # Uses all validation images for evaluation!
-                    # # Resets Validation Auxilary Variables
-                    # i, l = 0, []
-                    # valid_batch_size = 2 # TODO: Move
-                    # while i <= len(data.test_image_filenames):
-                    #     valid_batch_data_resized, valid_batch_labels, valid_batch_pred, valid_batch_loss = sess.run([model.valid.tf_batch_data_resized, model.valid.tf_batch_labels, model.fcrn_valid.get_output(), model.valid.tf_loss])
-                    #     l.append(valid_batch_loss)
-                    #     i += valid_batch_size
-                    #
-                    #     valid_image =
-                    #     valid_labels =
-                    #     valid_log_labels =
-                    #     valid_pred =
-                    #
-                    #
-                    #     # print(valid_batch_data_resized.shape)
-                    #     # print(valid_batch_labels.shape)
-                    #     # print(valid_batch_pred.shape)
-                    #     # plt.figure(10)
-                    #     # plt.imshow(valid_batch_data_resized[0])
-                    #     # plt.figure(11)
-                    #     # plt.imshow(valid_batch_labels[0,:,:,0])
-                    #     # plt.figure(12)
-                    #     # plt.imshow(valid_batch_pred[0,:,:,0])
-                    #     # plt.draw()
-                    #     # plt.pause(0.1)
-                    #
-                    #     # print(valid_batch_loss)
-                    #     # print()
-                    #
-                    # model.valid.loss = np.mean(l)
-                    #
-                    # # print(l)
-                    # # print(len(l))
-                    # # print("mean:", model.valid.loss)
-                    # -----
-
-                    # Validation
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
                         feed_valid = {
                             model.valid.tf_image: np.expand_dims(plt.imread(data.test_image_filenames[i]), axis=0),
-                            model.valid.tf_depth: np.expand_dims(np.expand_dims(plt.imread(data.test_depth_filenames[i]), axis=0), axis=3)}
+                            model.valid.tf_depth: np.expand_dims(
+                                np.expand_dims(plt.imread(data.test_depth_filenames[i]), axis=0), axis=3)}
 
                         if args.show_valid_progress:
                             valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
-                                [model.valid.tf_image_resized, model.valid.fcrn.get_output(), model.valid.tf_depth_resized,
-                                 model.valid.tf_log_depth_resized, model.valid.tf_loss], feed_dict=feed_valid)
+                                [model.valid.tf_image_resized, model.valid.fcrn.get_output(),
+                                 model.valid.tf_depth_resized,
+                                 model.valid.tf_log_depth_resized, model.valid.tf_loss],
+                                feed_dict=feed_valid)  # FIXME: Só funciona na primeira vez
 
                             model.valid.plot.showResults(raw=valid_image[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
@@ -362,29 +326,33 @@ def train(args):
 
                         valid_loss_sum += model.valid.loss
 
-                        print("%d/%d\tvalid_loss_sum: %f\tvalid_loss: %f" % (i, data.numTestSamples, valid_loss_sum, model.valid.loss))
+                        print("%d/%d\tvalid_loss_sum: %f\tvalid_loss: %f" % (
+                            i, data.numTestSamples, valid_loss_sum, model.valid.loss))
 
                     # Calculate mean value of 'valid_loss'
-                    model.valid.loss = valid_loss_sum/data.numTestSamples # Updates 'Valid_loss' value
+                    model.valid.loss = valid_loss_sum / data.numTestSamples  # Updates 'Valid_loss' value
                     print("mean(valid_loss): %f\n" % model.valid.loss)
 
                     # TODO: Move
-                    model.train.loss_hist.append(model.train.loss)
-                    model.valid.loss_hist.append(model.valid.loss)
+                    def plotGraph(firstTime):
+                        model.train.loss_hist.append(model.train.loss)
+                        model.valid.loss_hist.append(model.valid.loss)
 
-                    plt.figure(3)
-                    plt.plot(range(len(model.train.loss_hist)), model.train.loss_hist, 'b', label='Train Loss')
-                    plt.plot(range(len(model.valid.loss_hist)), model.valid.loss_hist, 'r', label='Valid Loss')
+                        plt.figure(3)
+                        plt.plot(range(len(model.train.loss_hist)), model.train.loss_hist, 'b', label='Train Loss')
+                        plt.plot(range(len(model.valid.loss_hist)), model.valid.loss_hist, 'r', label='Valid Loss')
 
-                    if firstTime:
-                        plt.title('Training and Validation Loss')
-                        plt.xlabel('Epochs')
-                        plt.ylabel('Loss')
-                        plt.legend()
-                        plt.draw()
-                        firstTime = False
-                    else:
-                        plt.draw()
+                        if firstTime:
+                            plt.title('Training and Validation Loss')
+                            plt.xlabel('Epochs')
+                            plt.ylabel('Loss')
+                            plt.legend()
+                            plt.draw()
+                            firstTime = False
+                        else:
+                            plt.draw()
+
+                    # plotGraph() # TODO: REATIVAR!!!!!!!!!!!
 
                     if ENABLE_EARLY_STOP:
                         if stop.check(step, model.valid.loss):  # TODO: Validar
@@ -397,7 +365,7 @@ def train(args):
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:
-                print("[KeyEvent] 'SpaceBar' Pressed! Training process aborted!")
+                print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
 
         coord.request_stop()
         coord.join(threads)
@@ -494,7 +462,7 @@ def test(args):
                 test_labels_o[i] = depth[:, :, 0]
                 # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
             else:
-                image, _, image_crop, _ = data.readImage(data.test_image_filenames[i], None, mode='test') #FIXME
+                image, _, image_crop, _ = data.readImage(data.test_image_filenames[i], None, mode='test')  # FIXME
 
             test_data_o[i] = image
             test_data_crop_o[i] = image_crop
