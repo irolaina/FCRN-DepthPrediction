@@ -3,16 +3,23 @@
 # ===========
 import glob
 import os
+import numpy as np
 import tensorflow as tf
 import sys
-import numpy as np
+import time
 
 from ..size import Size
+from ..filenames import FilenamesHandler
 
 # ==================
 #  Global Variables
 # ==================
 LOG_INITIAL_VALUE = 1
+
+
+# ===========
+#  Functions
+# ===========
 
 
 # ===================
@@ -22,7 +29,7 @@ LOG_INITIAL_VALUE = 1
 # TODO: Add info
 # Image: (375, 1242, 3) ?
 # Depth: (375, 1242)    ?
-class Kitti2015(object):
+class Kitti2015(FilenamesHandler):
     def __init__(self, machine):
         if machine == 'olorin':
             self.dataset_path = ''
@@ -71,6 +78,9 @@ class Kitti2015(object):
 
             # print()
 
+        # TODO: Adicionar Sequential Search
+        # TODO: Fazer shuffle
+        # TODO: Eu acho que não precisa mais disso
         # Alphabelly Sort the List of Strings
         image_filenames.sort()
         depth_filenames.sort()

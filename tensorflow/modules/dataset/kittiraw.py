@@ -6,13 +6,20 @@ import os
 import numpy as np
 import tensorflow as tf
 import sys
+import time
 
 from ..size import Size
+from ..filenames import FilenamesHandler
 
 # ==================
 #  Global Variables
 # ==================
 LOG_INITIAL_VALUE = 1
+
+
+# ===========
+#  Functions
+# ===========
 
 
 # ===================
@@ -21,7 +28,7 @@ LOG_INITIAL_VALUE = 1
 # KittiRaw Residential Continuous
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint8
-class KittiRaw(object):
+class KittiRaw(FilenamesHandler):
     def __init__(self, machine):
         if machine == 'olorin':
             self.dataset_path = ''
@@ -59,6 +66,9 @@ class KittiRaw(object):
         image_filenames = glob.glob(dataset_path_aux + "imgs/*")
         depth_filenames = glob.glob(dataset_path_aux + "dispc/*")
 
+        # TODO: Adicionar Sequential Search
+        # TODO: Fazer shuffle
+        # TODO: Eu acho que não precisa mais disso
         # Alphabelly Sort the List of Strings
         image_filenames.sort()
         depth_filenames.sort()
