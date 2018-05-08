@@ -52,7 +52,6 @@ class Apolloscape(FilenamesHandler):
 
         print("[Dataloader] Apolloscape object created.")
 
-    # TODO: Otimizar
     def getFilenamesLists(self, mode):
         image_filenames = []
         depth_filenames = []
@@ -60,115 +59,58 @@ class Apolloscape(FilenamesHandler):
         file = 'data/' + self.name + '_' + mode + '.txt'
         ratio = 0.8
 
-        if mode == 'train':
-            if os.path.exists(file):
-                data = self.loadList(file)
+        if os.path.exists(file):
+            data = self.loadList(file)
 
-                # Parsing Data
-                image_filenames = data[:, 0]
-                depth_filenames = data[:, 1]
-            else:
-                print("[Dataloader] '%s' doesn't exist..." % file)
-                print("[Dataloader] Searching files using glob (This may take a while)...")
+            # Parsing Data
+            image_filenames = list(data[:, 0])
+            depth_filenames = list(data[:, 1])
+        else:
+            print("[Dataloader] '%s' doesn't exist..." % file)
+            print("[Dataloader] Searching files using glob (This may take a while)...")
 
-                # Finds input images and labels inside list of folders.
-                image_filenames_tmp = glob.glob(
-                    self.dataset_path + "ColorImage/*/*/*")  # ...ColorImage/Record*/Camera */*.jpg
-                depth_filenames_tmp = glob.glob(self.dataset_path + "Depth/*/*/*")  # ...Depth/Record*/Camera */*.png
+            # Finds input images and labels inside list of folders.
+            image_filenames_tmp = glob.glob(self.dataset_path + "ColorImage/*/*/*")  # ...ColorImage/Record*/Camera */*.jpg
+            depth_filenames_tmp = glob.glob(self.dataset_path + "Depth/*/*/*")  # ...Depth/Record*/Camera */*.png
 
-                image_filename_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
-                depth_filename_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
+            image_filename_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
+            depth_filename_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
 
-                n = len(image_filename_aux)
-                m = len(depth_filename_aux)
+            n, m = len(image_filename_aux), len(depth_filename_aux)
 
-                # Sequential Search. This kind of search ensures that the images are paired!
-                start = time.time()
-                for j, depth in enumerate(depth_filename_aux):
-                    print("%d/%d" % (j + 1, m))  # Debug
-                    for i, image in enumerate(image_filename_aux):
-                        if image == depth:
-                            image_filenames.append(image_filenames_tmp[i])
-                            depth_filenames.append(depth_filenames_tmp[j])
+            # Sequential Search. This kind of search ensures that the images are paired!
+            start = time.time()
+            for j, depth in enumerate(depth_filename_aux):
+                print("%d/%d" % (j + 1, m))  # Debug
+                for i, image in enumerate(image_filename_aux):
+                    if image == depth:
+                        image_filenames.append(image_filenames_tmp[i])
+                        depth_filenames.append(depth_filenames_tmp[j])
 
-                print("time: %f s" % (time.time() - start))
+            print("time: %f s" % (time.time() - start))
 
-                # Defines Training Subset
-                n2 = len(image_filenames)
-                m2 = len(depth_filenames)
+            # Splits Train/Test Subsets
+            n2, m2 = len(image_filenames), len(depth_filenames)
+            divider = int(n2 * ratio)
 
-                divider = int(n2*ratio)
+            if mode == 'train':
                 image_filenames = image_filenames[:divider]
                 depth_filenames = depth_filenames[:divider]
-
-                n3 = len(image_filenames)
-                m3 = len(depth_filenames)
-
-                print('train_image_set: %d/%d' % (n3, n2))
-                print('train_depth_set: %d/%d' % (m3, m2))
-
-                # Shuffles
-                s = np.random.choice(n3, n3, replace=False)
-                image_filenames = list(np.array(image_filenames)[s])
-                depth_filenames = list(np.array(depth_filenames)[s])
-
-                self.saveList(image_filenames, depth_filenames, mode)
-
-        # TODO: Terminar
-        elif mode == 'test':
-            if os.path.exists(file):
-                data = self.loadList(file)
-
-                # Parsing Data
-                image_filenames = data[:, 0]
-                depth_filenames = data[:, 1]
-            else:
-                print("[Dataloader] '%s' doesn't exist..." % file)
-                print("[Dataloader] Searching files using glob (This may take a while)...")
-
-                # Finds input images and labels inside list of folders.
-                image_filenames_tmp = glob.glob(
-                    self.dataset_path + "ColorImage/*/*/*")  # ...ColorImage/Record*/Camera */*.jpg
-                depth_filenames_tmp = glob.glob(self.dataset_path + "Depth/*/*/*")  # ...Depth/Record*/Camera */*.png
-
-                image_filename_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
-                depth_filename_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
-
-                n = len(image_filename_aux)
-                m = len(depth_filename_aux)
-
-                # Sequential Search. This kind of search ensures that the images are paired!
-                start = time.time()
-                for j, depth in enumerate(depth_filename_aux):
-                    print("%d/%d" % (j + 1, m))  # Debug
-                    for i, image in enumerate(image_filename_aux):
-                        if image == depth:
-                            image_filenames.append(image_filenames_tmp[i])
-                            depth_filenames.append(depth_filenames_tmp[j])
-
-                print("time: %f s" % (time.time() - start))
-
-                # Defines Test Subset
-                n2 = len(image_filenames)
-                m2 = len(depth_filenames)
-
-                divider = int(n2*ratio)
+            elif mode == 'test':
+                # Defines Testing Subset
                 image_filenames = image_filenames[divider:]
                 depth_filenames = depth_filenames[divider:]
 
-                n3 = len(image_filenames)
-                m3 = len(depth_filenames)
+            n3, m3 = len(image_filenames), len(depth_filenames)
 
-                print('test_image_set: %d/%d' % (n3, n2))
-                print('test_depth_set: %d/%d' % (m3, m2))
+            print('%s_image_set: %d/%d' % (mode, n3, n2))
+            print('%s_depth_set: %d/%d' % (mode, m3, m2))
 
-                # Shuffles
-                s = np.random.choice(n3, n3, replace=False)
-                image_filenames = list(np.array(image_filenames)[s])
-                depth_filenames = list(np.array(depth_filenames)[s])
+            # Shuffles
+            s = np.random.choice(n3, n3, replace=False)
+            image_filenames = list(np.array(image_filenames)[s])
+            depth_filenames = list(np.array(depth_filenames)[s])
 
-                self.saveList(image_filenames, depth_filenames, mode)
-        else:
-            sys.exit()
+            self.saveList(image_filenames, depth_filenames, mode)
 
         return image_filenames, depth_filenames
