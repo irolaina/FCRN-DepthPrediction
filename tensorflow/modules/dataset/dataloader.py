@@ -10,6 +10,8 @@ import tensorflow as tf
 from scipy import misc as scp
 from skimage import transform
 
+from .kitti2012 import Kitti2012
+from .kitti2015 import Kitti2015
 from .kittiraw import KittiRaw
 from .nyudepth import NyuDepth
 from .apolloscape import Apolloscape
@@ -39,7 +41,13 @@ class Dataloader:
         self.selectedDataset = args.dataset
         # print(selectedDataset)
 
-        if self.selectedDataset == 'kittiraw_residential_continuous':
+        if self.selectedDataset == 'kitti2012':
+            self.datasetObj = Kitti2012(args.machine)
+
+        elif self.selectedDataset == 'kitti2015':
+            self.datasetObj = Kitti2015(args.machine)
+
+        elif self.selectedDataset == 'kittiraw_residential_continuous':
             self.datasetObj = KittiRaw(args.machine)
 
         elif self.selectedDataset == 'nyudepth':
@@ -49,8 +57,8 @@ class Dataloader:
             self.datasetObj = Apolloscape(args.machine)
 
         else:
-            print(
-                "[Dataloader] The typed dataset '%s' is invalid. Check the list of supported datasets." % self.selectedDataset)
+            print("[Dataloader] The typed dataset '%s' is invalid. "
+                  "Check the list of supported datasets." % self.selectedDataset)
             sys.exit()
 
         # Collects Dataset Info
@@ -59,14 +67,15 @@ class Dataloader:
         self.image_size = self.datasetObj.image_size
         self.depth_size = self.datasetObj.depth_size
 
-        # Filenames Lists
-        self.train_image_filenames = None
-        self.train_depth_filenames = None
-        self.test_image_filenames = None
-        self.test_depth_filenames = None
+        # Searches dataset image/depth filenames lists
+        self.train_image_filenames, self.train_depth_filenames, self.numTrainSamples = None, None, -1
+        self.test_image_filenames, self.test_depth_filenames, self.numTestSamples = None, None, -1
 
-        self.numTrainSamples = -1
-        self.numTestSamples = -1
+        if args.mode == 'train':
+            self.getTrainData()
+            self.getTestData()
+        elif args.mode == 'test': # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+            pass
 
         print("[Dataloader] dataloader object created.")
 
@@ -84,7 +93,10 @@ class Dataloader:
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+        self.train_image_filenames = image_filenames
+        self.train_depth_filenames = depth_filenames
+        self.tf_train_image_filenames = tf_image_filenames
+        self.tf_train_depth_filenames = tf_depth_filenames
 
     def getTestData(self, mode='test'):
         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
@@ -100,7 +112,11 @@ class Dataloader:
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+        # Searches dataset images filenames
+        self.test_image_filenames = image_filenames
+        self.test_depth_filenames = depth_filenames
+        self.tf_test_image_filenames = tf_image_filenames
+        self.tf_test_depth_filenames = tf_depth_filenames
 
     def readData(self, tf_image_filenames, tf_depth_filenames):
         # Creates Inputs Queue.
