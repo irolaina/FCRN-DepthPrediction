@@ -3,9 +3,10 @@
 # ===========
 import glob
 import os
+import numpy as np
 import tensorflow as tf
 import sys
-import numpy as np
+import time
 
 from ..size import Size
 
@@ -18,23 +19,6 @@ LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
-def saveLists(image_filenames, depth_filenames):
-    print(type(image_filenames))
-    print(type(depth_filenames))
-
-    filenames = list(zip(image_filenames, depth_filenames))
-    filenames = np.array(filenames)
-
-    # for i in filenames:
-    #     print(i)
-
-    input("oi")
-    print(filenames.shape)
-
-    np.savetxt('nyudepth.txt', filenames, fmt='%s')
-    input("oi2")
-
-    raise SystemExit
 
 
 # ===================
@@ -59,7 +43,7 @@ class NyuDepth(object):
         self.image_replace = [b'_colors.png', b'']
         self.depth_replace = [b'_depth.png', b'']
 
-        # Data Range/Plot ColorSpace
+        # Data Range/Plot ColorSpace # TODO: Terminar
         self.vmin = None
         self.vmax = None
         self.log_vmin = None
@@ -71,32 +55,92 @@ class NyuDepth(object):
         image_filenames = []
         depth_filenames = []
 
+        file = 'data/' + self.name + '_' + mode + '.txt'
+
         if mode == 'train':
-            dataset_path_aux = self.dataset_path + "training/*/"
+            if os.path.exists(file):
+                data = self.loadList(file)
+
+                # Parsing Data
+                image_filenames = data[:, 0]
+                depth_filenames = data[:, 1]
+            else:
+                print("[Dataloader] '%s' doesn't exist..." % file)
+                print("[Dataloader] Searching files using glob (This may take a while)...")
+
+                # Finds input images and labels inside list of folders.
+                start = time.time()
+                for folder in glob.glob(self.dataset_path + "training/*/"):
+                    # print(folder)
+                    os.chdir(folder)
+
+                    for file in glob.glob('*_colors.png'):
+                        # print(file)
+                        image_filenames.append(folder + file)
+
+                    for file in glob.glob('*_depth.png'):
+                        # print(file)
+                        depth_filenames.append(folder + file)
+
+                print("time: %f s" % (time.time() - start))
+
+                self.saveList(image_filenames, depth_filenames, mode)
+
         elif mode == 'test':
-            dataset_path_aux = self.dataset_path + "testing/*/"
+            if os.path.exists(file):
+                data = self.loadList(file)
+
+                # Parsing Data
+                image_filenames = data[:, 0]
+                depth_filenames = data[:, 1]
+            else:
+                print("[Dataloader] '%s' doesn't exist..." % file)
+                print("[Dataloader] Searching files using glob (This may take a while)...")
+
+                # Finds input images and labels inside list of folders.
+                for folder in glob.glob(self.dataset_path + "testing/*/"):
+                    # print(folder)
+                    os.chdir(folder)
+
+                    for file in glob.glob('*_colors.png'):
+                        # print(file)
+                        image_filenames.append(folder + file)
+
+                    for file in glob.glob('*_depth.png'):
+                        # print(file)
+                        depth_filenames.append(folder + file)
+
+                self.saveList(image_filenames, depth_filenames, mode)
         else:
             sys.exit()
-
-        # Finds input images and labels inside list of folders.
-        for folder in glob.glob(dataset_path_aux):
-            # print(folder)
-            os.chdir(folder)
-
-            for file in glob.glob('*_colors.png'):
-                # print(file)
-                image_filenames.append(folder + file)
-
-            for file in glob.glob('*_depth.png'):
-                # print(file)
-                depth_filenames.append(folder + file)
-
-            # print()
 
         # Alphabelly Sort the List of Strings
         image_filenames.sort()
         depth_filenames.sort()
 
-        # self.saveLists(image_filenames, depth_filenames) # FIXME: Doesn't Save
-
         return image_filenames, depth_filenames
+
+    def loadList(self, filename):
+        print("[Dataloader] Loading '%s'..." % filename)
+        try:
+            data = np.genfromtxt(filename, dtype='str', delimiter='\t')
+            print(data.shape)
+        except OSError:
+            print("[OSError] Could not find the '%s' file." % filename)
+            sys.exit()
+
+        return data
+
+    def saveList(self, image_filenames, depth_filenames, mode):
+        # Column-Concatenation of Lists of Strings
+        filenames = list(zip(image_filenames, depth_filenames))
+        filenames = np.array(filenames)
+
+        # Saving the 'filenames' variable to *.txt
+        root_path = os.path.abspath(os.path.join(__file__, "../../.."))
+        relative_path = 'data/' + self.name + '_' + mode + '.txt'
+        save_file_path = os.path.join(root_path, relative_path)
+
+        np.savetxt(save_file_path, filenames, delimiter='\t', fmt='%s')
+
+        print("[Dataset] '%s' file saved." % save_file_path)
