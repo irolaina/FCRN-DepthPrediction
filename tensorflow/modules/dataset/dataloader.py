@@ -75,7 +75,7 @@ class Dataloader:
         tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
-            print("\nSummary - TrainData")
+            print("Summary - TrainData")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
 
@@ -91,7 +91,7 @@ class Dataloader:
         tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
-            print("\nSummary - TestData (Validation Set)")
+            print("Summary - TestData (Validation Set)")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
 

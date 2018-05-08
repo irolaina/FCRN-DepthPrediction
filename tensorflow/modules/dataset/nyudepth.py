@@ -114,6 +114,9 @@ class NyuDepth(object):
         else:
             sys.exit()
 
+        # TODO: Fazer shuffle
+
+        # TODO: Eu acho que não precisa mais disso
         # Alphabelly Sort the List of Strings
         image_filenames.sort()
         depth_filenames.sort()
@@ -121,10 +124,10 @@ class NyuDepth(object):
         return image_filenames, depth_filenames
 
     def loadList(self, filename):
-        print("[Dataloader] Loading '%s'..." % filename)
+        print("\n[Dataloader] Loading '%s'..." % filename)
         try:
             data = np.genfromtxt(filename, dtype='str', delimiter='\t')
-            print(data.shape)
+            # print(data.shape)
         except OSError:
             print("[OSError] Could not find the '%s' file." % filename)
             sys.exit()
