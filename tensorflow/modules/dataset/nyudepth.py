@@ -31,6 +31,7 @@ LOG_INITIAL_VALUE = 1
 # Depth: (480, 640)    ?
 class NyuDepth(FilenamesHandler):
     def __init__(self, machine):
+        super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':

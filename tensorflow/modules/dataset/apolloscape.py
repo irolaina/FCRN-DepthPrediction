@@ -31,6 +31,7 @@ LOG_INITIAL_VALUE = 1
 # Depth: (2710, 3384)    ?
 class Apolloscape(FilenamesHandler):
     def __init__(self, machine):
+        super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':

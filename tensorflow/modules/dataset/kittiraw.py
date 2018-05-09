@@ -30,6 +30,7 @@ LOG_INITIAL_VALUE = 1
 # Depth: (375, 1242)    uint8
 class KittiRaw(FilenamesHandler):
     def __init__(self, machine):
+        super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':

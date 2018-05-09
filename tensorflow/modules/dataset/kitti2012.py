@@ -31,6 +31,7 @@ LOG_INITIAL_VALUE = 1
 # Depth: (370, 1226)    ?
 class Kitti2012(FilenamesHandler):
     def __init__(self, machine):
+        super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
