@@ -258,7 +258,7 @@ class Dataloader:
             # Processing the RGB Image
             image = scp.imread(os.path.join(image_path))
             image_downsized = scp.imresize(image, size=input_size.getSize())
-            image_normed = self.normalizeImage(image_downsized) # TODO: Not Used!
+            image_normed = self.normalizeImage(image_downsized)  # TODO: Not Used!
 
             # Processing the Depth Image
             if depth_path is not None:
@@ -268,16 +268,16 @@ class Dataloader:
             # Results
             if showImages:
                 print("image: ", image.shape)
-                print("image_downsized: ",image_downsized.shape)
+                print("image_downsized: ", image_downsized.shape)
                 print("image_normed: ", image_normed.shape)
 
                 print("depth: ", depth.shape)
                 print("depth_downsized: ", depth_downsized.shape)
 
                 fig, axarr = plt.subplots(2, 2)
-                axarr[0, 0].imshow(image),                     axarr[0, 0].set_title("colors")
+                axarr[0, 0].imshow(image),                      axarr[0, 0].set_title("colors")
                 axarr[0, 1].imshow(depth),                      axarr[0, 1].set_title("depth")
-                axarr[1, 0].imshow(image_downsized),           axarr[1, 0].set_title("image_downsized")
+                axarr[1, 0].imshow(image_downsized),            axarr[1, 0].set_title("image_downsized")
                 axarr[1, 1].imshow(depth_downsized[:, :, 0]),   axarr[1, 1].set_title("depth_downsized")
 
                 plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)

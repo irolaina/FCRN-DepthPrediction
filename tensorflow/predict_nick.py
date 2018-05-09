@@ -130,20 +130,22 @@ def total_size(o, handlers={}, verbose=False):
                     OtherContainerClass: OtherContainerClass.get_elements}
 
     """
-    dict_handler = lambda d: chain.from_iterable(d.items())
+    def dict_handler(d):
+        return chain.from_iterable(d.items())
+
     all_handlers = {tuple: iter,
                     list: iter,
                     deque: iter,
                     dict: dict_handler,
                     set: iter,
                     frozenset: iter,
-                   }
-    all_handlers.update(handlers)     # user handlers take precedence
-    seen = set()                      # track which object id's have already been seen
-    default_size = getsizeof(0)       # estimate sizeof object without __sizeof__
+                    }
+    all_handlers.update(handlers)  # user handlers take precedence
+    seen = set()  # track which object id's have already been seen
+    default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
 
     def sizeof(o):
-        if id(o) in seen:       # do not double count the same object
+        if id(o) in seen:  # do not double count the same object
             return 0
         seen.add(id(o))
         s = getsizeof(o, default_size)
@@ -474,9 +476,9 @@ def test(args):
             test_plotObj = Plot(args.mode, title='Test Predictions')
 
         # Memory Allocation
-        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)   # (228, 304, 3)
-        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)      # (128, 160, 1)
-        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.int32)       # (128, 160, 1)
+        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)    # (228, 304, 3)
+        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)          # (128, 160, 1)
+        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.int32)   # (128, 160, 1)
 
         start = time.time()
         for i in range(data.numTestSamples):
@@ -509,7 +511,7 @@ def test(args):
             test_plotObj.showTestResults(raw=image_resized,
                                          label=depth_resized[:, :, 0],
                                          log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
-                                         pred=pred[0, :, :, 0], i=i+1)
+                                         pred=pred[0, :, :, 0], i=i + 1)
 
         # Testing Finished.
         end = time.time()
@@ -537,7 +539,7 @@ def test(args):
         #         "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
 
         # Close the listener when we are done
-        hookman.cancel() # TODO: Não faz sentido usar no teste. Se o hookman não foi cancelado, programa pode ter problemas em desligar
+        hookman.cancel()  # TODO: Não faz sentido usar no teste. Se o hookman não foi cancelado, programa pode ter problemas em desligar
 
 
 # ======
@@ -555,6 +557,7 @@ def main(args):
 
     print("\n[%s] Done." % appName)
     sys.exit()
+
 
 if __name__ == '__main__':
     args = argsLib.argumentHandler()
