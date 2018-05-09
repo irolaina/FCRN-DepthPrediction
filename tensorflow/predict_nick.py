@@ -28,6 +28,9 @@ import modules.metrics as metricsLib
 import modules.args as argsLib
 
 from PIL import Image
+from sys import getsizeof, stderr
+from itertools import chain
+from collections import deque
 
 from modules.dataset.dataloader import Dataloader
 from modules.framework import Model
@@ -42,7 +45,7 @@ from modules.plot import Plot
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 2
+LOSS_FUNCTION = 1
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
@@ -114,6 +117,47 @@ hookman.KeyDown = kbevent
 hookman.HookKeyboard()
 # Start our listener
 hookman.start()
+
+
+def total_size(o, handlers={}, verbose=False):
+    """ Returns the approximate memory footprint an object and all of its contents.
+
+    Automatically finds the contents of the following builtin containers and
+    their subclasses:  tuple, list, deque, dict, set and frozenset.
+    To search other containers, add handlers to iterate over their contents:
+
+        handlers = {SomeContainerClass: iter,
+                    OtherContainerClass: OtherContainerClass.get_elements}
+
+    """
+    dict_handler = lambda d: chain.from_iterable(d.items())
+    all_handlers = {tuple: iter,
+                    list: iter,
+                    deque: iter,
+                    dict: dict_handler,
+                    set: iter,
+                    frozenset: iter,
+                   }
+    all_handlers.update(handlers)     # user handlers take precedence
+    seen = set()                      # track which object id's have already been seen
+    default_size = getsizeof(0)       # estimate sizeof object without __sizeof__
+
+    def sizeof(o):
+        if id(o) in seen:       # do not double count the same object
+            return 0
+        seen.add(id(o))
+        s = getsizeof(o, default_size)
+
+        if verbose:
+            print(s, type(o), repr(o), file=stderr)
+
+        for typ, handler in all_handlers.items():
+            if isinstance(o, typ):
+                s += sum(map(sizeof, handler(o)))
+                break
+        return s
+
+    return sizeof(o)
 
 
 # ========= #
@@ -386,8 +430,6 @@ def test(args):
     print('[%s] Selected mode: Test' % appName)
 
     # Local Variables
-    input_size = Size(228, 304, 3)
-    batch_size = 1
     numSamples = None
 
     # -----------------------------------------
@@ -400,36 +442,25 @@ def test(args):
     # data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
 
     if TEST_EVALUATE_SUBSET == 0:
-        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTestData()
+        _ = data.getTestData()
         numSamples = data.numTestSamples
     elif TEST_EVALUATE_SUBSET == 1:
         data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
         numSamples = data.numTrainSamples
 
-    # Create a placeholder for the input image
-    tf_image = tf.placeholder(tf.float32, shape=(None, input_size.height, input_size.width, input_size.nchannels))
-
     # Construct the network
     with tf.variable_scope('model'):
-        # Construct the network
-        net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
         input_size = Size(228, 304, 3)
         output_size = Size(128, 160, 1)
+        batch_size = 1
 
-    # Memory Allocation
-    # Length of test_dataset used, so when there is not test_labels, the variable will still be declared.
-    test_data_o = np.zeros((numSamples, input_size.height, input_size.width, input_size.nchannels),
-                           dtype=np.uint8)  # (?, 172, 576, 3)
-    test_data_crop_o = np.zeros((numSamples, input_size.height, input_size.width, input_size.nchannels),
-                                dtype=np.uint8)  # (?, 172, 576, 3)
-    pred = np.zeros((numSamples, output_size.height, output_size.width), dtype=np.float32)  # (?, 43, 144)
-    test_labels_o = np.zeros((numSamples, output_size.height, output_size.width), dtype=np.int32)  # (?, 43, 144)
+        tf_image = tf.placeholder(tf.float32, shape=(None, input_size.height, input_size.width, input_size.nchannels))
+        net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
 
     with tf.Session() as sess:
-        # Load the converted parameters
         print('\n[network/Testing] Loading the model...')
 
-        # Use to load from ckpt file
+        # Use to load from *.ckpt file
         saver = tf.train.Saver()
         saver.restore(sess, args.model_path)
 
@@ -439,35 +470,42 @@ def test(args):
         # ==============
         #  Testing Loop
         # ==============
-        start = time.time()
+        if args.show_test_results:
+            test_plotObj = Plot(args.mode, title='Test Predictions')
 
-        for i, image_path in enumerate(data.test_image_filenames):
+        # Memory Allocation
+        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)   # (228, 304, 3)
+        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)      # (128, 160, 1)
+        depth = np.zeros(shape=output_size.getSize(), dtype=np.int32)       # (128, 160, 1)
+
+        start = time.time()
+        for i in range(data.numTestSamples):
             start2 = time.time()
 
             if data.test_depth_filenames:  # It's not empty
-                image, depth, image_crop, depth_bilinear = data.readImage(data.test_image_filenames[i],
-                                                                          data.test_depth_filenames[i],
-                                                                          input_size,
-                                                                          output_size,
-                                                                          mode='test')
+                image_resized, depth, depth_bilinear = data.readImage(data.test_image_filenames[i],
+                                                                      data.test_depth_filenames[i],
+                                                                      input_size,
+                                                                      output_size,
+                                                                      mode='test')
 
-                test_labels_o[i] = depth[:, :, 0]
-                # test_labelsBilinear_o[i] = depth_bilinear # TODO: Usar?
             else:
-                image, _, image_crop, _ = data.readImage(data.test_image_filenames[i], None, mode='test')  # FIXME
-
-            test_data_o[i] = image
-            test_data_crop_o[i] = image_crop
+                image_resized, _, _ = data.readImage(data.test_image_filenames[i], None, input_size, output_size, mode='test')
 
             # Evalute the network for the given image
-            pred_temp = sess.run(net.get_output(),
-                                 feed_dict={tf_image: np.expand_dims(np.asarray(test_data_o[i]), axis=0)})
-            pred[i] = pred_temp[:, :, :, 0]
+            feed_test = {tf_image: np.expand_dims(np.asarray(image_resized), axis=0)}
+            pred = sess.run(net.get_output(), feed_dict=feed_test)
 
             # Prints Testing Progress
             end2 = time.time()
             print('step: %d/%d | t: %f' % (i + 1, numSamples, end2 - start2))
             # break # Test
+
+            # Show Results
+            test_plotObj.showTestResults(raw=image_resized,
+                                         label=depth[:, :, 0],
+                                         log_label=np.log(depth[:, :, 0] + LOG_INITIAL_VALUE),
+                                         pred=pred[0, :, :, 0], i=i+1)
 
         # Testing Finished.
         end = time.time()
@@ -477,31 +515,25 @@ def test(args):
         #  Save Results
         # ==============
         # Saves the Test Predictions
-        print("[Network/Testing] Saving testing predictions...")
-
-        output_directory = os.path.dirname(args.model_path) if args.output_directory == '' else args.output_directory
-
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-
         if SAVE_TEST_DISPARITIES:
-            np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path
+            print("[Network/Testing] Saving testing predictions...")
+            output_directory = os.path.dirname(args.model_path) if args.output_directory == '' else args.output_directory
 
-        # Calculate Metrics
-        if data.test_depth_filenames:
-            metricsLib.evaluateTesting(pred, test_labels_o)
-        else:
-            print(
-                "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+            if not os.path.exists(output_directory):
+                os.makedirs(output_directory)
 
-        # Show Results
-        if args.show_test_results:
-            test_plotObj = Plot(args.mode, title='Test Predictions')
-            for i in range(numSamples):
-                test_plotObj.showTestResults(raw=test_data_crop_o[i],
-                                             label=test_labels_o[i],
-                                             log_label=np.log(test_labels_o[i] + LOG_INITIAL_VALUE),
-                                             pred=pred[i], i=i)
+            # np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path # FIXME: Reativar
+
+        # FIXME: Reativar
+        # # Calculate Metrics
+        # if data.test_depth_filenames:
+        #     metricsLib.evaluateTesting(pred, test_labels_o)
+        # else:
+        #     print(
+        #         "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+
+        # Close the listener when we are done
+        hookman.cancel() # TODO: Não faz sentido usar no teste. Se o hookman não foi cancelado, programa pode ter problemas em desligar
 
 
 # ======
@@ -519,7 +551,6 @@ def main(args):
 
     print("\n[%s] Done." % appName)
     sys.exit()
-
 
 if __name__ == '__main__':
     args = argsLib.argumentHandler()
