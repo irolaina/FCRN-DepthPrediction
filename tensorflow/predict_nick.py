@@ -43,10 +43,10 @@ from modules.plot import Plot
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 0
+LOSS_FUNCTION = 2
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False  # Default: True
+VALID_PIXELS = True  # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = False  # Default: True # TODO: Ativar
