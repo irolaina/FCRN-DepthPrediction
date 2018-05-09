@@ -476,21 +476,25 @@ def test(args):
         # Memory Allocation
         image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)   # (228, 304, 3)
         pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)      # (128, 160, 1)
-        depth = np.zeros(shape=output_size.getSize(), dtype=np.int32)       # (128, 160, 1)
+        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.int32)       # (128, 160, 1)
 
         start = time.time()
         for i in range(data.numTestSamples):
             start2 = time.time()
 
             if data.test_depth_filenames:  # It's not empty
-                image_resized, depth, depth_bilinear = data.readImage(data.test_image_filenames[i],
-                                                                      data.test_depth_filenames[i],
-                                                                      input_size,
-                                                                      output_size,
-                                                                      mode='test')
-
+                image_resized, depth_resized = data.readImage(data.test_image_filenames[i],
+                                                              data.test_depth_filenames[i],
+                                                              input_size,
+                                                              output_size,
+                                                              mode='test',
+                                                              showImages=False)
             else:
-                image_resized, _, _ = data.readImage(data.test_image_filenames[i], None, input_size, output_size, mode='test')
+                image_resized, _ = data.readImage(data.test_image_filenames[i],
+                                                  None,
+                                                  input_size,
+                                                  output_size,
+                                                  mode='test')
 
             # Evalute the network for the given image
             feed_test = {tf_image: np.expand_dims(np.asarray(image_resized), axis=0)}
@@ -503,8 +507,8 @@ def test(args):
 
             # Show Results
             test_plotObj.showTestResults(raw=image_resized,
-                                         label=depth[:, :, 0],
-                                         log_label=np.log(depth[:, :, 0] + LOG_INITIAL_VALUE),
+                                         label=depth_resized[:, :, 0],
+                                         log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                          pred=pred[0, :, :, 0], i=i+1)
 
         # Testing Finished.
