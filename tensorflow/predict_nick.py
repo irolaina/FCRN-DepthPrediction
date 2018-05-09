@@ -45,15 +45,15 @@ from modules.plot import Plot
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 1
+LOSS_FUNCTION = 2
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True  # Default: True
+VALID_PIXELS = True             # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = False  # Default: False
-ENABLE_EARLY_STOP = False  # Default: True # TODO: Ativar
-ENABLE_TENSORBOARD = True  # Default: True
-SAVE_TRAINED_MODEL = True  # Default: True
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+ENABLE_EARLY_STOP = True        # Default: True
+ENABLE_TENSORBOARD = True       # Default: True
+SAVE_TRAINED_MODEL = True       # Default: True
 
 # =============================
 #  Framework Config - Testing
@@ -63,8 +63,8 @@ SAVE_TRAINED_MODEL = True  # Default: True
 # 1 - TrainData
 TEST_EVALUATE_SUBSET = 0
 
-SAVE_TEST_DISPARITIES = True  # Default: True
-APPLY_BILINEAR_OUTPUT = False  # Default: False
+SAVE_TEST_DISPARITIES = True    # Default: True
+APPLY_BILINEAR_OUTPUT = False   # Default: False
 
 # ==================
 #  Global Variables
@@ -119,7 +119,7 @@ hookman.HookKeyboard()
 hookman.start()
 
 
-def total_size(o, handlers={}, verbose=False):
+def total_size(o, handlers=None, verbose=False):
     """ Returns the approximate memory footprint an object and all of its contents.
 
     Automatically finds the contents of the following builtin containers and
@@ -130,6 +130,10 @@ def total_size(o, handlers={}, verbose=False):
                     OtherContainerClass: OtherContainerClass.get_elements}
 
     """
+
+    if handlers is None:
+        handlers = {}
+
     def dict_handler(d):
         return chain.from_iterable(d.items())
 
@@ -411,9 +415,6 @@ def train(args):
         end = time.time()
         sim_train = end - start
 
-        # Close the listener when we are done
-        hookman.cancel()
-
         print("\n[Network/Training] Training FINISHED! Time elapsed: %f s\n" % sim_train)
 
         # ==============
@@ -476,9 +477,9 @@ def test(args):
             test_plotObj = Plot(args.mode, title='Test Predictions')
 
         # Memory Allocation
-        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)    # (228, 304, 3)
-        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)          # (128, 160, 1)
-        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.int32)   # (128, 160, 1)
+        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)  # (228, 304, 3)
+        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)  # (128, 160, 1)
+        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.int32)  # (128, 160, 1)
 
         start = time.time()
         for i in range(data.numTestSamples):
@@ -538,9 +539,6 @@ def test(args):
         #     print(
         #         "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
 
-        # Close the listener when we are done
-        hookman.cancel()  # TODO: Não faz sentido usar no teste. Se o hookman não foi cancelado, programa pode ter problemas em desligar
-
 
 # ======
 #  Main
@@ -554,6 +552,9 @@ def main(args):
         test(args)
     elif args.mode == 'pred':
         predict(args.model_path, args.image_path)
+
+    # Close the listener when we are done
+    hookman.cancel()
 
     print("\n[%s] Done." % appName)
     sys.exit()

@@ -38,7 +38,12 @@ class Model(object):
         self.valid = None
 
         self.loss_name = ''
+        self.train_step = None
+        self.summary_writer = None
+        self.summary_op = None
+        self.train_saver = None
 
+        # Invoke Methods
         self.build_model(data)
         self.build_losses(selected_loss, valid_pixels)
         self.build_optimizer()

@@ -69,7 +69,10 @@ class Dataloader:
 
         # Searches dataset image/depth filenames lists
         self.train_image_filenames, self.train_depth_filenames, self.numTrainSamples = None, None, -1
+        self.tf_train_image_filenames, self.tf_train_depth_filenames = None, None
+
         self.test_image_filenames, self.test_depth_filenames, self.numTestSamples = None, None, -1
+        self.tf_test_image_filenames, self.tf_test_depth_filenames = None, None
 
         if args.mode == 'train':
             _ = self.getTrainData()
@@ -275,10 +278,10 @@ class Dataloader:
                 print("depth_downsized: ", depth_downsized.shape)
 
                 fig, axarr = plt.subplots(2, 2)
-                axarr[0, 0].imshow(image),                      axarr[0, 0].set_title("colors")
-                axarr[0, 1].imshow(depth),                      axarr[0, 1].set_title("depth")
-                axarr[1, 0].imshow(image_downsized),            axarr[1, 0].set_title("image_downsized")
-                axarr[1, 1].imshow(depth_downsized[:, :, 0]),   axarr[1, 1].set_title("depth_downsized")
+                axarr[0, 0].imshow(image), axarr[0, 0].set_title("colors")
+                axarr[0, 1].imshow(depth), axarr[0, 1].set_title("depth")
+                axarr[1, 0].imshow(image_downsized), axarr[1, 0].set_title("image_downsized")
+                axarr[1, 1].imshow(depth_downsized[:, :, 0]), axarr[1, 1].set_title("depth_downsized")
 
                 plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
                 plt.show()  # Display it
