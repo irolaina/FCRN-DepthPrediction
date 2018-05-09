@@ -37,16 +37,17 @@ class FilenamesHandler(object):
 
         return data
 
-    def saveList(self, image_filenames, depth_filenames, mode):
+    def saveList(self, image_filenames, depth_filenames, name, mode):
         # Column-Concatenation of Lists of Strings
         filenames = list(zip(image_filenames, depth_filenames))
         filenames = np.array(filenames)
 
         # Saving the 'filenames' variable to *.txt
-        root_path = os.path.abspath(os.path.join(__file__, "../..")) # This line may cause 'FileNotFindError'
-        relative_path = 'data/' + self.name + '_' + mode + '.txt'
+        root_path = os.path.abspath(os.path.join(__file__, "../.."))  # This line may cause 'FileNotFindError'
+        relative_path = 'data/' + name + '_' + mode + '.txt'
         save_file_path = os.path.join(root_path, relative_path)
 
-        np.savetxt(save_file_path, filenames, delimiter='\t', fmt='%s')
+        # noinspection PyTypeChecker
+        np.savetxt(save_file_path, filenames, fmt='%s', delimiter='\t')
 
-        print("[Dataset] '%s' file saved." % save_file_path)
+        print("\n[Dataset] '%s' file saved." % save_file_path)

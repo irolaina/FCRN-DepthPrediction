@@ -203,40 +203,25 @@ class Dataloader:
 
             # Results
             if showImages:
-                def plot1():
-                    scp.imshow(image)
-                    scp.imshow(depth)
-                    scp.imshow(image_aug)
-                    scp.imshow(depth_aug)
-                    scp.imshow(image_crop)
-                    scp.imshow(depth_crop)
-                    scp.imshow(image_normed)
-                    scp.imshow(depth_downsized)
+                fig, axarr = plt.subplots(4, 2)
+                axarr[0, 0].set_title("image")
+                axarr[0, 0].imshow(image)
+                axarr[0, 1].set_title("depth")
+                axarr[0, 1].imshow(depth)
+                axarr[1, 0].set_title("image_aug")
+                axarr[1, 0].imshow(image_aug)
+                axarr[1, 1].set_title("depth_aug")
+                axarr[1, 1].imshow(depth_aug)
+                axarr[2, 0].set_title("image_crop")
+                axarr[2, 0].imshow(image_crop)
+                axarr[2, 1].set_title("depth_crop")
+                axarr[2, 1].imshow(depth_crop)
+                axarr[3, 0].set_title("image_normed")
+                axarr[3, 0].imshow(image_normed)
+                axarr[3, 1].set_title("depth_downsized")
+                axarr[3, 1].imshow(depth_downsized)
 
-                def plot2():
-                    fig, axarr = plt.subplots(4, 2)
-                    axarr[0, 0].set_title("image")
-                    axarr[0, 0].imshow(image)
-                    axarr[0, 1].set_title("depth")
-                    axarr[0, 1].imshow(depth)
-                    axarr[1, 0].set_title("image_aug")
-                    axarr[1, 0].imshow(image_aug)
-                    axarr[1, 1].set_title("depth_aug")
-                    axarr[1, 1].imshow(depth_aug)
-                    axarr[2, 0].set_title("image_crop")
-                    axarr[2, 0].imshow(image_crop)
-                    axarr[2, 1].set_title("depth_crop")
-                    axarr[2, 1].imshow(depth_crop)
-                    axarr[3, 0].set_title("image_normed")
-                    axarr[3, 0].imshow(image_normed)
-                    axarr[3, 1].set_title("depth_downsized")
-                    axarr[3, 1].imshow(depth_downsized)
-
-                    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
-
-                # plot1()
-                plot2()
-
+                plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
                 plt.show()  # Display it
 
             # Debug

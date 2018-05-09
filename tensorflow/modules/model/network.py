@@ -83,6 +83,7 @@ class Network(object):
         ignore_missing: If true, serialized weights for missing layers are ignored.
         """
         data_dict = np.load(data_path, encoding='latin1').item()
+        # noinspection PyTypeChecker
         for op_name in data_dict:
             with tf.variable_scope(op_name, reuse=True):
                 for param_name, data in iter(data_dict[op_name].items()):
@@ -246,6 +247,7 @@ class Network(object):
             fc = op(feed_in, weights, biases, name=scope.name)
             return fc
 
+    # noinspection PyTypeChecker
     @layer
     def softmax(self, input_data, name):
         input_shape = map(lambda v: v.value, input_data.get_shape())

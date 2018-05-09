@@ -148,18 +148,19 @@ def total_size(o, handlers=None, verbose=False):
     seen = set()  # track which object id's have already been seen
     default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
 
-    def sizeof(o):
-        if id(o) in seen:  # do not double count the same object
+    def sizeof(var):
+        if id(var) in seen:  # do not double count the same object
             return 0
-        seen.add(id(o))
-        s = getsizeof(o, default_size)
+        seen.add(id(var))
+        s = getsizeof(var, default_size)
 
         if verbose:
-            print(s, type(o), repr(o), file=stderr)
+            print(s, type(var), repr(var), file=stderr)
 
         for typ, handler in all_handlers.items():
-            if isinstance(o, typ):
-                s += sum(map(sizeof, handler(o)))
+            if isinstance(var, typ):
+                # noinspection PyCallingNonCallable
+                s += sum(map(sizeof, handler(var)))
                 break
         return s
 

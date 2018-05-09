@@ -86,6 +86,6 @@ class Kitti2012(FilenamesHandler):
         image_filenames.sort()
         depth_filenames.sort()
 
-        # self.saveLists(image_filenames, depth_filenames) # FIXME: Doesn't Save
+        # self.saveLists(image_filenames, depth_filenames, self.name, mode) # FIXME: Doesn't Save
 
         return image_filenames, depth_filenames

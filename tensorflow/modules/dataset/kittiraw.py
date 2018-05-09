@@ -83,6 +83,6 @@ class KittiRaw(FilenamesHandler):
             image_filenames.sort()
             depth_filenames.sort()
 
-            self.saveList(image_filenames, depth_filenames, mode)
+            self.saveList(image_filenames, depth_filenames, self.name, mode)
 
         return image_filenames, depth_filenames

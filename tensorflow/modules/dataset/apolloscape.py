@@ -114,6 +114,6 @@ class Apolloscape(FilenamesHandler):
             image_filenames = list(np.array(image_filenames)[s])
             depth_filenames = list(np.array(depth_filenames)[s])
 
-            self.saveList(image_filenames, depth_filenames, mode)
+            self.saveList(image_filenames, depth_filenames, self.name, mode)
 
         return image_filenames, depth_filenames
