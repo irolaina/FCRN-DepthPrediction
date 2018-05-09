@@ -26,7 +26,8 @@ class FilenamesHandler(object):
     def __init__(self):
         pass
 
-    def loadList(self, filename):
+    @staticmethod
+    def loadList(filename):
         print("\n[Dataloader] Loading '%s'..." % filename)
         try:
             data = np.genfromtxt(filename, dtype='str', delimiter='\t')
@@ -37,7 +38,8 @@ class FilenamesHandler(object):
 
         return data
 
-    def saveList(self, image_filenames, depth_filenames, name, mode):
+    @staticmethod
+    def saveList(image_filenames, depth_filenames, name, mode):
         # Column-Concatenation of Lists of Strings
         filenames = list(zip(image_filenames, depth_filenames))
         filenames = np.array(filenames)

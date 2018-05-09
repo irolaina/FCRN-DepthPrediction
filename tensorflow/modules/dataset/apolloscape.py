@@ -77,8 +77,6 @@ class Apolloscape(FilenamesHandler):
             image_filename_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
             depth_filename_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
 
-            # TODO: Add assert, tamanho das listas devem ser iguais
-            # assert(2 + 2 == 5, "Houston we've got a problem")
             n, m = len(image_filename_aux), len(depth_filename_aux)
 
             # Sequential Search. This kind of search ensures that the images are paired!
@@ -90,10 +88,11 @@ class Apolloscape(FilenamesHandler):
                         image_filenames.append(image_filenames_tmp[i])
                         depth_filenames.append(depth_filenames_tmp[j])
 
+            n2, m2 = len(image_filenames), len(depth_filenames)
+            assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
             print("time: %f s" % (time.time() - start))
 
             # Splits Train/Test Subsets
-            n2, m2 = len(image_filenames), len(depth_filenames)
             divider = int(n2 * ratio)
 
             if mode == 'train':

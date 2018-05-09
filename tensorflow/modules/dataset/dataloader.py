@@ -234,15 +234,6 @@ class Dataloader:
             # return image_normed, depth_downsized, image_crop, depth_crop
 
         elif mode == 'test':
-            # Local Variables
-            image = None
-            image_downsized = None
-            image_normed = None
-
-            depth = None
-            depth_downsized = None
-            img_depth_bilinear = None
-
             # Processing the RGB Image
             image = scp.imread(os.path.join(image_path))
             image_downsized = scp.imresize(image, size=input_size.getSize())
