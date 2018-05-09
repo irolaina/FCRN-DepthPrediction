@@ -26,8 +26,8 @@ LOG_INITIAL_VALUE = 1
 #  Functions
 # ===========
 def getFilenamesTensors(image_filenames, depth_filenames):
-    tf_image_filenames = tf.constant(image_filenames)
-    tf_depth_filenames = tf.constant(depth_filenames)
+    tf_image_filenames = tf.convert_to_tensor(image_filenames)
+    tf_depth_filenames = tf.convert_to_tensor(depth_filenames)
 
     return tf_image_filenames, tf_depth_filenames
 
@@ -74,7 +74,13 @@ class Dataloader:
         if args.mode == 'train':
             self.getTrainData()
             self.getTestData()
-        elif args.mode == 'test': # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+
+            self.tf_train_image = None
+            self.tf_train_depth = None
+        elif args.mode == 'test':  # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+
+            self.tf_test_image = None
+            self.tf_test_image = None
             pass
 
         print("[Dataloader] dataloader object created.")
@@ -112,7 +118,6 @@ class Dataloader:
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
 
-        # Searches dataset images filenames
         self.test_image_filenames = image_filenames
         self.test_depth_filenames = depth_filenames
         self.tf_test_image_filenames = tf_image_filenames

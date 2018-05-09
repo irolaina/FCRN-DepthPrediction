@@ -58,6 +58,7 @@ class Train:
             self.loss_hist = []
 
         self.trainCollection()
+        self.stop = EarlyStopping()
 
         if args.show_train_progress:
             self.plot = Plot(args.mode, title='Train Predictions')
@@ -138,7 +139,7 @@ class Train:
 
 
 # TODO: Validar
-class EarlyStopping:
+class EarlyStopping(object):
     def __init__(self):
         # Local Variables
         self.movMeanLast = 0

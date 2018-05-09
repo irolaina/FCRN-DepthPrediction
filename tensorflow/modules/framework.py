@@ -25,7 +25,7 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 class Model(object):
-    def __init__(self, args):
+    def __init__(self, args, data, selected_loss, valid_pixels):
         self.args = args
 
         self.input_size = Size(228, 304, 3)
@@ -39,13 +39,13 @@ class Model(object):
 
         self.loss_name = ''
 
-        # self.build_model(tf_image, labels)
-        # self.build_losses()
-        # self.build_optimizer()
-        # self.build_summaries()
-        # self.countParams()
+        self.build_model(data)
+        self.build_losses(selected_loss, valid_pixels)
+        self.build_optimizer()
+        self.build_summaries()
+        self.countParams()
 
-    def build_model(self, image_size, depth_size, tf_train_image, tf_train_depth):
+    def build_model(self, data):
         print("\n[Network/Model] Build Network Model...")
 
         # =============================================
@@ -53,15 +53,15 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, tf_train_image, tf_train_depth, self.input_size, self.output_size)
+            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, image_size, depth_size, self.input_size, self.output_size)
+            self.valid = Validation(self.args, data.image_size, data.depth_size, self.input_size, self.output_size)
 
-    def build_losses(self, selectedLoss, valid_pixels):
+    def build_losses(self, selected_loss, valid_pixels):
         with tf.name_scope("Losses"):
             # Select Loss Function:
-            if selectedLoss == 0:
+            if selected_loss == 0:
                 self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.fcrn.get_output(),
                                                                  self.train.tf_log_batch_labels,
                                                                  valid_pixels)
@@ -70,7 +70,7 @@ class Model(object):
                                                     self.valid.tf_log_depth_resized,
                                                     valid_pixels)
 
-            elif selectedLoss == 1:
+            elif selected_loss == 1:
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.train.fcrn.get_output(),
                                                                self.train.tf_log_batch_labels,
                                                                valid_pixels,
@@ -79,7 +79,7 @@ class Model(object):
                 _, self.valid.tf_loss = loss.tf_L(self.valid.fcrn.get_output(),
                                                   self.valid.tf_log_depth_resized,
                                                   valid_pixels)
-            elif selectedLoss == 2:
+            elif selected_loss == 2:
                 # FIXME: BerHu está aproximando para y e não log(y)
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.fcrn.get_output(),
                                                                    self.train.tf_batch_labels,

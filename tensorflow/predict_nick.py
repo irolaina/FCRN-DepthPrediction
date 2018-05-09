@@ -32,7 +32,6 @@ from PIL import Image
 from modules.dataset.dataloader import Dataloader
 from modules.framework import Model
 from modules.model.fcrn import ResNet50UpProj
-from modules.train import EarlyStopping
 from modules.size import Size
 from modules.plot import Plot
 
@@ -174,9 +173,9 @@ def predict(model_data_path, image_path):
 def train(args):
     print('[%s] Selected mode: Train' % appName)
 
-    # Create a loop to keep the application running
-    global running
+    # Local Variables
     global firstTime
+    global running  # Create a loop to keep the application running
     running = True
 
     save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
@@ -187,22 +186,16 @@ def train(args):
     graph = tf.Graph()
     with graph.as_default():
         data = Dataloader(args)
-        model = Model(args)
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
             data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
 
-        tf_train_image, tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
+        data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
-        model.build_model(data.image_size, data.depth_size, tf_train_image, tf_train_depth)
-        model.build_losses(LOSS_FUNCTION, VALID_PIXELS)
-        model.build_optimizer()
-        model.build_summaries()
-        model.countParams()
-
+        model = Model(args, data, LOSS_FUNCTION, VALID_PIXELS)
         model.collectSummaries(save_path, graph)
         model.createTrainSaver()
 
@@ -211,7 +204,6 @@ def train(args):
     # ---------------------------------------- #
     # Local Variables and Memory Allocation
     epoch, step = 0, 0
-    stop = EarlyStopping()
 
     with tf.Session(graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
@@ -355,7 +347,7 @@ def train(args):
                     # plotGraph() # TODO: REATIVAR!!!!!!!!!!!
 
                     if ENABLE_EARLY_STOP:
-                        if stop.check(step, model.valid.loss):  # TODO: Validar
+                        if model.train.stop.check(step, model.valid.loss):  # TODO: Validar
                             break
 
                 # Write information to TensorBoard

@@ -76,6 +76,8 @@ class Apolloscape(FilenamesHandler):
             image_filename_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
             depth_filename_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
 
+            # TODO: Add assert, tamanho das listas devem ser iguais
+            # assert(2 + 2 == 5, "Houston we've got a problem")
             n, m = len(image_filename_aux), len(depth_filename_aux)
 
             # Sequential Search. This kind of search ensures that the images are paired!
