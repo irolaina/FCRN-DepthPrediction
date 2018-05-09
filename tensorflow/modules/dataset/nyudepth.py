@@ -71,27 +71,49 @@ class NyuDepth(FilenamesHandler):
 
             # Finds input images and labels inside list of folders.
             start = time.time()
+            image_filenames_tmp = []
+            depth_filenames_tmp = []
+
+            image_filenames_aux = []
+            depth_filenames_aux = []
             for folder in glob.glob(self.dataset_path + mode + "ing/*/"):
                 # print(folder)
                 os.chdir(folder)
 
-                for file in glob.glob('*_colors.png'):
+                for image in glob.glob('*_colors.png'):
                     # print(file)
-                    image_filenames.append(folder + file)
+                    image_filenames_tmp.append(folder + image)
+                    image_filenames_aux.append(os.path.split(image)[1].replace('_colors.png', ''))
 
-                for file in glob.glob('*_depth.png'):
+                for depth in glob.glob('*_depth.png'):
                     # print(file)
-                    depth_filenames.append(folder + file)
+                    depth_filenames_tmp.append(folder + depth)
+                    depth_filenames_aux.append(os.path.split(depth)[1].replace('_depth.png', ''))
 
-            # TODO: Adicionar Sequential Search
+            n, m = len(image_filenames_aux), len(depth_filenames_aux)
 
+            # Sequential Search. This kind of search ensures that the images are paired!
+            start = time.time()
+            for j, depth in enumerate(depth_filenames_aux):
+                print("%d/%d" % (j + 1, m))  # Debug
+                for i, image in enumerate(image_filenames_aux):
+                    if image == depth:
+                        image_filenames.append(image_filenames_tmp[i])
+                        depth_filenames.append(depth_filenames_tmp[j])
+
+            n2, m2 = len(image_filenames), len(depth_filenames)
+            assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
             print("time: %f s" % (time.time() - start))
 
-            # TODO: Fazer shuffle
-            # TODO: Eu acho que não precisa mais disso
-            # Alphabelly Sort the List of Strings
-            image_filenames.sort()
-            depth_filenames.sort()
+            # Shuffles
+            s = np.random.choice(n2, n2, replace=False)
+            image_filenames = list(np.array(image_filenames)[s])
+            depth_filenames = list(np.array(depth_filenames)[s])
+
+            # Debug
+            # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
+            # for i in filenames:
+            #     print(i)
 
             self.saveList(image_filenames, depth_filenames, self.name, mode)
 

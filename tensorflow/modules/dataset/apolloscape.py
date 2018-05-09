@@ -74,16 +74,16 @@ class Apolloscape(FilenamesHandler):
             image_filenames_tmp = glob.glob(self.dataset_path + "ColorImage/*/*/*")  # ...ColorImage/Record*/Camera */*.jpg
             depth_filenames_tmp = glob.glob(self.dataset_path + "Depth/*/*/*")  # ...Depth/Record*/Camera */*.png
 
-            image_filename_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
-            depth_filename_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
+            image_filenames_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
+            depth_filenames_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
 
-            n, m = len(image_filename_aux), len(depth_filename_aux)
+            n, m = len(image_filenames_aux), len(depth_filenames_aux)
 
             # Sequential Search. This kind of search ensures that the images are paired!
             start = time.time()
-            for j, depth in enumerate(depth_filename_aux):
+            for j, depth in enumerate(depth_filenames_aux):
                 print("%d/%d" % (j + 1, m))  # Debug
-                for i, image in enumerate(image_filename_aux):
+                for i, image in enumerate(image_filenames_aux):
                     if image == depth:
                         image_filenames.append(image_filenames_tmp[i])
                         depth_filenames.append(depth_filenames_tmp[j])
