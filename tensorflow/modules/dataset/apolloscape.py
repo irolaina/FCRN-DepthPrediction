@@ -12,7 +12,6 @@
 #
 # The absolute depth value in meter can be obtained as:
 #   double depth_value = depth_u16.at(row, col) / 200.00;
-# TODO: Utilizar equações acima
 
 
 # ===========

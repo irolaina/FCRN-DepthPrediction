@@ -27,7 +27,7 @@ def np_maskOutInvalidPixels(y, y_):
 
 def tf_maskOutInvalidPixels(tf_pred, tf_labels):
     # Identify Pixels to be masked out.
-    tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
+    tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx) # FIXME: Implement workaround for ApolloScape, Ignore pixels with 65535
 
     # Mask Out Pixels without depth values
     tf_valid_pred = tf.gather_nd(tf_pred, tf_idx)

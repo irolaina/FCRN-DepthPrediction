@@ -1,11 +1,14 @@
+# FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
 # ========
 #  README
 # ========
 # KittiContinuous(Residential)
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint8
-# FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
-# TODO: Criar uma classe para o kitticontinuous do vitor
+
+# Dataset Guidelines by Vitor Guizilini
+# disp(u,v)  = ((float)I(u,v))/3.0;
+# valid(u,v) = I(u,v)>0;
 
 # ===========
 #  Libraries
@@ -51,10 +54,10 @@ class KittiContinuous(FilenamesHandler):
         self.depth_replace = [b'/dispc/', b'']
 
         # Data Range/Plot ColorSpace
-        self.vmin = 0
-        self.vmax = 240
-        self.log_vmin = np.log(self.vmin + LOG_INITIAL_VALUE)
-        self.log_vmax = np.log(self.vmax)
+        self.vmin = None
+        self.vmax = None
+        self.log_vmin = None
+        self.log_vmax = None
 
         print("[Dataloader] KittiContinuous object created.")
 

@@ -142,18 +142,20 @@ class Dataloader:
         tf_image_key, image_file = image_reader.read(tf_train_image_filename_queue)
         tf_depth_key, depth_file = image_reader.read(tf_train_depth_filename_queue)
 
-        # FIXME: KittiContinuous depth image é do tipo uint8, inves de uint16 como todos os outros datasets
         tf_image = tf.image.decode_png(image_file, channels=3, dtype=tf.uint8)
-        tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint16)
+        if self.dataset_name == 'kitticontinuous_residential':
+            tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint8)
+        else:
+            tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint16)
 
         # print(tf_image)   # Must be uint8!
-        # print(tf_depth)   # Must be uint16!
+        # print(tf_depth)   # Must be uint16/uin8!
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
             tf_depth = (tf.cast(tf_depth, tf.float32))/256.0
         elif self.dataset_name == 'kitticontinuous_residential':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) # TODO: Terminar
+            tf_depth = (tf.cast(tf_depth, tf.float32))/3.0
         elif self.dataset_name == 'nyudepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) # TODO: Terminar
         elif self.dataset_name == 'apolloscape':

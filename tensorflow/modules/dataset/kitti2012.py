@@ -8,7 +8,7 @@
 # Dataset Guidelines
 # disp(u,v)  = ((float)I(u,v))/256.0;
 # valid(u,v) = I(u,v)>0;
-# TODO: Utilizar equações acima
+
 
 # ===========
 #  Libraries
