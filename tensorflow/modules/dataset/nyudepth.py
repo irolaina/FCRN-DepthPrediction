@@ -49,12 +49,6 @@ class NyuDepth(FilenamesHandler):
         self.image_replace = [b'_colors.png', b'']
         self.depth_replace = [b'_depth.png', b'']
 
-        # Data Range/Plot ColorSpace # TODO: Terminar
-        self.vmin = None
-        self.vmax = None
-        self.log_vmin = None
-        self.log_vmax = None
-
         print("[Dataloader] NyuDepth object created.")
 
     def getFilenamesLists(self, mode):

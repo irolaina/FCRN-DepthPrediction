@@ -51,17 +51,11 @@ class Apolloscape(FilenamesHandler):
 
         self.name = 'apolloscape'
 
-        self.image_size = Size(2710, 3384, 3)
-        self.depth_size = Size(2710, 3384, 1)
+        self.image_size = Size(2710, 3384, 3)  # FIXME
+        self.depth_size = Size(2710, 3384, 1)  # FIXME
 
         self.image_replace = [b'/ColorImage/', b'']
         self.depth_replace = [b'/Depth/', b'']
-
-        # Data Range/Plot ColorSpace # TODO: Terminar
-        self.vmin = None
-        self.vmax = None
-        self.log_vmin = None
-        self.log_vmax = None
 
         print("[Dataloader] Apolloscape object created.")
 

@@ -53,12 +53,6 @@ class KittiContinuous(FilenamesHandler):
         self.image_replace = [b'/imgs/', b'']
         self.depth_replace = [b'/dispc/', b'']
 
-        # Data Range/Plot ColorSpace
-        self.vmin = None
-        self.vmax = None
-        self.log_vmin = None
-        self.log_vmax = None
-
         print("[Dataloader] KittiContinuous object created.")
 
     def getFilenamesLists(self, mode):

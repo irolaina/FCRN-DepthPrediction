@@ -53,12 +53,6 @@ class Kitti2012(FilenamesHandler):
         self.image_replace = [b'_colors.png', b'']  # FIXME
         self.depth_replace = [b'_depth.png', b'']  # FIXME
 
-        # Data Range/Plot ColorSpace # TODO: Terminar
-        self.vmin = None
-        self.vmax = None
-        self.log_vmin = None
-        self.log_vmax = None
-
         print("[Dataloader] Kitti2012 object created.")
 
     def getFilenamesLists(self, mode):  # FIXME
