@@ -12,7 +12,7 @@ from skimage import transform
 
 from .kitti2012 import Kitti2012
 from .kitti2015 import Kitti2015
-from .kittiraw import KittiRaw
+from .kitticontinuous import KittiContinuous
 from .nyudepth import NyuDepth
 from .apolloscape import Apolloscape
 
@@ -47,8 +47,8 @@ class Dataloader:
         elif self.selectedDataset == 'kitti2015':
             self.datasetObj = Kitti2015(args.machine)
 
-        elif self.selectedDataset == 'kittiraw_residential_continuous':
-            self.datasetObj = KittiRaw(args.machine)
+        elif self.selectedDataset == 'kitticontinuous_residential':
+            self.datasetObj = KittiContinuous(args.machine)
 
         elif self.selectedDataset == 'nyudepth':
             self.datasetObj = NyuDepth(args.machine)
@@ -152,7 +152,7 @@ class Dataloader:
         # True Depth Value Calculation. May vary from dataset to dataset.
         if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
             tf_depth = (tf.cast(tf_depth, tf.float32))/256.0
-        elif self.dataset_name == 'kittiraw':
+        elif self.dataset_name == 'kitticontinuous_residential':
             tf_depth = (tf.cast(tf_depth, tf.float32)) # TODO: Terminar
         elif self.dataset_name == 'nyudepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) # TODO: Terminar

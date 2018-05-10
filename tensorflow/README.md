@@ -4,13 +4,13 @@ Run Single Prediction:
     
 Train:
 
-    python3 predict_nick.py -m train -s kittiraw_residential_continuous --max_steps 1000 -d 0.5 --ldecay --gpu 0 -t
-    python3 predict_nick_tf_read.py -m train -s kittiraw_residential_continuous --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
-    python3 predict_nick_tf_read.py -m train -s kittiraw_residential_continuous --max_steps 1000 --ldecay --l2norm --gpu 0 -t -v
+    python3 predict_nick.py -m train -s kitticontinuous_residential --max_steps 1000 -d 0.5 --ldecay --gpu 0 -t
+    python3 predict_nick_tf_read.py -m train -s kitticontinuous_residential --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
+    python3 predict_nick_tf_read.py -m train -s kitticontinuous_residential --max_steps 1000 --ldecay --l2norm --gpu 0 -t -v
     
 Test:
 
-    python3 predict_nick.py -m test -s kittiraw_residential_continuous -r output/fcrn/2018-02-26_17-08-45/restore/model.fcrn --gpu 1 -u
+    python3 predict_nick.py -m test -s kitticontinuous_residential -r output/fcrn/2018-02-26_17-08-45/restore/model.fcrn --gpu 1 -u
 
 Predict:
 

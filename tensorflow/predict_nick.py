@@ -48,9 +48,9 @@ from modules.plot import Plot
 LOSS_FUNCTION = 2
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True             # Default: True
+VALID_PIXELS = False             # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+TRAIN_ON_SINGLE_IMAGE = True   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
@@ -480,7 +480,7 @@ def test(args):
         # Memory Allocation
         image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)  # (228, 304, 3)
         pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)  # (128, 160, 1)
-        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.int32)  # (128, 160, 1)
+        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.uint16)  # (128, 160, 1)
 
         start = time.time()
         for i in range(data.numTestSamples):

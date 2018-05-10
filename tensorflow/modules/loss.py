@@ -44,7 +44,7 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
 # NYU-Depth v2: ~10 m               / Data range: ]0, ~4000] # TODO: Validar data range values
 # Make3D: ~70 m                     / Data range:
 # Kitti 2012/2015: ???              / Data range: [0, ~30000] # TODO: Descobrir o range em metros e validar data range values
-# KittiRaw Continuous (Vitor): ~80m / Data range: [0, 240]
+# KittiContinuous (Vitor): ~80m / Data range: [0, 240] # TODO: Descobrir o range em metros e validar data range values
 
 # -------------------- #
 #  Mean Squared Error  #

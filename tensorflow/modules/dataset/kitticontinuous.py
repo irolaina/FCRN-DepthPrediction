@@ -1,7 +1,7 @@
 # ========
 #  README
 # ========
-# KittiRaw Residential Continuous
+# KittiContinuous(Residential)
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint8
 # FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
@@ -34,7 +34,7 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-class KittiRaw(FilenamesHandler):
+class KittiContinuous(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()
         if machine == 'olorin':
@@ -42,7 +42,7 @@ class KittiRaw(FilenamesHandler):
         elif machine == 'xps':
             self.dataset_path = "../../data/residential_continuous/"
 
-        self.name = 'kittiraw'
+        self.name = 'kitticontinuous_residential'
 
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
@@ -56,7 +56,7 @@ class KittiRaw(FilenamesHandler):
         self.log_vmin = np.log(self.vmin + LOG_INITIAL_VALUE)
         self.log_vmax = np.log(self.vmax)
 
-        print("[Dataloader] KittiRaw object created.")
+        print("[Dataloader] KittiContinuous object created.")
 
     def getFilenamesLists(self, mode):
         image_filenames = []
