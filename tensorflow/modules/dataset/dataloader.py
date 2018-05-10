@@ -142,42 +142,27 @@ class Dataloader:
         tf_image_key, image_file = image_reader.read(tf_train_image_filename_queue)
         tf_depth_key, depth_file = image_reader.read(tf_train_depth_filename_queue)
 
-        # FIXME: Kitti Original as imagens de disparidade são do tipo int32, no caso do kittiraw_residential_continous são uint8
-        tf_image = tf.image.decode_image(image_file, channels=3)  # uint8
-        tf_depth = tf.image.decode_image(depth_file, channels=1)  # uint8
+        # FIXME: KittiContinuous depth image é do tipo uint8, inves de uint16 como todos os outros datasets
+        tf_image = tf.image.decode_png(image_file, channels=3, dtype=tf.uint8)
+        tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint16)
 
-        # Restores images structure (size, type)
-        tf_image.set_shape([self.image_size.height, self.image_size.width, self.image_size.nchannels])
-        tf_depth.set_shape([self.depth_size.height, self.depth_size.width, self.depth_size.nchannels])
+        # print(tf_image)   # Must be uint8!
+        # print(tf_depth)   # Must be uint16!
+
+        # True Depth Value Calculation. May vary from dataset to dataset.
+        if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
+            tf_depth = (tf.cast(tf_depth, tf.float32))/256.0
+        elif self.dataset_name == 'kittiraw':
+            tf_depth = (tf.cast(tf_depth, tf.float32)) # TODO: Terminar
+        elif self.dataset_name == 'nyudepth':
+            tf_depth = (tf.cast(tf_depth, tf.float32)) # TODO: Terminar
+        elif self.dataset_name == 'apolloscape':
+            tf_depth = (tf.cast(tf_depth, tf.float32))/200.0
+
+        # print(tf_image) # Must be uint8!
+        # print(tf_depth) # Must be float32!
 
         return tf_image, tf_depth
-
-    def checkIntegrity(self, sess, tf_image_filenames, tf_depth_filenames, mode):
-        try:
-            image_filenames, depth_filenames = sess.run([tf_image_filenames, tf_depth_filenames])
-
-            image_filenames_aux = [item.replace(self.datasetObj.image_replace[0], self.datasetObj.image_replace[1]) for
-                                   item in image_filenames]
-            depth_filenames_aux = [item.replace(self.datasetObj.depth_replace[0], self.datasetObj.depth_replace[1]) for
-                                   item in depth_filenames]
-
-            # flag = False
-            # for i in range(len(image_filenames)):
-            #     if image_filenames_aux[i] == depth_filenames_aux[i]:
-            #         flag = True
-            #     else:
-            #         flag = False
-            #
-            #     print(i, image_filenames[i], depth_filenames[i], flag)
-
-            if image_filenames_aux == depth_filenames_aux:
-                print("[Dataloader/%s] Check Integrity: Pass" % mode)
-            else:
-                raise ValueError
-
-        except ValueError:
-            print("[Dataloader/%s] Check Integrity: Failed" % mode)
-            sys.exit()
 
     def readImage(self, image_path, depth_path, input_size, output_size, mode, showImages=False):
         # The DataAugmentation Transforms should be done before the Image Normalization!!!
