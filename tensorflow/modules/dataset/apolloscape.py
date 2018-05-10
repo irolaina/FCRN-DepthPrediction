@@ -1,3 +1,20 @@
+# ========
+#  README
+# ========
+# Apollo Scape
+# Image: (2710, 3384, 3) uint8
+# Depth: (2710, 3384)    uint16
+
+# Dataset Guidelines
+# Depth image format:
+# In the depth image, the depth value is save as unsigned short int format. It can be easily read in OpenCV as:
+#   cv::Mat depth_u16 = cv::imread ( depth_path, CV_LOAD_IMAGE_ANYDEPTH);
+#
+# The absolute depth value in meter can be obtained as:
+#   double depth_value = depth_u16.at(row, col) / 200.00;
+# TODO: Utilizar equações acima
+
+
 # ===========
 #  Libraries
 # ===========
@@ -25,10 +42,6 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-# Apollo Scape
-# TODO: Add Info
-# Image: (2710, 3384, 3) ?
-# Depth: (2710, 3384)    ?
 class Apolloscape(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()

@@ -1,3 +1,12 @@
+# ========
+#  README
+# ========
+# KittiRaw Residential Continuous
+# Image: (375, 1242, 3) uint8
+# Depth: (375, 1242)    uint8
+# FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
+# TODO: Criar uma classe para o kitticontinuous do vitor
+
 # ===========
 #  Libraries
 # ===========
@@ -25,10 +34,6 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-# KittiRaw Residential Continuous
-# Image: (375, 1242, 3) uint8
-# Depth: (375, 1242)    uint8
-# FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
 class KittiRaw(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()

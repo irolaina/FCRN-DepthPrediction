@@ -1,3 +1,11 @@
+# ========
+#  README
+# ========
+# NYU Depth v2
+# Image: (480, 640, 3) uint8
+# Depth: (480, 640)    uint16
+# TODO: Encontrar dataset guidelines para extrair o valor de depth da imagem uint16 para este dataset
+
 # ===========
 #  Libraries
 # ===========
@@ -25,10 +33,6 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-# NYU Depth v2
-# TODO: Add info
-# Image: (480, 640, 3) ?
-# Depth: (480, 640)    ?
 class NyuDepth(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()

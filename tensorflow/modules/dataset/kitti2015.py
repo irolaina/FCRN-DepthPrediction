@@ -1,3 +1,16 @@
+# ========
+#  README
+# ========
+# Kitti Stereo 2015
+# Image: (375, 1242, 3) uint8
+# Depth: (375, 1242)    uint16
+
+# Dataset Guidelines
+# disp(u,v)  = ((float)I(u,v))/256.0;
+# valid(u,v) = I(u,v)>0;
+# TODO: Utilizar equações acima
+
+
 # ===========
 #  Libraries
 # ===========
@@ -25,10 +38,6 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-# Kitti Stereo 2015
-# TODO: Add info
-# Image: (375, 1242, 3) ?
-# Depth: (375, 1242)    ?
 class Kitti2015(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()

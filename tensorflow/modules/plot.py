@@ -17,8 +17,9 @@ import modules.loss as loss
 def updateColorBar(cbar, img):
     vmin, vmax = np.min(img), np.max(img)
     cbar.set_clim(vmin, vmax)
-    # new_cbar_ticks = np.linspace(vmin, vmax, num=6, endpoint=True)
-    # cbar.set_ticks(new_cbar_ticks)
+
+    # Debug
+    # print(vmin, vmax)
 
 
 # ===================
