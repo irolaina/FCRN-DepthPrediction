@@ -70,14 +70,14 @@ class Plot(object):
 
         self.isFirstTime = True
 
-    def showResults(self, raw, label, log_label, pred, cbar_range):
+    def showResults(self, raw, label, log_label, pred):
         predMSE = loss.np_MSE(y=pred, y_=log_label)
 
         if self.isFirstTime:
             self.cax1 = self.axes[0].imshow(raw)
-            self.cax2 = self.axes[1].imshow(label, vmin=cbar_range.vmin, vmax=cbar_range.vmax)
-            self.cax3 = self.axes[2].imshow(log_label, vmin=cbar_range.log_vmin, vmax=cbar_range.log_vmax)
-            self.cax4 = self.axes[3].imshow(pred, vmin=cbar_range.log_vmin, vmax=cbar_range.log_vmax)
+            self.cax2 = self.axes[1].imshow(label)
+            self.cax3 = self.axes[2].imshow(log_label)
+            self.cax4 = self.axes[3].imshow(pred)
             self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
             # Creates ColorBars

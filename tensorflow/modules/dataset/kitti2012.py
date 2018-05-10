@@ -50,9 +50,6 @@ class Kitti2012(FilenamesHandler):
         self.image_size = Size(370, 1226, 3)
         self.depth_size = Size(370, 1226, 1)
 
-        self.image_replace = [b'_colors.png', b'']  # FIXME
-        self.depth_replace = [b'_depth.png', b'']  # FIXME
-
         print("[Dataloader] Kitti2012 object created.")
 
     def getFilenamesLists(self, mode):  # FIXME

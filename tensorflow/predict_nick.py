@@ -4,7 +4,6 @@
 # ============
 #  To-Do FCRN
 # ============
-# TODO: Dar suporte a outros Datasets
 # TODO: Validar Métricas.
 
 # TODO: Implementar Bilinear
@@ -50,7 +49,7 @@ LOSS_FUNCTION = 2
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = False             # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = True   # Default: False
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
@@ -322,8 +321,7 @@ def train(args):
                         model.train.plot.showResults(raw=batch_data_raw[0],
                                                      label=batch_labels[0, :, :, 0],
                                                      log_label=log_batch_labels[0, :, :, 0],
-                                                     pred=batch_pred[0, :, :, 0],
-                                                     cbar_range=data.datasetObj)
+                                                     pred=batch_pred[0, :, :, 0])
 
                     end2 = time.time()
 
@@ -362,8 +360,7 @@ def train(args):
                             model.valid.plot.showResults(raw=valid_image[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
                                                          log_label=valid_log_labels[0, :, :, 0],
-                                                         pred=valid_pred[0, :, :, 0],
-                                                         cbar_range=data.datasetObj)
+                                                         pred=valid_pred[0, :, :, 0])
                         else:
                             model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
 
@@ -478,27 +475,25 @@ def test(args):
             test_plotObj = Plot(args.mode, title='Test Predictions')
 
         # Memory Allocation
-        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)  # (228, 304, 3)
-        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)  # (128, 160, 1)
+        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)    # (228, 304, 3)
         depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.uint16)  # (128, 160, 1)
+        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)  # (128, 160, 1)
 
         start = time.time()
         for i in range(data.numTestSamples):
             start2 = time.time()
 
             if data.test_depth_filenames:  # It's not empty
-                image_resized, depth_resized = data.readImage(data.test_image_filenames[i],
-                                                              data.test_depth_filenames[i],
-                                                              input_size,
-                                                              output_size,
-                                                              mode='test',
-                                                              showImages=False)
+                image_resized, depth_resized = data.readTestImage(data.test_image_filenames[i],
+                                                                  data.test_depth_filenames[i],
+                                                                  input_size,
+                                                                  output_size,
+                                                                  showImages=False)
             else:
-                image_resized, _ = data.readImage(data.test_image_filenames[i],
-                                                  None,
-                                                  input_size,
-                                                  output_size,
-                                                  mode='test')
+                image_resized, _ = data.readTestImage(data.test_image_filenames[i],
+                                                      None,
+                                                      input_size,
+                                                      output_size)
 
             # Evalute the network for the given image
             feed_test = {tf_image: np.expand_dims(np.asarray(image_resized), axis=0)}
@@ -510,6 +505,7 @@ def test(args):
             # break # Test
 
             # Show Results
+            # FIXME: O range das predições são true depth, já as que são plotadas aqui não.
             test_plotObj.showTestResults(raw=image_resized,
                                          label=depth_resized[:, :, 0],
                                          log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),

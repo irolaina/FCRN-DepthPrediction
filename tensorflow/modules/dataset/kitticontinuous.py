@@ -50,9 +50,6 @@ class KittiContinuous(FilenamesHandler):
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
 
-        self.image_replace = [b'/imgs/', b'']
-        self.depth_replace = [b'/dispc/', b'']
-
         print("[Dataloader] KittiContinuous object created.")
 
     def getFilenamesLists(self, mode):

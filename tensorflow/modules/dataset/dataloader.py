@@ -81,7 +81,6 @@ class Dataloader:
             self.tf_train_image = None
             self.tf_train_depth = None
         elif args.mode == 'test':  # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
-
             self.tf_test_image = None
             self.tf_test_image = None
             pass
@@ -153,103 +152,56 @@ class Dataloader:
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
-            tf_depth = (tf.cast(tf_depth, tf.float32))/256.0
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
         elif self.dataset_name == 'kitticontinuous_residential':
-            tf_depth = (tf.cast(tf_depth, tf.float32))/3.0
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
         elif self.dataset_name == 'nyudepth':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) # TODO: Terminar
+            depthParam1 = 351.3
+            depthParam2 = 1092.5
+
+            # tf_depth = (tf.cast(tf_depth, tf.float32))
+            tf_depth = depthParam1/(depthParam2 - tf.cast(tf_depth, tf.float32)) # FIXME: Falta fazer aquele swapbyte
+
+            # imgDepthAbs(imgDepthAbs > maxDepth) = maxDepth; # TODO: Terminar
+            # imgDepthAbs(imgDepthAbs < 0) = 0; # TODO: Terminar
         elif self.dataset_name == 'apolloscape':
-            tf_depth = (tf.cast(tf_depth, tf.float32))/200.0
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
 
         # print(tf_image) # Must be uint8!
         # print(tf_depth) # Must be float32!
 
         return tf_image, tf_depth
 
-    def readImage(self, image_path, depth_path, input_size, output_size, mode, showImages=False):
-        # The DataAugmentation Transforms should be done before the Image Normalization!!!
-        # Kitti RGB Image: (375, 1242, 3) uint8     #   NyuDepth RGB Image: (480, 640, 3) uint8 #
-        #     Depth Image: (375, 1242)    int32     #          Depth Image: (480, 640)    int32 #
+    def readTestImage(self, image_path, depth_path, input_size, output_size, showImages=False):
+        # Processing the RGB Image
+        image = scp.imread(os.path.join(image_path))
+        image_downsized = scp.imresize(image, size=input_size.getSize())
+        image_normed = self.normalizeImage(image_downsized)  # TODO: Not Used!
 
-        if mode == 'train' or mode == 'valid':
-            image = scp.imread(os.path.join(image_path))
+        # Processing the Depth Image
+        if depth_path is not None:
             depth = scp.imread(os.path.join(depth_path))
+            depth_downsized = self.np_resizeImage(depth, size=output_size.getSize())
 
-            # Data Augmentation
-            image_aug, depth_aug = self.train.augment_image_pair(image, depth)
+        # Results
+        if showImages:
+            print("image: ", image.shape)
+            print("image_downsized: ", image_downsized.shape)
+            print("image_normed: ", image_normed.shape)
 
-            # TODO: Implementar Random Crops
-            # Crops Image
-            image_crop = self.cropImage(image_aug, size=input_size.getSize())
-            depth_crop = self.cropImage(depth_aug, size=input_size.getSize())
+            print("depth: ", depth.shape)
+            print("depth_downsized: ", depth_downsized.shape)
 
-            # Normalizes RGB Image and Downsizes Depth Image
-            image_normed = self.normalizeImage(image_crop)
+            fig, axarr = plt.subplots(2, 2)
+            axarr[0, 0].imshow(image), axarr[0, 0].set_title("colors")
+            axarr[0, 1].imshow(depth), axarr[0, 1].set_title("depth")
+            axarr[1, 0].imshow(image_downsized), axarr[1, 0].set_title("image_downsized")
+            axarr[1, 1].imshow(depth_downsized[:, :, 0]), axarr[1, 1].set_title("depth_downsized")
 
-            depth_downsized = self.np_resizeImage(depth_crop, size=output_size.getSize())
+            plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
+            plt.show()  # Display it
 
-            # Results
-            if showImages:
-                fig, axarr = plt.subplots(4, 2)
-                axarr[0, 0].set_title("image")
-                axarr[0, 0].imshow(image)
-                axarr[0, 1].set_title("depth")
-                axarr[0, 1].imshow(depth)
-                axarr[1, 0].set_title("image_aug")
-                axarr[1, 0].imshow(image_aug)
-                axarr[1, 1].set_title("depth_aug")
-                axarr[1, 1].imshow(depth_aug)
-                axarr[2, 0].set_title("image_crop")
-                axarr[2, 0].imshow(image_crop)
-                axarr[2, 1].set_title("depth_crop")
-                axarr[2, 1].imshow(depth_crop)
-                axarr[3, 0].set_title("image_normed")
-                axarr[3, 0].imshow(image_normed)
-                axarr[3, 1].set_title("depth_downsized")
-                axarr[3, 1].imshow(depth_downsized)
-
-                plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
-                plt.show()  # Display it
-
-            # Debug
-            # print(image.shape, image.dtype)
-            # print(depth.shape, depth.dtype)
-            # input()
-
-            input("Deprecated!!!")
-
-            # return image_normed, depth_downsized, image_crop, depth_crop
-
-        elif mode == 'test':
-            # Processing the RGB Image
-            image = scp.imread(os.path.join(image_path))
-            image_downsized = scp.imresize(image, size=input_size.getSize())
-            image_normed = self.normalizeImage(image_downsized)  # TODO: Not Used!
-
-            # Processing the Depth Image
-            if depth_path is not None:
-                depth = scp.imread(os.path.join(depth_path))
-                depth_downsized = self.np_resizeImage(depth, size=output_size.getSize())
-
-            # Results
-            if showImages:
-                print("image: ", image.shape)
-                print("image_downsized: ", image_downsized.shape)
-                print("image_normed: ", image_normed.shape)
-
-                print("depth: ", depth.shape)
-                print("depth_downsized: ", depth_downsized.shape)
-
-                fig, axarr = plt.subplots(2, 2)
-                axarr[0, 0].imshow(image), axarr[0, 0].set_title("colors")
-                axarr[0, 1].imshow(depth), axarr[0, 1].set_title("depth")
-                axarr[1, 0].imshow(image_downsized), axarr[1, 0].set_title("image_downsized")
-                axarr[1, 1].imshow(depth_downsized[:, :, 0]), axarr[1, 1].set_title("depth_downsized")
-
-                plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
-                plt.show()  # Display it
-
-            return image_downsized, depth_downsized
+        return image_downsized, depth_downsized
 
     @staticmethod
     def np_resizeImage(img, size):
@@ -262,7 +214,8 @@ class Dataloader:
         # TODO: Qual devo usar?
         # resized = scp.imresize(img, size, interp='bilinear')  # Attention! This method doesn't maintain the original depth range!!!
         # resized = transform.resize(image=img,output_shape=size, preserve_range=True, order=0)  # 0: Nearest - neighbor
-        resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=1)  # 1: Bi - linear(default)
+        resized = transform.resize(image=img, output_shape=size, preserve_range=True,
+                                   order=1)  # 1: Bi - linear(default)
 
         # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=2) # 2: Bi - quadratic
         # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=3) # 3: Bi - cubic

@@ -121,6 +121,7 @@ class Train:
         #                                        lambda: (tf_image_resized, tf_depth_resized))
         #
         # # Normalizes Input
+        # ATTENTION! Make sure the normalization is correctly implemented on 'train', 'test' and 'pred' modes
         # tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
         #
 

@@ -4,6 +4,7 @@
 # NYU Depth v2
 # Image: (480, 640, 3) uint8
 # Depth: (480, 640)    uint16
+# Kinect maxDepth: 10m
 # TODO: Encontrar dataset guidelines para extrair o valor de depth da imagem uint16 para este dataset
 
 # ===========
@@ -45,9 +46,6 @@ class NyuDepth(FilenamesHandler):
 
         self.image_size = Size(480, 640, 3)
         self.depth_size = Size(480, 640, 1)
-
-        self.image_replace = [b'_colors.png', b'']
-        self.depth_replace = [b'_depth.png', b'']
 
         print("[Dataloader] NyuDepth object created.")
 
