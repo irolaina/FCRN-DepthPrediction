@@ -2,6 +2,7 @@
 #  README
 # ========
 # Apollo Scape
+# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values] in meters
 # Image: (2710, 3384, 3) uint8
 # Depth: (2710, 3384)    uint16
 

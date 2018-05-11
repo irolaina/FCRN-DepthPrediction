@@ -159,9 +159,8 @@ class Dataloader:
             depthParam1 = 351.3
             depthParam2 = 1092.5
 
-            # tf_depth = (tf.cast(tf_depth, tf.float32))
-            tf_depth = depthParam1/(depthParam2 - tf.cast(tf_depth, tf.float32)) # FIXME: Falta fazer aquele swapbyte
-
+            tf_depth = (tf.cast(tf_depth, tf.float32))
+            # tf_depth = depthParam1/(depthParam2 - tf.cast(tf_depth, tf.float32)) # FIXME: Falta fazer aquele swapbyte
             # imgDepthAbs(imgDepthAbs > maxDepth) = maxDepth; # TODO: Terminar
             # imgDepthAbs(imgDepthAbs < 0) = 0; # TODO: Terminar
         elif self.dataset_name == 'apolloscape':

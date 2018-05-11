@@ -1,14 +1,16 @@
-# FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
 # ========
 #  README
 # ========
 # KittiContinuous(Residential)
+# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values] in meters
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint8
 
 # Dataset Guidelines by Vitor Guizilini
 # disp(u,v)  = ((float)I(u,v))/3.0;
 # valid(u,v) = I(u,v)>0;
+
+# FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
 
 # ===========
 #  Libraries

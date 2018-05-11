@@ -2,6 +2,7 @@
 #  README
 # ========
 # Kitti Stereo 2015
+# Uses Disparity Maps: measures pixels displacements [close - HIGH values, far - LOW values]
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint16
 

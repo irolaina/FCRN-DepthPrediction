@@ -2,9 +2,12 @@
 #  README
 # ========
 # NYU Depth v2
+# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values] in meters # TODO: Validar informação
 # Image: (480, 640, 3) uint8
 # Depth: (480, 640)    uint16
 # Kinect maxDepth: 10m
+
+# Dataset Guidelines
 # TODO: Encontrar dataset guidelines para extrair o valor de depth da imagem uint16 para este dataset
 
 # ===========
