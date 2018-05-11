@@ -71,7 +71,6 @@ class Kitti2015(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            start = time.time()
             image_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/colored_0/*")  # FIXME: Colocar folders corretos
             depth_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/disp_occ/*")   # FIXME: Colocar folders corretos
 
@@ -102,6 +101,7 @@ class Kitti2015(FilenamesHandler):
             # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
             # for i in filenames:
             #     print(i)
+            # input("enter")
 
             self.saveList(image_filenames, depth_filenames, self.name, mode)
 

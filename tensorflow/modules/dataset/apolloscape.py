@@ -117,6 +117,12 @@ class Apolloscape(FilenamesHandler):
             image_filenames = list(np.array(image_filenames)[s])
             depth_filenames = list(np.array(depth_filenames)[s])
 
+            # Debug
+            # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
+            # for i in filenames:
+            #     print(i)
+            # input("enter")
+
             self.saveList(image_filenames, depth_filenames, self.name, mode)
 
         return image_filenames, depth_filenames

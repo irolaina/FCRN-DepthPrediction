@@ -10,7 +10,6 @@
 # disp(u,v)  = ((float)I(u,v))/3.0;
 # valid(u,v) = I(u,v)>0;
 
-# FIXME: SEPAREI MANUALMENTE O CONJUNTO DE TESTE E TREINAMENTO, DEVERIA DEIXAR A SEPARAÇÃO ONLINE, COMO FIZ COM O APOLLO, A NÃO SER QUE O VITOR APLICOU O MÉTODO DELE EM IMAGENS QUE JÁ POSSUIAM A SEPARAÇÃO TRAIN/TEST
 
 # ===========
 #  Libraries
@@ -45,7 +44,7 @@ class KittiContinuous(FilenamesHandler):
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "../../data/residential_continuous/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/continuous/residential/"
 
         self.name = 'kitticontinuous_residential'
 
@@ -59,6 +58,7 @@ class KittiContinuous(FilenamesHandler):
         depth_filenames = []
 
         file = 'data/' + self.name + '_' + mode + '.txt'
+        ratio = 0.8
 
         if os.path.exists(file):
             data = self.loadList(file)
@@ -71,12 +71,11 @@ class KittiContinuous(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            start = time.time()
-            image_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/imgs/*")
-            depth_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/dispc/*")
+            image_filenames_tmp = glob.glob(self.dataset_path + "imgs/*")
+            depth_filenames_tmp = glob.glob(self.dataset_path + "dispc/*")
 
-            image_filenames_aux = [os.path.split(image)[1] for image in image_filenames_tmp]
-            depth_filenames_aux = [os.path.split(depth)[1] for depth in depth_filenames_tmp]
+            image_filenames_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
+            depth_filenames_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
 
             n, m = len(image_filenames_aux), len(depth_filenames_aux)
 
@@ -93,8 +92,24 @@ class KittiContinuous(FilenamesHandler):
             assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
             print("time: %f s" % (time.time() - start))
 
+            # Splits Train/Test Subsets
+            divider = int(n2 * ratio)
+
+            if mode == 'train':
+                image_filenames = image_filenames[:divider]
+                depth_filenames = depth_filenames[:divider]
+            elif mode == 'test':
+                # Defines Testing Subset
+                image_filenames = image_filenames[divider:]
+                depth_filenames = depth_filenames[divider:]
+
+            n3, m3 = len(image_filenames), len(depth_filenames)
+
+            print('%s_image_set: %d/%d' % (mode, n3, n2))
+            print('%s_depth_set: %d/%d' % (mode, m3, m2))
+
             # Shuffles
-            s = np.random.choice(n2, n2, replace=False)
+            s = np.random.choice(n3, n3, replace=False)
             image_filenames = list(np.array(image_filenames)[s])
             depth_filenames = list(np.array(depth_filenames)[s])
 
@@ -102,6 +117,7 @@ class KittiContinuous(FilenamesHandler):
             # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
             # for i in filenames:
             #     print(i)
+            # input("enter")
 
             self.saveList(image_filenames, depth_filenames, self.name, mode)
 

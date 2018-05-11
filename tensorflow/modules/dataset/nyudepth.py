@@ -69,7 +69,6 @@ class NyuDepth(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            start = time.time()
             image_filenames_tmp = []
             depth_filenames_tmp = []
 
@@ -113,6 +112,7 @@ class NyuDepth(FilenamesHandler):
             # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
             # for i in filenames:
             #     print(i)
+            # input("enter")
 
             self.saveList(image_filenames, depth_filenames, self.name, mode)
 
