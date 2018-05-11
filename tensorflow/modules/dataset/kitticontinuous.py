@@ -92,6 +92,11 @@ class KittiContinuous(FilenamesHandler):
             assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
             print("time: %f s" % (time.time() - start))
 
+            # Shuffles
+            s = np.random.choice(n2, n2, replace=False)
+            image_filenames = list(np.array(image_filenames)[s])
+            depth_filenames = list(np.array(depth_filenames)[s])
+
             # Splits Train/Test Subsets
             divider = int(n2 * ratio)
 
@@ -107,11 +112,6 @@ class KittiContinuous(FilenamesHandler):
 
             print('%s_image_set: %d/%d' % (mode, n3, n2))
             print('%s_depth_set: %d/%d' % (mode, m3, m2))
-
-            # Shuffles
-            s = np.random.choice(n3, n3, replace=False)
-            image_filenames = list(np.array(image_filenames)[s])
-            depth_filenames = list(np.array(depth_filenames)[s])
 
             # Debug
             # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
