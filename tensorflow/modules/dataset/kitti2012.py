@@ -10,6 +10,7 @@
 # disp(u,v)  = ((float)I(u,v))/256.0;
 # valid(u,v) = I(u,v)>0;
 
+# FIXME: kitti2012 as imagens de teste nao possuem ground truth
 
 # ===========
 #  Libraries
@@ -53,39 +54,57 @@ class Kitti2012(FilenamesHandler):
 
         print("[Dataloader] Kitti2012 object created.")
 
-    def getFilenamesLists(self, mode):  # FIXME
+    def getFilenamesLists(self, mode):
         image_filenames = []
         depth_filenames = []
 
-        if mode == 'train':
-            dataset_path_aux = self.dataset_path + "training/*/"
-        elif mode == 'test':
-            dataset_path_aux = self.dataset_path + "testing/*/"
+        file = 'data/' + self.name + '_' + mode + '.txt'
+
+        if os.path.exists(file):
+            data = self.loadList(file)
+
+            # Parsing Data
+            image_filenames = list(data[:, 0])
+            depth_filenames = list(data[:, 1])
         else:
-            sys.exit()
+            print("[Dataloader] '%s' doesn't exist..." % file)
+            print("[Dataloader] Searching files using glob (This may take a while)...")
 
-        # Finds input images and labels inside list of folders.
-        for folder in glob.glob(dataset_path_aux):
-            # print(folder)
-            os.chdir(folder)
+            # Finds input images and labels inside list of folders.
+            start = time.time()
+            image_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/colored_0/*")
+            depth_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/disp_occ/*")
 
-            for file in glob.glob('*_colors.png'):
-                # print(file)
-                image_filenames.append(folder + file)
+            image_filenames_aux = [os.path.split(image)[1] for image in image_filenames_tmp]
+            depth_filenames_aux = [os.path.split(depth)[1] for depth in depth_filenames_tmp]
 
-            for file in glob.glob('*_depth.png'):
-                # print(file)
-                depth_filenames.append(folder + file)
+            n, m = len(image_filenames_aux), len(depth_filenames_aux)
 
-            # print()
+            # Sequential Search. This kind of search ensures that the images are paired!
+            start = time.time()
+            for j, depth in enumerate(depth_filenames_aux):
+                print("%d/%d" % (j + 1, m))  # Debug
+                for i, image in enumerate(image_filenames_aux):
+                    if image == depth:
+                        image_filenames.append(image_filenames_tmp[i])
+                        depth_filenames.append(depth_filenames_tmp[j])
 
-        # TODO: Adicionar Sequential Search
-        # TODO: Fazer shuffle
-        # TODO: Eu acho que não precisa mais disso
-        # Alphabelly Sort the List of Strings
-        image_filenames.sort()
-        depth_filenames.sort()
+            n2, m2 = len(image_filenames), len(depth_filenames)
+            assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
+            print("time: %f s" % (time.time() - start))
 
-        # self.saveLists(image_filenames, depth_filenames, self.name, mode) # FIXME: Doesn't Save
+            # Shuffles
+            s = np.random.choice(n2, n2, replace=False)
+            image_filenames = list(np.array(image_filenames)[s])
+            depth_filenames = list(np.array(depth_filenames)[s])
+
+            # Debug
+            # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
+            # for i in filenames:
+            #     print(i)
+
+            self.saveList(image_filenames, depth_filenames, self.name, mode)
+
+        input("terminar")
 
         return image_filenames, depth_filenames
