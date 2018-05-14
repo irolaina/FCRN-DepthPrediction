@@ -7,8 +7,14 @@
 # Depth: (480, 640)    uint16
 # Kinect maxDepth: 10m
 
-# Dataset Guidelines
-# TODO: Encontrar dataset guidelines para extrair o valor de depth da imagem uint16 para este dataset
+# Dataset Guidelines # TODO: Correto?
+# depthParam1 = 351.3;
+# depthParam2 = 1092.5;
+# maxDepth = 10;
+
+# depth_true = depthParam1./(depthParam2 - swapbytes(depth));
+# depth_true(depth_true > maxDepth) = maxDepth;
+# depth_true(depth_true < 0) = 0;
 
 # ===========
 #  Libraries
