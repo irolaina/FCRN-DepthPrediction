@@ -32,9 +32,8 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
     # Mask Out Pixels without depth values
     tf_valid_pred = tf.gather_nd(tf_pred, tf_idx)
     tf_valid_labels = tf.gather_nd(tf_labels, tf_idx)
-    tf_valid_log_labels = tf.log(tf_valid_labels, name='log_labels')  # TODO: Precisa daquela constante inicial?
 
-    return tf_valid_pred, tf_valid_labels, tf_valid_log_labels
+    return tf_valid_pred, tf_valid_labels
 
 
 # ======
@@ -60,17 +59,14 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
 
     # Mask Out
     if valid_pixels:
-        tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
-    else:
-        tf_log_y_ = tf.log(tf_y_ + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                           name='log_labels')  # Just for displaying Image
+        tf_y, tf_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
 
     # npixels value depends on valid_pixels flag:
     # npixels = (batchSize*height*width) OR npixels = number of valid pixels
-    tf_npixels = tf.cast(tf.size(tf_log_y_), tf.float32)
+    tf_npixels = tf.cast(tf.size(tf_y_), tf.float32)
 
     # Loss
-    mse = (tf.reduce_sum(tf.square(tf_log_y_ - tf_y)) / tf_npixels)
+    mse = (tf.reduce_sum(tf.square(tf_y_ - tf_y)) / tf_npixels)
 
     return loss_name, mse
 
@@ -82,18 +78,16 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
-    tf_log_y_ = tf.log(tf_y_ + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                       name='log_labels')  # Just for displaying Image
-    tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
+    tf_abs_error = tf.abs(tf.subtract(tf_y, tf_y_), name='abs_error')
     tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
 
     # Mask Out
     if valid_pixels:
-        # Overwrites the 'log(y)' tensor!
-        tf_y, tf_y_, tf_log_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+        # Overwrites the 'y' and 'y_' tensors!
+        tf_y, tf_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
 
         # Overwrites the previous tensor, so now considers only the Valid Pixels!
-        tf_abs_error = tf.abs(tf.subtract(tf_y, tf_log_y_), name='abs_error')
+        tf_abs_error = tf.abs(tf.subtract(tf_y, tf_y_), name='abs_error')
 
     # Loss
     tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,

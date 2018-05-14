@@ -85,13 +85,12 @@ class Model(object):
                                                   self.valid.tf_log_depth_resized,
                                                   valid_pixels)
             elif selected_loss == 2:
-                # FIXME: BerHu está aproximando para y e não log(y)
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.fcrn.get_output(),
-                                                                   self.train.tf_batch_labels,
+                                                                   self.train.tf_log_batch_labels,
                                                                    valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_BerHu(self.valid.fcrn.get_output(),
-                                                      self.valid.tf_depth_resized,
+                                                      self.valid.tf_log_depth_resized,
                                                       valid_pixels)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
