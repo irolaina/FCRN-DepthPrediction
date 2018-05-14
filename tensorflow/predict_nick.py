@@ -54,7 +54,7 @@ LOSS_FUNCTION = 0
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = False             # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+TRAIN_ON_SINGLE_IMAGE = True   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
@@ -194,7 +194,7 @@ def predict(model_data_path, image_path):
 
     with tf.variable_scope('model'):
         # Construct the network
-        net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+        net = ResNet50UpProj({'data': tf_image}, batch=batch_size, keep_prob=1, is_training=False)
 
         # for var in tf.trainable_variables():
         #     print(var)
@@ -463,7 +463,7 @@ def test(args):
         batch_size = 1
 
         tf_image = tf.placeholder(tf.float32, shape=(None, input_size.height, input_size.width, input_size.nchannels))
-        net = ResNet50UpProj({'data': tf_image}, batch_size, 1, False)
+        net = ResNet50UpProj({'data': tf_image}, batch=batch_size, keep_prob=1, is_training=False)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')

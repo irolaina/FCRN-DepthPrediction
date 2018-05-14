@@ -102,7 +102,7 @@ def main():
     input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
     
     # Construct the network
-    net = ResNet50UpProj({'data': input_node}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': input_node}, batch=batch_size, keep_prob=1, is_training=False)
     tf_pred = tf.exp(net.get_output(), 'pred')
 
     # ---------------

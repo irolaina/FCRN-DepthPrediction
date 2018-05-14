@@ -43,9 +43,7 @@ class Validation:
         #     capacity=16,
         #     min_after_dequeue=0)
 
-        self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, args.batch_size, 1, False)
-        # self.fcrn_valid = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized,axis=0)}, self.args.batch_size, 1, False) # TODO: Usar?
-        # self.fcrn_valid = ResNet50UpProj({'data': self.tf_batch_data}, self.args.batch_size, 1, False) # TODO: Usar?
+        self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, batch=args.batch_size, keep_prob=1, is_training=False)
 
         with tf.name_scope('Valid'):
             self.tf_loss = None

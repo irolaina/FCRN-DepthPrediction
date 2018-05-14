@@ -39,7 +39,7 @@ class Train:
             self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                                               name='log_batch_labels')
 
-        self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, args.batch_size, 1, False)
+        self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
 
         with tf.name_scope('Train'):
             # Count the number of steps taken.
