@@ -1,5 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# ====== #
+#  FCRN  #
+# ====== #
+# Attention! The maximum range that the Network can predict depends on the maximum distance recorded in the dataset.
 
 # ============
 #  To-Do FCRN
@@ -45,7 +49,7 @@ from modules.plot import Plot
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 2
+LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = False             # Default: True
@@ -179,7 +183,7 @@ def predict(model_data_path, image_path):
     channels = 3
     batch_size = 1
 
-    # Read image
+    # Read image (uint8)
     img = Image.open(image_path)
     img = img.resize([width, height], Image.ANTIALIAS)
     img = np.array(img).astype('float32')
@@ -407,6 +411,7 @@ def train(args):
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:
                 print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
+                break
 
         coord.request_stop()
         coord.join(threads)
@@ -422,7 +427,7 @@ def train(args):
         if SAVE_TRAINED_MODEL:
             model.saveTrainedModel(save_restore_path, sess, model.train_saver, args.model_name)
 
-        model.saveResults(datetime, step, sim_train)
+        model.saveResults(datetime, epoch, max_epochs, step, args.max_steps, sim_train)
 
 
 # ========= #
@@ -481,7 +486,7 @@ def test(args):
         pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)  # (128, 160, 1)
 
         start = time.time()
-        for i in range(data.numTestSamples):
+        for i in range(numSamples):
             start2 = time.time()
 
             if data.test_depth_filenames:  # It's not empty
@@ -497,8 +502,9 @@ def test(args):
                                                       output_size)
 
             # Evalute the network for the given image
-            feed_test = {tf_image: np.expand_dims(np.asarray(image_resized), axis=0)}
+            feed_test = {tf_image: np.expand_dims(image_resized, axis=0)}
             pred = sess.run(net.get_output(), feed_dict=feed_test)
+            # print(pred) # FIXME: Predições após a rede ser restaurada parecem sempre ser as mesmas.
 
             # Prints Testing Progress
             end2 = time.time()
