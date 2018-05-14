@@ -179,6 +179,7 @@ class Dataloader:
         image_normed = self.normalizeImage(image_downsized)  # TODO: Not Used!
 
         # Processing the Depth Image (uint16/uint8)
+        depth, depth_downsized = None, None
         if depth_path is not None:
             depth = imageio.imread(os.path.join(depth_path))
             depth_downsized = transform.resize(depth, output_shape=(output_size.height, output_size.width))
