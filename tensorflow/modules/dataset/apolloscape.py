@@ -14,6 +14,7 @@
 # The absolute depth value in meter can be obtained as:
 #   double depth_value = depth_u16.at(row, col) / 200.00;
 
+# FIXME: Algumas imagens de profundidade parecem estar incorretas. Ex: apolloscapes_test.txt linhas: 46 73 78
 
 # ===========
 #  Libraries
