@@ -211,15 +211,12 @@ class Dataloader:
         except ValueError:
             print("[ValueError] Oops! Empty resizeSize list. Please sets the desired resizeSize.\n")
 
-        # TODO: Qual devo usar?
-        # resized = transform.resize(image=img,output_shape=size, preserve_range=True, order=0)  # 0: Nearest - neighbor
-        resized = transform.resize(image=img, output_shape=size, preserve_range=True,
-                                   order=1)  # 1: Bi - linear(default)
-
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=2) # 2: Bi - quadratic
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=3) # 3: Bi - cubic
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=4) # 4: Bi - quartic
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=5) # 5: Bi - quintic
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=0)  # 0: Nearest - neighbor
+        resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=1)  # 1: Bi - linear(default)
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=2)  # 2: Bi - quadratic
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=3)  # 3: Bi - cubic
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=4)  # 4: Bi - quartic
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=5)  # 5: Bi - quintic
 
         # Debug
         def debug():
@@ -238,10 +235,9 @@ class Dataloader:
         return resized
 
     @staticmethod
-    def normalizeImage(img):
-        pixel_depth = 255
-
-        normed = (img - pixel_depth / 2) / pixel_depth
+    def normalizeImage(image):
+        mean = np.mean(image)
+        normed = image/mean
 
         # Debug
         # print("img[0,0,0]:", img[0, 0, 0], "img[0,0,1]:", img[0, 0, 1], "img[0,0,2]:", img[0, 0, 2])
