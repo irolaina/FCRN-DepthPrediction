@@ -13,6 +13,7 @@
 # ===========
 #  Libraries
 # ===========
+import imageio
 import os
 import warnings
 import time
@@ -346,9 +347,9 @@ def train(args):
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
                         feed_valid = {
-                            model.valid.tf_image: np.expand_dims(plt.imread(data.test_image_filenames[i]), axis=0),
+                            model.valid.tf_image: np.expand_dims(imageio.imread(data.test_image_filenames[i]), axis=0),
                             model.valid.tf_depth: np.expand_dims(
-                                np.expand_dims(plt.imread(data.test_depth_filenames[i]), axis=0), axis=3)}
+                                np.expand_dims(imageio.imread(data.test_depth_filenames[i]), axis=0), axis=3)}
 
                         if args.show_valid_progress:
                             valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
@@ -507,8 +508,8 @@ def test(args):
             # Show Results
             # FIXME: O range das predições são true depth, já as que são plotadas aqui não.
             test_plotObj.showTestResults(raw=image_resized,
-                                         label=depth_resized[:, :, 0],
-                                         log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
+                                         label=depth_resized,
+                                         log_label=np.log(depth_resized + LOG_INITIAL_VALUE),
                                          pred=pred[0, :, :, 0], i=i + 1)
 
         # Testing Finished.

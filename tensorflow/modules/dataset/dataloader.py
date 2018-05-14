@@ -4,10 +4,11 @@
 import os
 import random
 import sys
-
-import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
-from scipy import misc as scp
+import matplotlib.pyplot as plt
+import imageio
+
 from skimage import transform
 
 from .kitti2012 import Kitti2012
@@ -172,15 +173,15 @@ class Dataloader:
         return tf_image, tf_depth
 
     def readTestImage(self, image_path, depth_path, input_size, output_size, showImages=False):
-        # Processing the RGB Image
-        image = scp.imread(os.path.join(image_path))
-        image_downsized = scp.imresize(image, size=input_size.getSize())
+        # Processing the RGB Image (uint8)
+        image = imageio.imread(os.path.join(image_path))
+        image_downsized = transform.resize(image, output_shape=input_size.getSize())
         image_normed = self.normalizeImage(image_downsized)  # TODO: Not Used!
 
-        # Processing the Depth Image
+        # Processing the Depth Image (uint16/uint8)
         if depth_path is not None:
-            depth = scp.imread(os.path.join(depth_path))
-            depth_downsized = self.np_resizeImage(depth, size=output_size.getSize())
+            depth = imageio.imread(os.path.join(depth_path))
+            depth_downsized = transform.resize(depth, output_shape=(output_size.height, output_size.width))
 
         # Results
         if showImages:
@@ -195,7 +196,7 @@ class Dataloader:
             axarr[0, 0].imshow(image), axarr[0, 0].set_title("colors")
             axarr[0, 1].imshow(depth), axarr[0, 1].set_title("depth")
             axarr[1, 0].imshow(image_downsized), axarr[1, 0].set_title("image_downsized")
-            axarr[1, 1].imshow(depth_downsized[:, :, 0]), axarr[1, 1].set_title("depth_downsized")
+            axarr[1, 1].imshow(depth_downsized), axarr[1, 1].set_title("depth_downsized")
 
             plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
             plt.show()  # Display it
@@ -211,7 +212,6 @@ class Dataloader:
             print("[ValueError] Oops! Empty resizeSize list. Please sets the desired resizeSize.\n")
 
         # TODO: Qual devo usar?
-        # resized = scp.imresize(img, size, interp='bilinear')  # Attention! This method doesn't maintain the original depth range!!!
         # resized = transform.resize(image=img,output_shape=size, preserve_range=True, order=0)  # 0: Nearest - neighbor
         resized = transform.resize(image=img, output_shape=size, preserve_range=True,
                                    order=1)  # 1: Bi - linear(default)
