@@ -22,36 +22,34 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 # ===================
 #  Class Declaration
 # ===================
-# TODO: Organizar name_scopes
 class Train:
     def __init__(self, args, tf_train_image, tf_train_depth, input_size, output_size):
-        with tf.name_scope('Inputs'):
+        with tf.name_scope('Input'):
             # Downsizes Input and Depth Images
             tf_image_resized = tf.image.resize_images(tf_train_image, [input_size.height, input_size.width])
             tf_depth_resized = tf.image.resize_images(tf_train_depth, [output_size.height, output_size.width])
 
             # Create Tensors for Batch Training
-            self.tf_batch_data_resized, self.tf_batch_data, self.tf_batch_labels = self.prepareTrainData(
+            self.tf_batch_data, self.tf_batch_data_resized, self.tf_batch_labels = self.prepareTrainData(
                 tf_image_resized,
                 tf_depth_resized,
                 args.batch_size)
 
             # Network Input/Output
             self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                                              name='log_labels')  # Just for displaying Image
+                                              name='log_batch_labels')
 
         self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, args.batch_size, 1, False)
-        tf.add_to_collection('pred', self.fcrn.get_output())  # TODO: Move
 
         with tf.name_scope('Train'):
             # Count the number of steps taken.
             self.tf_global_step = tf.Variable(0, trainable=False, name='global_step')
-            self.tf_learningRate = args.learning_rate
+            self.tf_learning_rate = tf.constant(args.learning_rate, name='learning_rate')
 
             if args.ldecay:
-                self.tf_learningRate = tf.train.exponential_decay(self.tf_learningRate, self.tf_global_step, 1000, 0.95,
-                                                                  staircase=True,
-                                                                  name='ldecay')
+                self.tf_learning_rate = tf.train.exponential_decay(self.tf_learning_rate, self.tf_global_step, 1000, 0.95,
+                                                                   staircase=True,
+                                                                   name='learning_rate')
 
             self.tf_loss = None
             self.loss = -1
@@ -64,19 +62,24 @@ class Train:
             self.plot = Plot(args.mode, title='Train Predictions')
 
         print("\n[Network/Train] Training Tensors created.")
+        print(tf_image_resized)
+        print(tf_depth_resized)
         print(self.tf_batch_data)
         print(self.tf_batch_data_resized)
         print(self.tf_batch_labels)
         print(self.tf_log_batch_labels)
         print(self.tf_global_step)
-        print(self.tf_learningRate)
+        print(self.tf_learning_rate)
         print()
 
     def trainCollection(self):
-        tf.add_to_collection('image', self.tf_batch_data)
-        tf.add_to_collection('labels', self.tf_batch_labels)
+        tf.add_to_collection('batch_data', self.tf_batch_data)
+        tf.add_to_collection('batch_labels', self.tf_batch_labels)
+        tf.add_to_collection('log_batch_labels', self.tf_log_batch_labels)
+        tf.add_to_collection('pred', self.fcrn.get_output())
+
         tf.add_to_collection('global_step', self.tf_global_step)
-        tf.add_to_collection('learning_rate', self.tf_learningRate)
+        tf.add_to_collection('learning_rate', self.tf_learning_rate)
 
     @staticmethod
     def augment_image_pair(image, depth):
@@ -128,15 +131,15 @@ class Train:
         tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
 
         # Creates Training Batch Tensors
-        tf_batch_data_resized, tf_batch_data, tf_batch_labels = tf.train.shuffle_batch(
+        tf_batch_data, tf_batch_data_resized, tf_batch_labels = tf.train.shuffle_batch(
             # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-            [tf_image_resized_uint8, tf_image_proc, tf_depth_proc],  # Enable for debugging images
+            [tf_image_proc, tf_image_resized_uint8, tf_depth_proc],  # Enable for debugging images
             batch_size=batch_size,
             num_threads=1,
             capacity=16,
             min_after_dequeue=0)
 
-        return tf_batch_data_resized, tf_batch_data, tf_batch_labels
+        return tf_batch_data, tf_batch_data_resized, tf_batch_labels
 
 
 # TODO: Validar

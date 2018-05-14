@@ -107,9 +107,9 @@ class Model(object):
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
-            # optimizer = tf.train.GradientDescentOptimizer(self.learningRate).minimize(self.train.tf_loss,
+            # optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.train.tf_loss,
             #                                                global_step=self.global_step)
-            optimizer = tf.train.AdamOptimizer(self.train.tf_learningRate)
+            optimizer = tf.train.AdamOptimizer(self.train.tf_learning_rate)
             self.train_step = optimizer.minimize(self.train.tf_loss, global_step=self.train.tf_global_step)
             tf.add_to_collection("train_step", self.train_step)
 
@@ -117,7 +117,7 @@ class Model(object):
     def build_summaries(self):
         # Filling Summary Obj
         with tf.name_scope("Summaries"):
-            tf.summary.scalar('learning_rate', self.train.tf_learningRate, collections=self.model_collection)
+            tf.summary.scalar('learning_rate', self.train.tf_learning_rate, collections=self.model_collection)
             tf.summary.scalar('loss', self.train.tf_loss, collections=self.model_collection)
 
     @staticmethod

@@ -350,6 +350,7 @@ def train(args):
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
+                        # TODO: Otimizar
                         feed_valid = {
                             model.valid.tf_image: np.expand_dims(imageio.imread(data.test_image_filenames[i]), axis=0),
                             model.valid.tf_depth: np.expand_dims(
