@@ -83,7 +83,7 @@ class Dataloader:
             self.tf_train_depth = None
         elif args.mode == 'test':  # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
             self.tf_test_image = None
-            self.tf_test_image = None
+            self.tf_test_depth = None
             pass
 
         print("[Dataloader] dataloader object created.")
@@ -177,37 +177,6 @@ class Dataloader:
         # print(tf_depth) # Must be float32!
 
         return tf_image, tf_depth
-
-    def readTestImage(self, image_path, depth_path, input_size, output_size, showImages=False):
-        # Processing the RGB Image (uint8)
-        image = imageio.imread(os.path.join(image_path))
-        image_downsized = transform.resize(image, output_shape=input_size.getSize())
-        image_normed = self.normalizeImage(image_downsized)  # TODO: Not Used!
-
-        # Processing the Depth Image (uint16/uint8)
-        if depth_path is not None:
-            depth = imageio.imread(os.path.join(depth_path))
-            depth_downsized = transform.resize(depth, output_shape=(output_size.height, output_size.width))
-
-        # Results
-        if showImages:
-            print("image: ", image.shape)
-            print("image_downsized: ", image_downsized.shape)
-            print("image_normed: ", image_normed.shape)
-
-            print("depth: ", depth.shape)
-            print("depth_downsized: ", depth_downsized.shape)
-
-            fig, axarr = plt.subplots(2, 2)
-            axarr[0, 0].imshow(image), axarr[0, 0].set_title("colors")
-            axarr[0, 1].imshow(depth), axarr[0, 1].set_title("depth")
-            axarr[1, 0].imshow(image_downsized), axarr[1, 0].set_title("image_downsized")
-            axarr[1, 1].imshow(depth_downsized), axarr[1, 1].set_title("depth_downsized")
-
-            plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=2.0)
-            plt.show()  # Display it
-
-        return image_downsized, depth_downsized
 
     @staticmethod
     def np_resizeImage(img, size):
