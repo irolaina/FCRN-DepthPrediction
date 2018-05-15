@@ -130,6 +130,26 @@ class Dataloader:
 
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
+    def rawdepth2meters(self, tf_depth):
+        '''True Depth Value Calculation. May vary from dataset to dataset.'''
+        if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
+        elif self.dataset_name == 'kitticontinuous_residential':
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
+        elif self.dataset_name == 'nyudepth':
+            depthParam1 = 351.3
+            depthParam2 = 1092.5
+
+            tf_depth = (tf.cast(tf_depth, tf.float32))
+            # tf_depth = depthParam1/(depthParam2 - tf.cast(tf_depth, tf.float32)) # FIXME: Falta fazer aquele swapbyte
+            # imgDepthAbs(imgDepthAbs > maxDepth) = maxDepth; # TODO: Terminar
+            # imgDepthAbs(imgDepthAbs < 0) = 0; # TODO: Terminar
+        elif self.dataset_name == 'apolloscape':
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
+
+
+        return tf_depth
+
     def readData(self, tf_image_filenames, tf_depth_filenames):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
@@ -152,20 +172,7 @@ class Dataloader:
         # print(tf_depth)   # Must be uint16/uin8!
 
         # True Depth Value Calculation. May vary from dataset to dataset.
-        if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
-        elif self.dataset_name == 'kitticontinuous_residential':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
-        elif self.dataset_name == 'nyudepth':
-            depthParam1 = 351.3
-            depthParam2 = 1092.5
-
-            tf_depth = (tf.cast(tf_depth, tf.float32))
-            # tf_depth = depthParam1/(depthParam2 - tf.cast(tf_depth, tf.float32)) # FIXME: Falta fazer aquele swapbyte
-            # imgDepthAbs(imgDepthAbs > maxDepth) = maxDepth; # TODO: Terminar
-            # imgDepthAbs(imgDepthAbs < 0) = 0; # TODO: Terminar
-        elif self.dataset_name == 'apolloscape':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
+        tf_depth = self.rawdepth2meters(tf_depth)
 
         # print(tf_image) # Must be uint8!
         # print(tf_depth) # Must be float32!

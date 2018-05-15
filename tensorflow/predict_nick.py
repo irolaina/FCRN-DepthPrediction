@@ -64,7 +64,7 @@ SAVE_TRAINED_MODEL = True       # Default: True
 # Select Subset:
 # 0 - TestData      # Default
 # 1 - TrainData
-TEST_EVALUATE_SUBSET = 1
+TEST_EVALUATE_SUBSET = 0
 
 SAVE_TEST_DISPARITIES = True    # Default: True
 APPLY_BILINEAR_OUTPUT = False   # Default: False
@@ -462,6 +462,9 @@ def test(args):
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
+
+        # True Depth Value Calculation. May vary from dataset to dataset.
+        tf_depth = data.rawdepth2meters(tf_depth)
 
         # tf_image.set_shape(input_size.getSize())
         # tf_depth.set_shape(output_size.getSize())
