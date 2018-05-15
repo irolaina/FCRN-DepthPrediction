@@ -51,12 +51,12 @@ from modules.plot import Plot
 LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False             # Default: True
+VALID_PIXELS = False  # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = False   # Default: False
-ENABLE_EARLY_STOP = True        # Default: True
-ENABLE_TENSORBOARD = True       # Default: True
-SAVE_TRAINED_MODEL = True       # Default: True
+TRAIN_ON_SINGLE_IMAGE = False  # Default: False
+ENABLE_EARLY_STOP = True  # Default: True
+ENABLE_TENSORBOARD = True  # Default: True
+SAVE_TRAINED_MODEL = True  # Default: True
 
 # =============================
 #  Framework Config - Testing
@@ -66,8 +66,8 @@ SAVE_TRAINED_MODEL = True       # Default: True
 # 1 - TrainData
 TEST_EVALUATE_SUBSET = 0
 
-SAVE_TEST_DISPARITIES = True    # Default: True
-APPLY_BILINEAR_OUTPUT = False   # Default: False
+SAVE_TEST_DISPARITIES = True  # Default: True
+APPLY_BILINEAR_OUTPUT = False  # Default: False
 
 # ==================
 #  Global Variables
@@ -333,7 +333,7 @@ def train(args):
                             model.valid.loss))
 
                 # Detects the end of a epoch
-                if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not(TRAIN_ON_SINGLE_IMAGE):
+                if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
                     # Validation
                     # TODO: Create valid_ops variable
                     # TODO: Portar Leitura para o Tensorflow
@@ -365,7 +365,7 @@ def train(args):
                         valid_loss_sum += model.valid.loss
 
                         print("%d/%d\tvalid_loss_sum: %f\tvalid_loss: %f" % (
-                            i+1, data.numTestSamples, valid_loss_sum, model.valid.loss))
+                            i + 1, data.numTestSamples, valid_loss_sum, model.valid.loss))
 
                     # Calculate mean value of 'valid_loss'
                     model.valid.loss = valid_loss_sum / data.numTestSamples  # Updates 'Valid_loss' value
@@ -504,7 +504,7 @@ def test(args):
         # Memory Allocation
         image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)    # (228, 304, 3)
         depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.uint16)  # (128, 160, 1)
-        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)  # (128, 160, 1)
+        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)          # (128, 160, 1)
 
         start = time.time()
         for i in range(numSamples):
@@ -532,8 +532,8 @@ def test(args):
 
             # Show Results
             test_plotObj.showTestResults(raw=image_resized,
-                                         label=depth_resized[:,:,0],
-                                         log_label=np.log(depth_resized[:,:,0] + LOG_INITIAL_VALUE),
+                                         label=depth_resized[:, :, 0],
+                                         log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                          pred=pred[0, :, :, 0], i=i + 1)
 
         # Testing Finished.

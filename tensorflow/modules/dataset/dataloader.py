@@ -131,7 +131,7 @@ class Dataloader:
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
     def rawdepth2meters(self, tf_depth):
-        '''True Depth Value Calculation. May vary from dataset to dataset.'''
+        """True Depth Value Calculation. May vary from dataset to dataset."""
         if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
         elif self.dataset_name == 'kitticontinuous_residential':
@@ -146,7 +146,6 @@ class Dataloader:
             # imgDepthAbs(imgDepthAbs < 0) = 0; # TODO: Terminar
         elif self.dataset_name == 'apolloscape':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
-
 
         return tf_depth
 
@@ -244,7 +243,7 @@ class Dataloader:
     @staticmethod
     def normalizeImage(image):
         mean = np.mean(image)
-        normed = image/mean
+        normed = image / mean
 
         # Debug
         # print("img[0,0,0]:", img[0, 0, 0], "img[0,0,1]:", img[0, 0, 1], "img[0,0,2]:", img[0, 0, 2])
