@@ -64,7 +64,7 @@ SAVE_TRAINED_MODEL = True       # Default: True
 # Select Subset:
 # 0 - TestData      # Default
 # 1 - TrainData
-TEST_EVALUATE_SUBSET = 0
+TEST_EVALUATE_SUBSET = 1
 
 SAVE_TEST_DISPARITIES = True    # Default: True
 APPLY_BILINEAR_OUTPUT = False   # Default: False
@@ -454,8 +454,33 @@ def test(args):
         output_size = Size(128, 160, 1)
         batch_size = 1
 
-        tf_image = tf.placeholder(tf.float32, shape=(None, input_size.height, input_size.width, input_size.nchannels))
-        net = ResNet50UpProj({'data': tf_image}, batch=batch_size, keep_prob=1, is_training=False)
+        tf_image_path = tf.placeholder(tf.string)
+        tf_depth_path = tf.placeholder(tf.string)
+
+        tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
+        if data.dataset_name == 'kitticontinuous_residential':
+            tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
+        else:
+            tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
+
+        # tf_image.set_shape(input_size.getSize())
+        # tf_depth.set_shape(output_size.getSize())
+
+        tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
+        tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
+        tf_image_resized = tf.expand_dims(tf_image_resized, axis=0)  # Model's Input size requirement
+
+        tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
+
+        net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
+
+        print("\nTensors:")
+        print(tf_image_path)
+        print(tf_depth_path)
+        print(tf_image)
+        print(tf_depth)
+        print(tf_image_resized)
+        print(tf_image_resized_uint8)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
@@ -482,22 +507,20 @@ def test(args):
         for i in range(numSamples):
             start2 = time.time()
 
-            if data.test_depth_filenames:  # It's not empty
-                image_resized, depth_resized = data.readTestImage(data.test_image_filenames[i],
-                                                                  data.test_depth_filenames[i],
-                                                                  input_size,
-                                                                  output_size,
-                                                                  showImages=False)
-            else:
-                image_resized, _ = data.readTestImage(data.test_image_filenames[i],
-                                                      None,
-                                                      input_size,
-                                                      output_size)
-
             # Evalute the network for the given image
-            feed_test = {tf_image: np.expand_dims(image_resized, axis=0)}
-            pred = sess.run(net.get_output(), feed_dict=feed_test)
-            # print(pred) # FIXME: Predições após a rede ser restaurada parecem sempre ser as mesmas.
+            if data.test_depth_filenames:  # It's not empty
+                feed_test = {tf_image_path: data.test_image_filenames[i], tf_depth_path: data.test_depth_filenames[i]}
+                image, image_resized, depth, depth_resized, pred = sess.run([tf_image, tf_image_resized_uint8, tf_depth, tf_depth_resized, net.get_output()], feed_dict=feed_test)
+            else:
+                feed_test = {tf_image_path: data.test_image_filenames[i]}
+                image, image_resized, pred = sess.run([tf_image, tf_image_resized_uint8, net.get_output()], feed_dict=feed_test)
+
+            # print(image.shape)
+            # print(image_resized.shape)
+            # print(depth.shape)
+            # print(depth_resized.shape)
+            # print(pred.shape)
+            # input("test")
 
             # Prints Testing Progress
             end2 = time.time()
@@ -505,10 +528,9 @@ def test(args):
             # break # Test
 
             # Show Results
-            # FIXME: O range das predições são true depth, já as que são plotadas aqui não.
             test_plotObj.showTestResults(raw=image_resized,
-                                         label=depth_resized,
-                                         log_label=np.log(depth_resized + LOG_INITIAL_VALUE),
+                                         label=depth_resized[:,:,0],
+                                         log_label=np.log(depth_resized[:,:,0] + LOG_INITIAL_VALUE),
                                          pred=pred[0, :, :, 0], i=i + 1)
 
         # Testing Finished.
