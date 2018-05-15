@@ -12,7 +12,6 @@
 
 # TODO: Implementar Bilinear
 # TODO: Estou aplicando a normalização da entrada em todos os módulos (predict, test, train, valid)?
-# FIXME: Qualidade dos labels de treinamento menos discretizado que os labels de validação
 
 # ===========
 #  Libraries
@@ -54,7 +53,7 @@ LOSS_FUNCTION = 0
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = False             # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = True   # Default: False
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
@@ -264,13 +263,6 @@ def train(args):
         print("\n[Network/Training] Initializing graph's variables...")
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
-        # Check Dataset Integrity
-        print("[Dataloader] Checking if RGB and Depth images are paired... ")
-
-        # FIXME: Tirar checagem do código, fazer ao fazer a leitura do dataset
-        # data.checkIntegrity(sess, tf_train_image_filenames, tf_train_depth_filenames, 'TrainData')
-        # data.checkIntegrity(sess, tf_test_image_filenames, tf_test_depth_filenames, 'TestData')
-
         # Proclaim the epochs
         max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
         print('\nTrain with approximately %d epochs' % max_epochs)
@@ -341,7 +333,7 @@ def train(args):
                             model.valid.loss))
 
                 # Detects the end of a epoch
-                if np.floor((step * args.batch_size) / data.numTrainSamples) != epoch:
+                if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not(TRAIN_ON_SINGLE_IMAGE):
                     # Validation
                     # TODO: Create valid_ops variable
                     # TODO: Portar Leitura para o Tensorflow
@@ -373,7 +365,7 @@ def train(args):
                         valid_loss_sum += model.valid.loss
 
                         print("%d/%d\tvalid_loss_sum: %f\tvalid_loss: %f" % (
-                            i, data.numTestSamples, valid_loss_sum, model.valid.loss))
+                            i+1, data.numTestSamples, valid_loss_sum, model.valid.loss))
 
                     # Calculate mean value of 'valid_loss'
                     model.valid.loss = valid_loss_sum / data.numTestSamples  # Updates 'Valid_loss' value
