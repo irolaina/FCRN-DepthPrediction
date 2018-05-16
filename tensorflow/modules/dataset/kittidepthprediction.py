@@ -1,21 +1,20 @@
-# TODO: Adaptar código abaixo para leitura do make3D
+# FIXME: Refatorar
 # ========
 #  README
 # ========
-# NYU Depth v2
-# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values] in meters # TODO: Validar informação
-# Image: (480, 640, 3) uint8
-# Depth: (480, 640)    uint16
-# Kinect maxDepth: 10m
+# Kitti Stereo 2012
+# Uses Disparity Maps: measures pixels displacements [close - HIGH values, far - LOW values]
+# Image: (370, 1226, 3) uint8
+# Depth: (370, 1226)    uint16
 
-# Dataset Guidelines # TODO: Correto?
-# depthParam1 = 351.3;
-# depthParam2 = 1092.5;
-# maxDepth = 10;
+# Dataset Guidelines
+# disp(u,v)  = ((float)I(u,v))/256.0;
+# valid(u,v) = I(u,v)>0;
 
-# depth_true = depthParam1./(depthParam2 - swapbytes(depth));
-# depth_true(depth_true > maxDepth) = maxDepth;
-# depth_true(depth_true < 0) = 0;
+# depth_png = np.array(Image.open(filename), dtype=int)
+# assert(np.max(depth_png) > 255)
+# depth = depth_png.astype(np.float) / 256.
+# depth[depth_png == 0] = -1.
 
 # ===========
 #  Libraries
@@ -44,20 +43,20 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-class NyuDepth(FilenamesHandler):
+class Kitti2012(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/stereo/stereo2012/data_stereo_flow/"
 
-        self.name = 'nyudepth'
+        self.name = 'kitti2012'
 
-        self.image_size = Size(480, 640, 3)
-        self.depth_size = Size(480, 640, 1)
+        self.image_size = Size(370, 1226, 3)
+        self.depth_size = Size(370, 1226, 1)
 
-        print("[Dataloader] NyuDepth object created.")
+        print("[Dataloader] Kitti2012 object created.")
 
     def getFilenamesLists(self, mode):
         image_filenames = []
@@ -76,24 +75,11 @@ class NyuDepth(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            image_filenames_tmp = []
-            depth_filenames_tmp = []
+            image_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/colored_0/*")
+            depth_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/disp_occ/*")
 
-            image_filenames_aux = []
-            depth_filenames_aux = []
-            for folder in glob.glob(self.dataset_path + mode + "ing/*/"):
-                # print(folder)
-                os.chdir(folder)
-
-                for image in glob.glob('*_colors.png'):
-                    # print(file)
-                    image_filenames_tmp.append(folder + image)
-                    image_filenames_aux.append(os.path.split(image)[1].replace('_colors.png', ''))
-
-                for depth in glob.glob('*_depth.png'):
-                    # print(file)
-                    depth_filenames_tmp.append(folder + depth)
-                    depth_filenames_aux.append(os.path.split(depth)[1].replace('_depth.png', ''))
+            image_filenames_aux = [os.path.split(image)[1] for image in image_filenames_tmp]
+            depth_filenames_aux = [os.path.split(depth)[1] for depth in depth_filenames_tmp]
 
             n, m = len(image_filenames_aux), len(depth_filenames_aux)
 
@@ -124,5 +110,7 @@ class NyuDepth(FilenamesHandler):
             # input("enter")
 
             self.saveList(image_filenames, depth_filenames, self.name, mode)
+
+        input("terminar")
 
         return image_filenames, depth_filenames
