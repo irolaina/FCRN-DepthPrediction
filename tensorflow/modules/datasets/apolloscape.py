@@ -2,17 +2,21 @@
 #  README
 # ========
 # Apollo Scape
-# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values] in meters
+# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values]
 # Image: (2710, 3384, 3) uint8
 # Depth: (2710, 3384)    uint16
 
+# -----
 # Dataset Guidelines
-# Depth image format:
+# -----
+# Raw Depth image to Depth (meters):
 # In the depth image, the depth value is save as unsigned short int format. It can be easily read in OpenCV as:
 #   cv::Mat depth_u16 = cv::imread ( depth_path, CV_LOAD_IMAGE_ANYDEPTH);
 #
 # The absolute depth value in meter can be obtained as:
 #   double depth_value = depth_u16.at(row, col) / 200.00;
+# -----
+
 
 # FIXME: Algumas imagens de profundidade parecem estar incorretas. Ex: apolloscapes_test.txt linhas: 46 73 78
 

@@ -2,13 +2,17 @@
 #  README
 # ========
 # KittiContinuous(Residential)
-# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values] in meters
+# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values]
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint8
 
+# -----
 # Dataset Guidelines by Vitor Guizilini
-# disp(u,v)  = ((float)I(u,v))/3.0;
+# -----
+# Raw Depth image to Depth (meters):
+# depth(u,v) = ((float)I(u,v))/3.0;
 # valid(u,v) = I(u,v)>0;
+# -----
 
 
 # ===========
