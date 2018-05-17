@@ -11,8 +11,8 @@ import imageio
 
 from skimage import transform
 
-from .kitti2012 import Kitti2012
-from .kitti2015 import Kitti2015
+# from .kitti2012 import Kitti2012
+# from .kitti2015 import Kitti2015
 from .kitticontinuous import KittiContinuous
 from .nyudepth import NyuDepth
 from .apolloscape import Apolloscape
