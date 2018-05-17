@@ -30,9 +30,9 @@ def argumentHandler():
                         default='/media/olorin/Documentos/datasets/')
 
     parser.add_argument('-s', '--dataset', action='store',
-                        help="Selects the dataset ['kitti2012','kitti2015','nyudepth',kitticontinuous_residential]", default='')
+                        help="Selects the dataset ['apolloscape', 'kittidepth', 'kitticontinuous_residential', 'nyudepth']", default='')
 
-    parser.add_argument('--batch_size', type=int, help="Define the Training batch size", default=2)
+    parser.add_argument('--batch_size', type=int, help="Define the Training batch size", default=4)
     parser.add_argument('--max_steps', type=int, help="Define the number of max Steps", default=1000)
     parser.add_argument('-l', '--learning_rate', type=float, help="Define the initial learning rate", default=1e-4)
     parser.add_argument('-d', '--dropout', type=float, help="Enable dropout in the model during training", default=0.5)

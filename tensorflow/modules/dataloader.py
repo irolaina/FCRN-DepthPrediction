@@ -11,11 +11,10 @@ import imageio
 
 from skimage import transform
 
-# from .kitti2012 import Kitti2012
-# from .kitti2015 import Kitti2015
-from .kitticontinuous import KittiContinuous
-from .nyudepth import NyuDepth
-from .apolloscape import Apolloscape
+from modules.datasets.apolloscape import Apolloscape
+from modules.datasets.kittidepth import KittiDepth
+from modules.datasets.kitticontinuous import KittiContinuous
+from modules.datasets.nyudepth import NyuDepth
 
 # ==================
 #  Global Variables
@@ -42,20 +41,18 @@ class Dataloader:
         self.selectedDataset = args.dataset
         # print(selectedDataset)
 
-        if self.selectedDataset == 'kitti2012':
-            self.datasetObj = Kitti2012(args.machine)
 
-        elif self.selectedDataset == 'kitti2015':
-            self.datasetObj = Kitti2015(args.machine)
+        if self.selectedDataset == 'apolloscape':
+            self.datasetObj = Apolloscape(args.machine)
+
+        elif self.selectedDataset == 'kittidepth':
+            self.datasetObj = KittiDepth(args.machine)
 
         elif self.selectedDataset == 'kitticontinuous_residential':
             self.datasetObj = KittiContinuous(args.machine)
 
         elif self.selectedDataset == 'nyudepth':
             self.datasetObj = NyuDepth(args.machine)
-
-        elif self.selectedDataset == 'apolloscape':
-            self.datasetObj = Apolloscape(args.machine)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "
@@ -132,7 +129,9 @@ class Dataloader:
 
     def rawdepth2meters(self, tf_depth):
         """True Depth Value Calculation. May vary from dataset to dataset."""
-        if self.dataset_name == 'kitti2012' or self.dataset_name == 'kitti2015':
+        if self.dataset_name == 'apolloscape':
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
+        elif self.dataset_name == 'kittidepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
         elif self.dataset_name == 'kitticontinuous_residential':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
@@ -144,8 +143,6 @@ class Dataloader:
             # tf_depth = depthParam1/(depthParam2 - tf.cast(tf_depth, tf.float32)) # FIXME: Falta fazer aquele swapbyte
             # imgDepthAbs(imgDepthAbs > maxDepth) = maxDepth; # TODO: Terminar
             # imgDepthAbs(imgDepthAbs < 0) = 0; # TODO: Terminar
-        elif self.dataset_name == 'apolloscape':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
 
         return tf_depth
 
