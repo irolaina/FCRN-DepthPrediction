@@ -1,8 +1,15 @@
+# Exclude Folders
+.idea/*
 models/*
 misc/*
-.idea/*
 tensorflow/output/*
+tensorflow/tmp/*
+
+# Exclude Extensions
 */.DS_Store
 *.pyc
 *.DS_Store
-tensorflow/tmp/*
+
+# Exclude Files
+matlab/predictions_NYUval.mat
+tensorflow/results.txt

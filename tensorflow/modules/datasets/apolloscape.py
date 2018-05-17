@@ -80,8 +80,8 @@ class Apolloscape(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            image_filenames_tmp = glob.glob(self.dataset_path + "ColorImage/*/*/*")  # ...ColorImage/Record*/Camera */*.jpg
-            depth_filenames_tmp = glob.glob(self.dataset_path + "Depth/*/*/*")  # ...Depth/Record*/Camera */*.png
+            image_filenames_tmp = glob.glob(self.dataset_path + "ColorImage/*/*/*.jpg")  # ...ColorImage/Record*/Camera */*.jpg
+            depth_filenames_tmp = glob.glob(self.dataset_path + "Depth/*/*/*.png")  # ...Depth/Record*/Camera */*.png
 
             image_filenames_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
             depth_filenames_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]

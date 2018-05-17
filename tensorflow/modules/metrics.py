@@ -63,7 +63,7 @@ def np_maskOutInvalidPixels(y, y_):
 # ----------- #
 #  Threshold  #
 # ----------- #
-# TODO: Métrica é aplicada em todos ou apenas nos pixeis válidos?
+# TODO: Métrica é aplicada em todos ou apenas nos pixeis válidos? TODOS
 def np_Threshold(y, y_, thr):
     # Check if y and y* have the same dimensions
     assert (y.shape == y_.shape), "Houston we've got a problem"
