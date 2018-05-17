@@ -8,7 +8,12 @@
 # Image: (480, 640, 3) uint8
 # Depth: (480, 640)    uint16
 
-# Dataset Guidelines # TODO: Correto?
+# ----- Official Dataset Guidelines ----- #
+# According to the NYU's Website the Labeled Dataset:
+# images – HxWx3xN matrix of RGB images where H and W are the height and width, respectively, and N is the number of images.
+# depths – HxWxN matrix of in-painted depth maps where H and W are the height and width, respectively and N is the number of images. The values of the depth elements are in meters.
+
+# Raw Depth to True Depth:
 # depthParam1 = 351.3;
 # depthParam2 = 1092.5;
 # maxDepth = 10;
@@ -16,6 +21,17 @@
 # depth_true = depthParam1./(depthParam2 - swapbytes(depth));
 # depth_true(depth_true > maxDepth) = maxDepth;
 # depth_true(depth_true < 0) = 0;
+# ------
+
+# ----- Dataset Guidelines - Custom ----- #
+# 1) Download the 'nyu_depth_v2_labeled.mat' and 'splits.mat' files from NYU Depth Dataset V2 website.
+# 2) Uses the 'convert.py' script from https://github.com/deeplearningais/curfil/wiki/Training-and-Prediction-with-the-NYU-Depth-v2-Dataset
+#   This script decompresses the information in the *.mat files to generate *.png images.
+#   The above script loads the dictionary 'depth', which is given in meters, and multiplies by 1000.0 before dumping it on the PNG format.
+# 3) Then, for retrieving the information from *_depth.png (uint16) to meters:
+#   depth_true = ((float) depth)/1000.0
+# -----
+
 
 # ===========
 #  Libraries
@@ -50,7 +66,7 @@ class NyuDepth(FilenamesHandler):
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/images/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/data/images/"
 
         self.name = 'nyudepth'
 

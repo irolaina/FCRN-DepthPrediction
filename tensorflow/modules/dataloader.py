@@ -136,14 +136,7 @@ class Dataloader:
         elif self.dataset_name == 'kitticontinuous_residential':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
         elif self.dataset_name == 'nyudepth':
-            depthParam1 = 351.3
-            depthParam2 = 1092.5
-
-            tf_depth = (tf.cast(tf_depth, tf.float32))
-            # tf_depth = depthParam1/(depthParam2 - tf.cast(tf_depth, tf.float32)) # FIXME: Falta fazer aquele swapbyte
-            # imgDepthAbs(imgDepthAbs > maxDepth) = maxDepth; # TODO: Terminar
-            # imgDepthAbs(imgDepthAbs < 0) = 0; # TODO: Terminar
-
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
         return tf_depth
 
     def readData(self, tf_image_filenames, tf_depth_filenames):
