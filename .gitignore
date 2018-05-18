@@ -2,10 +2,10 @@
 .idea/*
 models/*
 misc/*
+!misc/getDatasetInfo/
 tensorflow/output/*
 tensorflow/tmp/*
 
-!misc/getDatasetInfo/*
 # Exclude Extensions
 */.DS_Store
 *.pyc
