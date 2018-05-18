@@ -130,6 +130,11 @@ class Dataloader:
     def rawdepth2meters(self, tf_depth):
         """True Depth Value Calculation. May vary from dataset to dataset."""
         if self.dataset_name == 'apolloscape':
+            # Changes the invalid pixel value (65353) to 0.
+            tf_depth = tf.cast(tf_depth, tf.float32)
+            tf_imask = tf.where(tf_depth < 65535, tf.ones_like(tf_depth), tf.zeros_like(tf_depth))
+            tf_depth = tf_depth * tf_imask
+
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
         elif self.dataset_name == 'kittidepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
@@ -156,6 +161,10 @@ class Dataloader:
             tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint16)
+
+        # Retrieves shape
+        tf_image.set_shape(self.image_size.getSize())
+        tf_depth.set_shape(self.depth_size.getSize())
 
         # print(tf_image)   # Must be uint8!
         # print(tf_depth)   # Must be uint16/uin8!
