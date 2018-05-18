@@ -1,20 +1,20 @@
-# FIXME: Refatorar
 # ========
 #  README
 # ========
-# Kitti Stereo 2012
-# Uses Disparity Maps: measures pixels displacements [close - HIGH values, far - LOW values]
-# Image: (370, 1226, 3) uint8
-# Depth: (370, 1226)    uint16
+# Kitti Depth Prediction
+# Uses Depth Maps: measures distances [close - LOW values, far - HIGH values]
+# Image: (375, 1242, 3) uint8
+# Depth: (375, 1242)    uint16
 
+# -----
 # Dataset Guidelines
-# disp(u,v)  = ((float)I(u,v))/256.0;
+# -----
+# Raw Depth image to Depth (meters):
+# depth(u,v) = ((float)I(u,v))/256.0;
 # valid(u,v) = I(u,v)>0;
+# -----
 
-# depth_png = np.array(Image.open(filename), dtype=int)
-# assert(np.max(depth_png) > 255)
-# depth = depth_png.astype(np.float) / 256.
-# depth[depth_png == 0] = -1.
+# FIXME: Este dataset possui conjunto de validação. O conjunto de tests não possui ground truth. Criar lista de validação
 
 # ===========
 #  Libraries
@@ -43,21 +43,22 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-class Kitti2012(FilenamesHandler):
+class KittiDepth(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/stereo/stereo2012/data_stereo_flow/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/"
 
-        self.name = 'kitti2012'
+        self.name = 'kittidepth'
 
-        self.image_size = Size(370, 1226, 3)
-        self.depth_size = Size(370, 1226, 1)
+        self.image_size = Size(375, 1242, 3)
+        self.depth_size = Size(375, 1242, 1)
 
-        print("[Dataloader] Kitti2012 object created.")
+        print("[Dataloader] KittiDepth object created.")
 
+    # FIXME: PAREI Aqui
     def getFilenamesLists(self, mode):
         image_filenames = []
         depth_filenames = []
@@ -74,12 +75,38 @@ class Kitti2012(FilenamesHandler):
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
-            # Finds input images and labels inside list of folders.
-            image_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/colored_0/*")
-            depth_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/disp_occ/*")
+            # Workaround # FIXME: Temporary
+            if mode == 'test':
+                mode = 'val'
 
-            image_filenames_aux = [os.path.split(image)[1] for image in image_filenames_tmp]
-            depth_filenames_aux = [os.path.split(depth)[1] for depth in depth_filenames_tmp]
+            # Finds input images and labels inside list of folders.
+            image_filenames_tmp = glob.glob(self.dataset_path + 'raw_data/data/*/*/image_0*/data/*.png')
+            depth_filenames_tmp = glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_0*/*.png')
+
+            # TODO: Remover
+            # print(image_filenames_tmp)
+            # print(len(image_filenames_tmp))
+            # input("oi")
+            # print(depth_filenames_tmp)
+            # print(len(depth_filenames_tmp))
+            # input("oi2")
+
+            image_filenames_aux = [image.replace(self.dataset_path, '').split(os.sep) for image in image_filenames_tmp]
+            depth_filenames_aux = [depth.replace(self.dataset_path, '').split(os.sep) for depth in depth_filenames_tmp]
+
+            image_idx = [3, 4, 6]
+            depth_idx = [4, 7, 8]
+
+            image_filenames_aux = ['/'.join([image[i] for i in image_idx]) for image in image_filenames_aux]
+            depth_filenames_aux = ['/'.join([depth[i] for i in depth_idx]) for depth in depth_filenames_aux]
+
+            # TODO: Remover
+            # print(image_filenames_aux)
+            # print(len(image_filenames_aux))
+            # input("oi3")
+            # print(depth_filenames_aux)
+            # print(len(depth_filenames_aux))
+            # input("oi4")
 
             n, m = len(image_filenames_aux), len(depth_filenames_aux)
 
@@ -110,7 +137,5 @@ class Kitti2012(FilenamesHandler):
             # input("enter")
 
             self.saveList(image_filenames, depth_filenames, self.name, mode)
-
-        input("terminar")
 
         return image_filenames, depth_filenames
