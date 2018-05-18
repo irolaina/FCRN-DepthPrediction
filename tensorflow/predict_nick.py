@@ -5,13 +5,22 @@
 # ====== #
 # Attention! The maximum range that the Network can predict depends on the maximum distance recorded in the dataset.
 
-# ============
-#  To-Do FCRN
-# ============
-# TODO: Validar Métricas.
+# =======
+#  To-Do
+# =======
+# Must do
+# [Train] TODO: Implementar classe KittiDepth (datasetHandler)
+# [Train] FIXME: Apolloscape's RandomShuffleError
+# [Train] TODO: Reativar DataAugmentation
+# [Train] FIXME: Early Stopping
 
-# TODO: Implementar Bilinear
-# TODO: Estou aplicando a normalização da entrada em todos os módulos (predict, test, train, valid)?
+# [Test] TODO: Recuperar dimensão das predições (Usar bilinear).
+# [Test] TODO: Validar Métricas
+
+# Optional
+# [Train] TODO: Dar suporte ao Make3D
+# [Train] TODO: Adicionar feature para realizar pré-carregamento do modelo pré-treinado no ImageNet
+# []
 
 # ===========
 #  Libraries
@@ -35,7 +44,7 @@ from sys import getsizeof, stderr
 from itertools import chain
 from collections import deque
 
-from modules.dataset.dataloader import Dataloader
+from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.model.fcrn import ResNet50UpProj
 from modules.size import Size
