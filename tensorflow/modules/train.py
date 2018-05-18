@@ -25,17 +25,28 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 class Train:
     def __init__(self, args, tf_train_image, tf_train_depth, input_size, output_size):
         with tf.name_scope('Input'):
-            # Downsizes Input and Depth Images
-            tf_image_resized = tf.image.resize_images(tf_train_image, [input_size.height, input_size.width])
-            tf_depth_resized = tf.image.resize_images(tf_train_depth, [output_size.height, output_size.width])
+            # ===============
+            #  Prepare Batch
+            # ===============
+            batch_size = args.batch_size
+            num_threads = 4
+            min_after_dequeue = 16
+            capacity = min_after_dequeue + num_threads * batch_size
 
-            # Create Tensors for Batch Training
-            self.tf_batch_data, self.tf_batch_data_resized, self.tf_batch_labels = self.prepareTrainData(
-                tf_image_resized,
-                tf_depth_resized,
-                args.batch_size)
+            # Select:
+            # tf_batch_image, tf_batch_depth = tf.train.batch([tf_train_image, tf_train_depth], batch_size, num_threads, capacity)
+            tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_train_image, tf_train_depth], batch_size, capacity,
+                                                                    min_after_dequeue, num_threads)
+
+            # Downsizes Input and Depth Images
+            tf_batch_image_resized = tf.image.resize_images(tf_batch_image, [input_size.height, input_size.width])
+            tf_batch_depth_resized = tf.image.resize_images(tf_batch_depth, [output_size.height, output_size.width])
+            tf_batch_image_resized_uint8 = tf.cast(tf_batch_image_resized, tf.uint8)  # Visual purpose
 
             # Network Input/Output
+            self.tf_batch_data = tf_batch_image_resized
+            self.tf_batch_data_uint8 = tf_batch_image_resized_uint8
+            self.tf_batch_labels = tf_batch_depth_resized
             self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
                                               name='log_batch_labels')
 
@@ -62,10 +73,15 @@ class Train:
             self.plot = Plot(args.mode, title='Train Predictions')
 
         print("\n[Network/Train] Training Tensors created.")
-        print(tf_image_resized)
-        print(tf_depth_resized)
+        print(tf_train_image)
+        print(tf_train_depth)
+        print(tf_batch_image)
+        print(tf_batch_depth)
+        # print(tf_batch_image_resized)
+        # print(tf_batch_image_resized_uint8)
+        # print(tf_batch_depth_resized)
         print(self.tf_batch_data)
-        print(self.tf_batch_data_resized)
+        print(self.tf_batch_data_uint8)
         print(self.tf_batch_labels)
         print(self.tf_log_batch_labels)
         print(self.tf_global_step)
@@ -106,48 +122,6 @@ class Train:
         image_aug = tf.clip_by_value(image_aug, 0, 1)
 
         return image_aug, depth_aug
-
-    @staticmethod
-    def prepareTrainData(tf_image_resized, tf_depth_resized, batch_size):
-        # ------------------- #
-        #  Data Augmentation  #
-        # ------------------- #
-        # Copy
-        tf_image_proc = tf_image_resized
-        tf_depth_proc = tf_depth_resized
-
-        # TODO: Reativar
-        # # randomly augment images
-        # do_augment = tf.random_uniform([], 0, 1)
-        # tf_image_proc, tf_depth_proc = tf.cond(do_augment > 0.5,
-        #                                        lambda: self.augment_image_pair(tf_image_resized, tf_depth_resized),
-        #                                        lambda: (tf_image_resized, tf_depth_resized))
-        #
-        # # Normalizes Input
-        # ATTENTION! Make sure the normalization is correctly implemented on 'train', 'test' and 'pred' modes
-        # tf_image_proc = tf.image.per_image_standardization(tf_image_proc)
-        #
-
-        tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
-
-        # FIXME: 'RandomShuffleQueueError'
-        # Creates Training Batch Tensors
-        # capacity = min_after_dequeue + (num_threads + a small safety margin) * batch_size
-
-        # min_after_dequeue = 2048
-        min_after_dequeue = 16
-        num_threads = 4
-        capacity = min_after_dequeue + num_threads*batch_size
-
-        tf_batch_data, tf_batch_data_resized, tf_batch_labels = tf.train.shuffle_batch(
-            # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-            [tf_image_proc, tf_image_resized_uint8, tf_depth_proc],  # Enable for debugging images
-            batch_size,
-            capacity,
-            min_after_dequeue,
-            num_threads)
-
-        return tf_batch_data, tf_batch_data_resized, tf_batch_labels
 
 
 # TODO: Validar

@@ -20,7 +20,6 @@
 # Optional
 # [Train] TODO: Dar suporte ao Make3D
 # [Train] TODO: Adicionar feature para realizar pré-carregamento do modelo pré-treinado no ImageNet
-# []
 
 # ===========
 #  Libraries
@@ -60,7 +59,7 @@ from modules.plot import Plot
 LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False  # Default: True
+VALID_PIXELS = True  # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = True  # Default: True
@@ -255,7 +254,11 @@ def train(args):
             data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
 
-        data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
+        # Proclaim the epochs
+        max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
+        print('\nTrain with approximately %d epochs' % max_epochs)
+
+        data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames, max_epochs)
 
         # Build Network Model
         model = Model(args, data, LOSS_FUNCTION, VALID_PIXELS)
@@ -271,10 +274,6 @@ def train(args):
     with tf.Session(graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
-
-        # Proclaim the epochs
-        max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
-        print('\nTrain with approximately %d epochs' % max_epochs)
 
         # ===============
         #  Training Loop
@@ -292,8 +291,8 @@ def train(args):
                 # Training
                 # TODO: Create train_ops variable
                 if args.show_train_progress:
-                    _, batch_data_raw, batch_data, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                        [model.train_step, model.train.tf_batch_data_resized, model.train.tf_batch_data,
+                    _, batch_data, batch_data_uint8, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
+                        [model.train_step, model.train.tf_batch_data, model.train.tf_batch_data_uint8,
                          model.train.tf_batch_labels, model.train.tf_log_batch_labels,
                          model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
                 else:
@@ -324,7 +323,7 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
-                        model.train.plot.showResults(raw=batch_data_raw[0],
+                        model.train.plot.showResults(raw=batch_data_uint8[0],
                                                      label=batch_labels[0, :, :, 0],
                                                      log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
@@ -410,7 +409,7 @@ def train(args):
                     model.summary_writer.add_summary(summary_str, step)
                     model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
-                epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
+                epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples)) # TODO: nao deveria ser np.floor?
             else:
                 print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
                 break

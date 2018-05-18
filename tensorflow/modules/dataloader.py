@@ -144,19 +144,22 @@ class Dataloader:
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
         return tf_depth
 
-    def readData(self, tf_image_filenames, tf_depth_filenames):
+    def readData(self, image_filenames, depth_filenames, num_epochs):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
-        seed = random.randint(0, 2 ** 31 - 1)
-        tf_train_image_filename_queue = tf.train.string_input_producer(tf_image_filenames, shuffle=False, seed=seed)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(tf_depth_filenames, shuffle=False, seed=seed)
+        tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames, num_epochs, shuffle=False)
+        tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames, num_epochs, shuffle=False)
 
         # Reads images
         image_reader = tf.WholeFileReader()
         tf_image_key, image_file = image_reader.read(tf_train_image_filename_queue)
         tf_depth_key, depth_file = image_reader.read(tf_train_depth_filename_queue)
 
-        tf_image = tf.image.decode_png(image_file, channels=3, dtype=tf.uint8)
+        if self.dataset_name == 'apolloscape':
+            tf_image = tf.image.decode_jpeg(image_file)
+        else:
+            tf_image = tf.image.decode_png(image_file, channels=3, dtype=tf.uint8)
+
         if self.dataset_name == 'kitticontinuous_residential':
             tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint8)
         else:
