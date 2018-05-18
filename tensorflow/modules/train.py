@@ -130,14 +130,22 @@ class Train:
 
         tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
 
+        # FIXME: 'RandomShuffleQueueError'
         # Creates Training Batch Tensors
+        # capacity = min_after_dequeue + (num_threads + a small safety margin) * batch_size
+
+        # min_after_dequeue = 2048
+        min_after_dequeue = 16
+        num_threads = 4
+        capacity = min_after_dequeue + num_threads*batch_size
+
         tf_batch_data, tf_batch_data_resized, tf_batch_labels = tf.train.shuffle_batch(
             # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
             [tf_image_proc, tf_image_resized_uint8, tf_depth_proc],  # Enable for debugging images
-            batch_size=batch_size,
-            num_threads=1,
-            capacity=16,
-            min_after_dequeue=0)
+            batch_size,
+            capacity,
+            min_after_dequeue,
+            num_threads)
 
         return tf_batch_data, tf_batch_data_resized, tf_batch_labels
 
