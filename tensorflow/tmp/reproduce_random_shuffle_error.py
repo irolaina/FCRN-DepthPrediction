@@ -54,9 +54,13 @@ capacity = min_after_dequeue + num_threads * batch_size
 #  Read Input File
 # =================
 # Select Dataset:
-dataset_name = 'apolloscape'
+# dataset_name = 'apolloscape'
 # dataset_name = 'kitticontinuous_residential'
 # dataset_name = 'nyudepth'
+dataset_name = 'kittidepth'
+
+input_size = (228, 304, 3)
+output_size = (128, 160, 1)
 
 if dataset_name == 'apolloscape':
     data = np.genfromtxt('data/apolloscape_train.txt', dtype='str', delimiter='\t')
@@ -76,6 +80,10 @@ elif dataset_name == 'nyudepth':
 
     image_shape = (480, 640, 3)
     depth_shape = (480, 640, 1)
+elif dataset_name == 'kittidepth':
+    data = np.genfromtxt('data/kittidepth_train.txt', dtype='str', delimiter='\t')
+    image_shape = (375, 1242, 3)
+    depth_shape = (375, 1242, 1)
 else:
     raise SystemExit
 
@@ -114,12 +122,19 @@ elif dataset_name == 'kitticontinuous_residential':
 elif dataset_name == 'nyudepth':
     tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
     tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
+elif dataset_name == 'kittidepth':
+    tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
+    tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 else:
     raise SystemExit
 
 # Retrieves Shape
-# tf_image.set_shape(image_shape)
-# tf_depth.set_shape(depth_shape)
+tf_image.set_shape(image_shape)
+tf_depth.set_shape(depth_shape)
+
+# Downsizes Images
+tf_image = tf.image.resize_images(tf_image, [input_size[0], input_size[1]])
+tf_depth = tf.image.resize_images(tf_depth, [output_size[0], output_size[1]])
 
 tf_image_shape = tf.shape(tf_image)
 tf_depth_shape = tf.shape(tf_depth)
@@ -133,7 +148,7 @@ tf_depth_shape = tf.shape(tf_depth)
 
 # Images Batch
 # Junto
-tf_batch_image, tf_batch_depth = tf.train.batch([tf_image, tf_depth], batch_size, num_threads, capacity, shapes=[image_shape, depth_shape])
+tf_batch_image, tf_batch_depth = tf.train.batch([tf_image, tf_depth], batch_size, num_threads, capacity, shapes=[input_size, output_size])
 # tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_image, tf_depth], batch_size, capacity, min_after_dequeue, num_threads)
 
 # Separado
@@ -194,10 +209,10 @@ with tf.Session() as sess:
         batch_image, batch_depth = sess.run([tf_batch_image, tf_batch_depth])
         # batch_image = sess.run(tf_batch_image)
         # batch_depth = sess.run(tf_batch_depth)
-        # print("batch_image: ", batch_image.shape, batch_image.dtype)
+        print("batch_image: ", batch_image.shape, batch_image.dtype)
         # print(batch_image)
 
-        # print("batch_depth: ", batch_depth.shape, batch_depth.dtype)
+        print("batch_depth: ", batch_depth.shape, batch_depth.dtype)
         # print(batch_depth)
 
         # plt.figure(1)
