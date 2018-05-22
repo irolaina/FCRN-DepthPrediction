@@ -55,7 +55,7 @@ class KittiContinuousResidential(FilenamesHandler):
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
 
-        print("[Dataloader] KittiContinuous object created.")
+        print("[Dataloader] KittiContinuousResidential object created.")
 
     def getFilenamesLists(self, mode):
         image_filenames = []
