@@ -1,7 +1,7 @@
 # ========
 #  README
 # ========
-# KittiContinuous(Residential)
+# KittiContinuous
 # Uses Depth Maps: measures distances [close - LOW values, far - HIGH values]
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint8
@@ -42,15 +42,15 @@ LOG_INITIAL_VALUE = 1
 # ===================
 #  Class Declaration
 # ===================
-class KittiContinuousResidential(FilenamesHandler):
+class KittiContinuous(FilenamesHandler):
     def __init__(self, machine):
         super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/continuous/residential/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/raw_data/data/"
 
-        self.name = 'kitticontinuous_residential'
+        self.name = 'kitticontinuous'
 
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
@@ -75,11 +75,25 @@ class KittiContinuousResidential(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            image_filenames_tmp = glob.glob(self.dataset_path + "imgs/*.png")
-            depth_filenames_tmp = glob.glob(self.dataset_path + "dispc/*.png")
+            image_filenames_tmp = glob.glob(self.dataset_path + "*/proc2/imgs/*.png")
+            depth_filenames_tmp = glob.glob(self.dataset_path + "*/proc2/disp2/*.png")
+
+            # print(image_filenames_tmp)
+            # print(len(image_filenames_tmp))
+            # input("image_filenames_tmp")
+            # print(depth_filenames_tmp)
+            # print(len(depth_filenames_tmp))
+            # input("depth_filenames_tmp")
 
             image_filenames_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
             depth_filenames_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
+
+            # print(image_filenames_aux)
+            # print(len(image_filenames_aux))
+            # input("image_filenames_aux")
+            # print(depth_filenames_aux)
+            # print(len(depth_filenames_aux))
+            # input("depth_filenames_aux")
 
             n, m = len(image_filenames_aux), len(depth_filenames_aux)
 

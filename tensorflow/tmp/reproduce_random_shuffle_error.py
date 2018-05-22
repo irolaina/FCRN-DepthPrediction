@@ -55,6 +55,7 @@ capacity = min_after_dequeue + num_threads * batch_size
 # =================
 # Select Dataset:
 # dataset_name = 'apolloscape'
+# dataset_name = 'kitticontinuous'
 # dataset_name = 'kitticontinuous_residential'
 # dataset_name = 'nyudepth'
 dataset_name = 'kittidepth'
@@ -67,23 +68,29 @@ if dataset_name == 'apolloscape':
     # data = np.genfromtxt('tmp/apolloscape_train_little.txt', dtype='str', delimiter='\t')
     # data = np.genfromtxt('tmp/apolloscape_train_little2.txt', dtype='str', delimiter='\t')
     # data = np.genfromtxt('tmp/apolloscape_train_little3.txt', dtype='str', delimiter='\t')
-
     image_shape = (2710, 3384, 3)
     depth_shape = (2710, 3384, 1)
-elif dataset_name == 'kitticontinuous_residential':
-    data = np.genfromtxt('data/kitticontinuous_residential_train.txt', dtype='str', delimiter='\t')
 
+elif dataset_name == 'kitticontinuous':
+    data = np.genfromtxt('data/kitticontinuous_train.txt', dtype='str', delimiter='\t')
     image_shape = (375, 1242, 3)
     depth_shape = (375, 1242, 1)
+
+elif dataset_name == 'kitticontinuous_residential':
+    data = np.genfromtxt('data/kitticontinuous_residential_train.txt', dtype='str', delimiter='\t')
+    image_shape = (375, 1242, 3)
+    depth_shape = (375, 1242, 1)
+
 elif dataset_name == 'nyudepth':
     data = np.genfromtxt('data/nyudepth_train.txt', dtype='str', delimiter='\t')
-
     image_shape = (480, 640, 3)
     depth_shape = (480, 640, 1)
+
 elif dataset_name == 'kittidepth':
     data = np.genfromtxt('data/kittidepth_train.txt', dtype='str', delimiter='\t')
     image_shape = (375, 1242, 3)
     depth_shape = (375, 1242, 1)
+
 else:
     raise SystemExit
 
@@ -116,6 +123,9 @@ tf_depth_key, tf_depth_file = image_reader.read(tf_train_depth_filename_queue)
 if dataset_name == 'apolloscape':
     tf_image = tf.image.decode_jpeg(tf_image_file)
     tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
+elif dataset_name == 'kitticontinuous':
+    tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
+    tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
 elif dataset_name == 'kitticontinuous_residential':
     tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
     tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)

@@ -9,8 +9,6 @@
 #  To-Do
 # =======
 # Must do
-# [Train] TODO: Implementar classe KittiDepth (datasetHandler)
-# [Train] TODO: Assim que terminar 2011_10_03_drive_0042_sync.zip, extrair e gerar novamente as listas.txt para o dataset KittiDepth
 # [Train] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Train] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Train] TODO: Reativar DataAugmentation
@@ -469,7 +467,7 @@ def test(args):
         tf_depth_path = tf.placeholder(tf.string)
 
         tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
-        if data.dataset_name == 'kitticontinuous_residential':
+        if data.dataset_name== 'kitticontinuous' or data.dataset_name == 'kitticontinuous_residential':
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
