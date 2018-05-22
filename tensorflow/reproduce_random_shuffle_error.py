@@ -128,10 +128,6 @@ else:
 # tf_image.set_shape(image_shape)
 # tf_depth.set_shape(depth_shape)
 
-# Change Type
-# tf_image = tf.cast(tf_image, tf.float32) # uint8  -> float32
-# tf_depth = tf.cast(tf_depth, tf.float32) # uint16 -> float32
-
 tf_image_shape = tf.shape(tf_image)
 tf_depth_shape = tf.shape(tf_depth)
 
