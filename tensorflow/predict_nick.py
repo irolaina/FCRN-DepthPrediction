@@ -10,6 +10,7 @@
 # =======
 # Must do
 # [Train] TODO: Implementar classe KittiDepth (datasetHandler)
+# [Train] TODO: Assim que terminar 2011_10_03_drive_0042_sync.zip, extrair e gerar novamente as listas.txt para o dataset KittiDepth
 # [Train] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Train] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Train] TODO: Reativar DataAugmentation

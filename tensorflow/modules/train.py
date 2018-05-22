@@ -23,8 +23,13 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image, tf_depth, image_size, depth_size, input_size, output_size):
+    def __init__(self, args, tf_image, tf_depth, input_size, output_size):
         with tf.name_scope('Input'):
+            # Downsizes Input and Depth Images
+            tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
+            tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
+            tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
+
             # ==============
             #  Batch Config
             # ==============
@@ -37,13 +42,8 @@ class Train:
             #  Prepare Batch
             # ===============
             # Select:
-            tf_batch_image, tf_batch_depth = tf.train.batch([tf_image, tf_depth], batch_size, num_threads, capacity, shapes=[image_size.getSize(), depth_size.getSize()])
+            tf_batch_image_resized, tf_batch_image_resized_uint8, tf_batch_depth_resized = tf.train.batch([tf_image_resized, tf_image_resized_uint8, tf_depth_resized], batch_size, num_threads, capacity, shapes=[input_size.getSize(), input_size.getSize(), output_size.getSize()])
             # tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_image, tf_depth], batch_size, capacity, min_after_dequeue, num_threads, shapes=[image_size, depth_size])
-
-            # Downsizes Input and Depth Images
-            tf_batch_image_resized = tf.image.resize_images(tf_batch_image, [input_size.height, input_size.width])
-            tf_batch_depth_resized = tf.image.resize_images(tf_batch_depth, [output_size.height, output_size.width])
-            tf_batch_image_resized_uint8 = tf.cast(tf_batch_image_resized, tf.uint8)  # Visual purpose
 
             # Network Input/Output
             self.tf_batch_data = tf_batch_image_resized
@@ -78,8 +78,6 @@ class Train:
             self.plot = Plot(args.mode, title='Train Predictions')
 
         print("\n[Network/Train] Training Tensors created.")
-        print(tf_batch_image)
-        print(tf_batch_depth)
         # print(tf_batch_image_resized)
         # print(tf_batch_image_resized_uint8)
         # print(tf_batch_depth_resized)

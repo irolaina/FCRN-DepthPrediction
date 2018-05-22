@@ -14,8 +14,6 @@
 # valid(u,v) = I(u,v)>0;
 # -----
 
-# FIXME: Este dataset possui conjunto de validação. O conjunto de tests não possui ground truth. Criar lista de validação
-
 # ===========
 #  Libraries
 # ===========
@@ -58,7 +56,6 @@ class KittiDepth(FilenamesHandler):
 
         print("[Dataloader] KittiDepth object created.")
 
-    # FIXME: PAREI Aqui
     def getFilenamesLists(self, mode):
         image_filenames = []
         depth_filenames = []
@@ -80,33 +77,34 @@ class KittiDepth(FilenamesHandler):
                 mode = 'val'
 
             # Finds input images and labels inside list of folders.
-            image_filenames_tmp = glob.glob(self.dataset_path + 'raw_data/data/*/*/image_0*/data/*.png')
-            depth_filenames_tmp = glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_0*/*.png')
+            image_filenames_tmp = []
+            depth_filenames_tmp = []
 
-            # TODO: Remover
+            image_filenames_tmp = glob.glob(self.dataset_path + 'raw_data/data/*/image_02/data/*.png') + glob.glob(self.dataset_path + 'raw_data/data/*/image_03/data/*.png')
+            depth_filenames_tmp = glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_02/*.png') + glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_03/*.png')
+
             # print(image_filenames_tmp)
             # print(len(image_filenames_tmp))
-            # input("oi")
+            # input("image_filenames_tmp")
             # print(depth_filenames_tmp)
             # print(len(depth_filenames_tmp))
-            # input("oi2")
+            # input("depth_filenames_tmp")
 
             image_filenames_aux = [image.replace(self.dataset_path, '').split(os.sep) for image in image_filenames_tmp]
             depth_filenames_aux = [depth.replace(self.dataset_path, '').split(os.sep) for depth in depth_filenames_tmp]
 
-            image_idx = [3, 4, 6]
+            image_idx = [2, 3, 5]
             depth_idx = [4, 7, 8]
 
             image_filenames_aux = ['/'.join([image[i] for i in image_idx]) for image in image_filenames_aux]
             depth_filenames_aux = ['/'.join([depth[i] for i in depth_idx]) for depth in depth_filenames_aux]
 
-            # TODO: Remover
             # print(image_filenames_aux)
             # print(len(image_filenames_aux))
-            # input("oi3")
+            # input("image_filenames_aux")
             # print(depth_filenames_aux)
             # print(len(depth_filenames_aux))
-            # input("oi4")
+            # input("depth_filenames_aux")
 
             n, m = len(image_filenames_aux), len(depth_filenames_aux)
 
