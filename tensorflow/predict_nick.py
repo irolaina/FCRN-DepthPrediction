@@ -10,7 +10,8 @@
 # =======
 # Must do
 # [Train] TODO: Implementar classe KittiDepth (datasetHandler)
-# [Train] FIXME: Apolloscape's RandomShuffleError
+# [Train] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
+# [Train] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Train] TODO: Reativar DataAugmentation
 # [Train] FIXME: Early Stopping
 
@@ -254,11 +255,7 @@ def train(args):
             data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
 
-        # Proclaim the epochs
-        max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
-        print('\nTrain with approximately %d epochs' % max_epochs)
-
-        data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames, max_epochs)
+        data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
         model = Model(args, data, LOSS_FUNCTION, VALID_PIXELS)
@@ -270,6 +267,10 @@ def train(args):
     # ---------------------------------------- #
     # Local Variables and Memory Allocation
     epoch, step = 0, 0
+
+    # Proclaim the epochs
+    max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
+    print('\nTrain with approximately %d epochs' % max_epochs)
 
     with tf.Session(graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
@@ -430,6 +431,7 @@ def train(args):
 
         model.saveResults(datetime, epoch, max_epochs, step, args.max_steps, sim_train)
 
+        sess.close()
 
 # ========= #
 #  Testing  #

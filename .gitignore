@@ -5,7 +5,7 @@ misc/*
 !misc/getDatasetInfo/
 tensorflow/output/*
 tensorflow/tmp/*
-
+!tensorflow/tmp/reproduce_random_shuffle_error.py
 # Exclude Extensions
 */.DS_Store
 *.pyc

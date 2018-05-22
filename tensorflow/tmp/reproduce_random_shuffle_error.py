@@ -29,15 +29,8 @@
 # TODO: [Ok] NyuDepth/ImagesBatch/train.batch/Ambos/Juntos
 # TODO: [Ok] NyuDepth/ImagesBatch/train.random_shuffle_batch/Ambos/Juntos
 
-# TODO: [  ] Apolloscape/ImagesBatch/train.batch/Ambos/Juntos
-# TODO: [  ] Apolloscape/ImagesBatch/train.batch/Ambos/Separados -> DESSINCRONIZA!
-# TODO: [  ] Apolloscape/ImagesBatch/train.batch/OnlyImage
-# TODO: [  ] Apolloscape/ImagesBatch/train.batch/OnlyDepth
-
+# TODO: [Ok] Apolloscape/ImagesBatch/train.batch/Ambos/Juntos
 # TODO: [  ] Apolloscape/ImagesBatch/train.random_shuffle_batch/Ambos/Juntos
-# TODO: [  ] Apolloscape/ImagesBatch/train.random_shuffle_batch/Ambos/Separados -> DESSINCRONIZA!
-# TODO: [  ] Apolloscape/ImagesBatch/train.random_shuffle_batch/OnlyImage
-# TODO: [  ] Apolloscape/ImagesBatch/train.random_shuffle_batch/OnlyDepth
 
 # ===========
 #  Libraries

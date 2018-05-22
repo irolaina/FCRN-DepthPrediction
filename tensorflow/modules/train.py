@@ -23,20 +23,22 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_train_image, tf_train_depth, input_size, output_size):
+    def __init__(self, args, tf_image, tf_depth, image_size, depth_size, input_size, output_size):
         with tf.name_scope('Input'):
-            # ===============
-            #  Prepare Batch
-            # ===============
+            # ==============
+            #  Batch Config
+            # ==============
             batch_size = args.batch_size
             num_threads = 4
             min_after_dequeue = 16
             capacity = min_after_dequeue + num_threads * batch_size
 
+            # ===============
+            #  Prepare Batch
+            # ===============
             # Select:
-            # tf_batch_image, tf_batch_depth = tf.train.batch([tf_train_image, tf_train_depth], batch_size, num_threads, capacity)
-            tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_train_image, tf_train_depth], batch_size, capacity,
-                                                                    min_after_dequeue, num_threads)
+            tf_batch_image, tf_batch_depth = tf.train.batch([tf_image, tf_depth], batch_size, num_threads, capacity, shapes=[image_size.getSize(), depth_size.getSize()])
+            # tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_image, tf_depth], batch_size, capacity, min_after_dequeue, num_threads, shapes=[image_size, depth_size])
 
             # Downsizes Input and Depth Images
             tf_batch_image_resized = tf.image.resize_images(tf_batch_image, [input_size.height, input_size.width])
@@ -58,7 +60,10 @@ class Train:
             self.tf_learning_rate = tf.constant(args.learning_rate, name='learning_rate')
 
             if args.ldecay:
-                self.tf_learning_rate = tf.train.exponential_decay(self.tf_learning_rate, self.tf_global_step, 1000, 0.95,
+                self.tf_learning_rate = tf.train.exponential_decay(self.tf_learning_rate,
+                                                                   self.tf_global_step,
+                                                                   decay_steps=1000,
+                                                                   decay_rate=0.95,
                                                                    staircase=True,
                                                                    name='learning_rate')
 
@@ -73,8 +78,6 @@ class Train:
             self.plot = Plot(args.mode, title='Train Predictions')
 
         print("\n[Network/Train] Training Tensors created.")
-        print(tf_train_image)
-        print(tf_train_depth)
         print(tf_batch_image)
         print(tf_batch_depth)
         # print(tf_batch_image_resized)

@@ -41,7 +41,6 @@ class Dataloader:
         self.selectedDataset = args.dataset
         # print(selectedDataset)
 
-
         if self.selectedDataset == 'apolloscape':
             self.datasetObj = Apolloscape(args.machine)
 
@@ -144,30 +143,33 @@ class Dataloader:
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
         return tf_depth
 
-    def readData(self, image_filenames, depth_filenames, num_epochs):
+    def readData(self, image_filenames, depth_filenames):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
-        tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames, num_epochs, shuffle=False)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames, num_epochs, shuffle=False)
+        tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames, shuffle=False) # TODO: Add capacity?
+        tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames, shuffle=False) # TODO: Add capacity?
 
         # Reads images
         image_reader = tf.WholeFileReader()
-        tf_image_key, image_file = image_reader.read(tf_train_image_filename_queue)
-        tf_depth_key, depth_file = image_reader.read(tf_train_depth_filename_queue)
+        tf_image_key, tf_image_file = image_reader.read(tf_train_image_filename_queue)
+        tf_depth_key, tf_depth_file = image_reader.read(tf_train_depth_filename_queue)
 
         if self.dataset_name == 'apolloscape':
-            tf_image = tf.image.decode_jpeg(image_file)
+            tf_image = tf.image.decode_jpeg(tf_image_file)
         else:
-            tf_image = tf.image.decode_png(image_file, channels=3, dtype=tf.uint8)
+            tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
         if self.dataset_name == 'kitticontinuous_residential':
-            tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint8)
+            tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
         else:
-            tf_depth = tf.image.decode_png(depth_file, channels=1, dtype=tf.uint16)
+            tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
         # Retrieves shape
         tf_image.set_shape(self.image_size.getSize())
         tf_depth.set_shape(self.depth_size.getSize())
+
+        tf_image_shape = tf.shape(tf_image)
+        tf_depth_shape = tf.shape(tf_depth)
 
         # print(tf_image)   # Must be uint8!
         # print(tf_depth)   # Must be uint16/uin8!
@@ -177,6 +179,17 @@ class Dataloader:
 
         # print(tf_image) # Must be uint8!
         # print(tf_depth) # Must be float32!
+
+        # Print Tensors
+        print("\nTensors:")
+        print("tf_image_key: \t", tf_image_key)
+        print("tf_depth_key: \t", tf_depth_key)
+        print("tf_image_file: \t", tf_image_file)
+        print("tf_depth_file: \t", tf_depth_file)
+        print("tf_image: \t", tf_image)
+        print("tf_depth: \t", tf_depth)
+        print("tf_image_shape: ", tf_image_shape)
+        print("tf_depth_shape: ", tf_depth_shape)
 
         return tf_image, tf_depth
 
