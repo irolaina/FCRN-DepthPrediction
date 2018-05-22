@@ -16,7 +16,7 @@ kitti2015_depth = imread('/media/nicolas/Nícolas/datasets/kitti/stereo/stereo20
 kitti2015_depth_true = double(kitti2015_depth)/256.0;
 
 %% Kitti Depth
-kittiDepth_image = imread('/media/nicolas/Nícolas/datasets/kitti/raw_data/data/city/2011_09_26_drive_0001_sync/image_02/data/0000000005.png');
+kittiDepth_image = imread('/media/nicolas/Nícolas/datasets/kitti/raw_data/data/2011_09_26_drive_0001_sync/image_02/data/0000000005.png');
 kittiDepth_depth = imread('/media/nicolas/Nícolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0001_sync/proj_depth/groundtruth/image_02/0000000005.png');
 kittiDepth_depth_true = double(kittiDepth_depth)/256.0;
 
