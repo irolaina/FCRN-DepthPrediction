@@ -65,8 +65,8 @@ class Dataloader:
         # Collects Dataset Info
         self.dataset_name = self.datasetObj.name
         self.dataset_path = self.datasetObj.dataset_path
-        self.image_size = self.datasetObj.image_size
-        self.depth_size = self.datasetObj.depth_size
+        # self.image_size = self.datasetObj.image_size
+        # self.depth_size = self.datasetObj.depth_size
 
         # Searches dataset image/depth filenames lists
         self.train_image_filenames, self.train_depth_filenames, self.numTrainSamples = None, None, -1
@@ -171,8 +171,8 @@ class Dataloader:
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
         # Retrieves shape
-        tf_image.set_shape(self.image_size.getSize())
-        tf_depth.set_shape(self.depth_size.getSize())
+        # tf_image.set_shape(self.image_size.getSize())
+        # tf_depth.set_shape(self.depth_size.getSize())
 
         tf_image_shape = tf.shape(tf_image)
         tf_depth_shape = tf.shape(tf_depth)

@@ -61,7 +61,7 @@ class Model(object):
             self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, data.image_size, data.depth_size, self.input_size, self.output_size)
+            self.valid = Validation(self.args, self.input_size, self.output_size)
 
     def build_losses(self, selected_loss, valid_pixels):
         with tf.name_scope("Losses"):

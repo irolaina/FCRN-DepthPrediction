@@ -74,8 +74,8 @@ class NyuDepth(FilenamesHandler):
 
         self.name = 'nyudepth'
 
-        self.image_size = Size(480, 640, 3)
-        self.depth_size = Size(480, 640, 1)
+        # self.image_size = Size(480, 640, 3)
+        # self.depth_size = Size(480, 640, 1)
 
         print("[Dataloader] NyuDepth object created.")
 
