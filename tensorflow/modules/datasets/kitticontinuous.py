@@ -70,6 +70,12 @@ class KittiContinuous(FilenamesHandler):
             # Parsing Data
             image_filenames = list(data[:, 0])
             depth_filenames = list(data[:, 1])
+
+            timer = -time.time()
+            image_filenames = [self.dataset_path + image for image in image_filenames]
+            depth_filenames = [self.dataset_path + depth for depth in depth_filenames]
+            timer += time.time()
+            print(timer)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
@@ -105,8 +111,8 @@ class KittiContinuous(FilenamesHandler):
                 print("%d/%d" % (j + 1, m))  # Debug
                 for i, image in enumerate(image_filenames_aux):
                     if image == depth:
-                        image_filenames.append(image_filenames_tmp[i])
-                        depth_filenames.append(depth_filenames_tmp[j])
+                        image_filenames.append(image_filenames_tmp[i].replace(self.dataset_path, ''))
+                        depth_filenames.append(depth_filenames_tmp[j].replace(self.dataset_path, ''))
 
             n2, m2 = len(image_filenames), len(depth_filenames)
             assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
