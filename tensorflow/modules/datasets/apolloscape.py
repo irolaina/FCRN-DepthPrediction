@@ -100,8 +100,8 @@ class Apolloscape(FilenamesHandler):
                 print("%d/%d" % (j + 1, m))  # Debug
                 for i, image in enumerate(image_filenames_aux):
                     if image == depth:
-                        image_filenames.append(image_filenames_tmp[i].replace(self.dataset_path, ''))
-                        depth_filenames.append(depth_filenames_tmp[j].replace(self.dataset_path, ''))
+                        image_filenames.append(image_filenames_tmp[i])
+                        depth_filenames.append(depth_filenames_tmp[j])
 
             n2, m2 = len(image_filenames), len(depth_filenames)
             assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
@@ -134,6 +134,6 @@ class Apolloscape(FilenamesHandler):
             #     print(i)
             # input("enter")
 
-            self.saveList(image_filenames, depth_filenames, self.name, mode)
+            self.saveList(image_filenames.replace(self.dataset_path, ''), depth_filenames.replace(self.dataset_path, ''), self.name, mode)
 
         return image_filenames, depth_filenames
