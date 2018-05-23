@@ -5,6 +5,7 @@
 # ===========
 import numpy as np
 
+
 # TODO: Comparar métricas abaixo com as que eu implementei.
 # Link: https://github.com/iro-cp/FCRN-DepthPrediction/issues/45
 # thresh = np.maximum((gt / pred), (pred / gt))

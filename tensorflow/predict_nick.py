@@ -56,7 +56,7 @@ from modules.plot import Plot
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 0
+LOSS_FUNCTION = 2
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
@@ -409,7 +409,8 @@ def train(args):
                     model.summary_writer.add_summary(summary_str, step)
                     model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
-                epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples)) # TODO: nao deveria ser np.floor?
+                # TODO: nao deveria ser np.floor?
+                epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:
                 print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
                 break
@@ -431,6 +432,7 @@ def train(args):
         model.saveResults(datetime, epoch, max_epochs, step, args.max_steps, sim_train)
 
         sess.close()
+
 
 # ========= #
 #  Testing  #
@@ -467,7 +469,7 @@ def test(args):
         tf_depth_path = tf.placeholder(tf.string)
 
         tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
-        if data.dataset_name== 'kitticontinuous' or data.dataset_name == 'kitticontinuous_residential':
+        if data.dataset_name == 'kitticontinuous' or data.dataset_name == 'kitticontinuous_residential':
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)

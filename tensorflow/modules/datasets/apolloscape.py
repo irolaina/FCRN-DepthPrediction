@@ -18,8 +18,6 @@
 # -----
 
 
-# FIXME: Algumas imagens de profundidade parecem estar incorretas. Ex: apolloscapes_test.txt linhas: 46 73 78
-
 # ===========
 #  Libraries
 # ===========
