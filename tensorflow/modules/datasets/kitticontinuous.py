@@ -145,6 +145,9 @@ class KittiContinuous(FilenamesHandler):
             #     print(i)
             # input("enter")
 
-            self.saveList(image_filenames.replace(self.dataset_path, ''), depth_filenames.replace(self.dataset_path, ''), self.name, mode)
+            image_filenames_dump = [image.replace(self.dataset_path, '') for image in image_filenames]
+            depth_filenames_dump = [depth.replace(self.dataset_path, '') for depth in depth_filenames]
+
+            self.saveList(image_filenames_dump, depth_filenames_dump, self.name, mode)
 
         return image_filenames, depth_filenames
