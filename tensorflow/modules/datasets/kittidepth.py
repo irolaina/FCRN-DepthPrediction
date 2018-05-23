@@ -60,27 +60,27 @@ class KittiDepth(FilenamesHandler):
         image_filenames = []
         depth_filenames = []
 
+        # Workaround # FIXME: Temporary
+        if mode == 'test':
+            mode = 'val'
+
         file = 'data/' + self.name + '_' + mode + '.txt'
 
         if os.path.exists(file):
+            timer = -time.time()
             data = self.loadList(file)
 
             # Parsing Data
             image_filenames = list(data[:, 0])
             depth_filenames = list(data[:, 1])
 
-            timer = -time.time()
             image_filenames = [self.dataset_path + image for image in image_filenames]
             depth_filenames = [self.dataset_path + depth for depth in depth_filenames]
             timer += time.time()
-            print(timer)
+            print('time:', timer, 's\n')
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
-
-            # Workaround # FIXME: Temporary
-            if mode == 'test':
-                mode = 'val'
 
             # Finds input images and labels inside list of folders.
             image_filenames_tmp = []

@@ -75,7 +75,7 @@ class KittiContinuous(FilenamesHandler):
             image_filenames = [self.dataset_path + image for image in image_filenames]
             depth_filenames = [self.dataset_path + depth for depth in depth_filenames]
             timer += time.time()
-            print(timer)
+            print('time:', timer, 's\n')
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")

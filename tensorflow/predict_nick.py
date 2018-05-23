@@ -282,10 +282,10 @@ def train(args):
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(coord=coord)
 
-        start = time.time()
+        timer = -time.time()
         for step in range(args.max_steps + 1):
             if running:
-                start2 = time.time()
+                timer2 = -time.time()
 
                 # ----- Session Run! ----- #
                 # Training
@@ -328,7 +328,7 @@ def train(args):
                                                      log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
-                    end2 = time.time()
+                    timer2 += time.time()
 
                     print(
                         'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
@@ -336,7 +336,7 @@ def train(args):
                             max_epochs,
                             step,
                             args.max_steps,
-                            end2 - start2,
+                            timer2,
                             model.train.loss,
                             model.valid.loss))
 
@@ -418,10 +418,9 @@ def train(args):
         coord.request_stop()
         coord.join(threads)
 
-        end = time.time()
-        sim_train = end - start
+        timer += time.time()
 
-        print("\n[Network/Training] Training FINISHED! Time elapsed: %f s\n" % sim_train)
+        print("\n[Network/Training] Training FINISHED! Time elapsed: %f s\n" % timer)
 
         # ==============
         #  Save Results
@@ -429,7 +428,7 @@ def train(args):
         if SAVE_TRAINED_MODEL:
             model.saveTrainedModel(save_restore_path, sess, model.train_saver, args.model_name)
 
-        model.saveResults(datetime, epoch, max_epochs, step, args.max_steps, sim_train)
+        model.saveResults(datetime, epoch, max_epochs, step, args.max_steps, timer)
 
         sess.close()
 
@@ -517,9 +516,9 @@ def test(args):
         depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.uint16)  # (128, 160, 1)
         pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)          # (128, 160, 1)
 
-        start = time.time()
+        timer = -time.time()
         for i in range(numSamples):
-            start2 = time.time()
+            timer2 = -time.time()
 
             # Evalute the network for the given image
             if data.test_depth_filenames:  # It's not empty
@@ -537,8 +536,7 @@ def test(args):
             # input("test")
 
             # Prints Testing Progress
-            end2 = time.time()
-            print('step: %d/%d | t: %f' % (i + 1, numSamples, end2 - start2))
+            print('step: %d/%d | t: %f' % (i + 1, numSamples, timer2))
             # break # Test
 
             # Show Results
@@ -548,8 +546,8 @@ def test(args):
                                          pred=pred[0, :, :, 0], i=i + 1)
 
         # Testing Finished.
-        end = time.time()
-        print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % (end - start))
+        timer += time.time()
+        print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % (timer))
 
         # ==============
         #  Save Results
