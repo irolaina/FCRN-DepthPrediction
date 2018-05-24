@@ -13,6 +13,7 @@ from skimage import transform
 
 from modules.datasets.apolloscape import Apolloscape
 from modules.datasets.kittidepth import KittiDepth
+from modules.datasets.kittidiscrete import KittiDiscrete
 from modules.datasets.kitticontinuous import KittiContinuous
 from modules.datasets.kitticontinuous_residential import KittiContinuousResidential
 from modules.datasets.nyudepth import NyuDepth
@@ -47,6 +48,9 @@ class Dataloader:
 
         elif self.selectedDataset == 'kittidepth':
             self.datasetObj = KittiDepth(args.machine)
+
+        elif self.selectedDataset == 'kittidiscrete':
+            self.datasetObj = KittiDiscrete(args.machine)
 
         elif self.selectedDataset == 'kitticontinuous':
             self.datasetObj = KittiContinuous(args.machine)
@@ -141,9 +145,9 @@ class Dataloader:
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
         elif self.dataset_name == 'kittidepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
-        elif self.dataset_name == 'kitticontinuous':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
-        elif self.dataset_name == 'kitticontinuous_residential':
+        elif self.dataset_name == 'kittidiscrete' or \
+             self.dataset_name == 'kitticontinuous' or \
+             self.dataset_name == 'kitticontinuous_residential':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
         elif self.dataset_name == 'nyudepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
@@ -165,7 +169,9 @@ class Dataloader:
         else:
             tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
-        if self.dataset_name == 'kitticontinuous' or self.dataset_name == 'kitticontinuous_residential':
+        if self.dataset_name == 'kittidiscrete' or \
+           self.dataset_name == 'kitticontinuous' or \
+           self.dataset_name == 'kitticontinuous_residential':
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)

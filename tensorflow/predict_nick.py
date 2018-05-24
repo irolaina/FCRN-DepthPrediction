@@ -56,10 +56,10 @@ from modules.plot import Plot
 # 0 - MSE
 # 1 - Eigen's Log Depth
 # 2 - BerHu
-LOSS_FUNCTION = 2
+LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True  # Default: True
+VALID_PIXELS = False  # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = True  # Default: True
@@ -468,7 +468,9 @@ def test(args):
         tf_depth_path = tf.placeholder(tf.string)
 
         tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
-        if data.dataset_name == 'kitticontinuous' or data.dataset_name == 'kitticontinuous_residential':
+        if data.dataset_name == 'kittidiscrete' or \
+           data.dataset_name == 'kitticontinuous' or \
+           data.dataset_name == 'kitticontinuous_residential':
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)

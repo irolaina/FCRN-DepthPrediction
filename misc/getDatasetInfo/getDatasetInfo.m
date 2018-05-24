@@ -20,6 +20,11 @@ kittiDepth_image = imread('/media/nicolas/Nícolas/datasets/kitti/raw_data/data/
 kittiDepth_depth = imread('/media/nicolas/Nícolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0001_sync/proj_depth/groundtruth/image_02/0000000005.png');
 kittiDepth_depth_true = double(kittiDepth_depth)/256.0;
 
+%% KittiDiscrete
+kittidiscrete_image = imread('/media/nicolas/Nícolas/datasets/kitti/raw_data/data/2011_09_26_drive_0002_sync/proc2/imgs/city_2011_09_26_drive_0002_sync_0000000000.png')
+kittidiscrete_depth = imread('/media/nicolas/Nícolas/datasets/kitti/raw_data/data/2011_09_26_drive_0002_sync/proc2/disp1/city_2011_09_26_drive_0002_sync_0000000000.png');
+kittidiscrete_depth_true = double(kittidiscrete_depth)/3.0;
+
 %% KittiContinuous (Residential)
 kitticontinuous_image = imread('/media/nicolas/Nícolas/datasets/kitti/continuous/residential/imgs/residential_2011_09_26_drive_0019_sync_0000000000.png');
 kitticontinuous_depth = imread('/media/nicolas/Nícolas/datasets/kitti/continuous/residential/dispc/residential_2011_09_26_drive_0019_sync_0000000000.png');
@@ -53,17 +58,22 @@ subplot(3,1,1), imshow(kittiDepth_image), title('image')
 subplot(3,1,2), imshow(kittiDepth_depth), title('depth'), c = colorbar; c.Label.String = '(uint16)';
 subplot(3,1,3), image(kittiDepth_depth_true), title('true depth'), c = colorbar; c.Label.String = 'Depth (in meters)'; axis image
 
-h4 = figure('Name','KittiContinuous (Residential)','NumberTitle','on');
+h4 = figure('Name','KittiDiscrete','NumberTitle','on');
+subplot(3,1,1), imshow(kittidiscrete_image), title('image')
+subplot(3,1,2), imshow(kittidiscrete_depth), title('depth'), c = colorbar; c.Label.String = '(uint8)';
+subplot(3,1,3), image(kittidiscrete_depth_true), title('true depth'), c = colorbar; c.Label.String = 'Depth (in meters)'; axis image
+
+h5 = figure('Name','KittiContinuous (Residential)','NumberTitle','on');
 subplot(3,1,1), imshow(kitticontinuous_image), title('image')
 subplot(3,1,2), imshow(kitticontinuous_depth), title('depth'), c = colorbar; c.Label.String = '(uint8)';
 subplot(3,1,3), image(kitticontinuous_depth_true), title('true depth'), c = colorbar; c.Label.String = 'Depth (in meters)'; axis image
 
-h5 = figure('Name','NYU Depth v2','NumberTitle','on');
+h6 = figure('Name','NYU Depth v2','NumberTitle','on');
 subplot(3,1,1), imshow(nyu_image), title('image')
 subplot(3,1,2), imshow(nyu_depth), title('depth'), c = colorbar; c.Label.String = '(uint16)';
 subplot(3,1,3), image(nyu_depth_true), title('true depth'), c = colorbar; c.Label.String = 'Depth (in meters)'; axis image % FIXME: Colorbar range
 
-h6 = figure('Name','Apolloscape','NumberTitle','on');
+h7 = figure('Name','Apolloscape','NumberTitle','on');
 subplot(3,1,1), imshow(apollo_image), title('image')
 subplot(3,1,2), imshow(apollo_depth), title('depth'), c = colorbar; c.Label.String = '(uint16)';
 subplot(3,1,3), image(apollo_depth_true), title('true depth'), c = colorbar; c.Label.String = 'Depth (in meters)'; axis image
