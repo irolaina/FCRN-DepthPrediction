@@ -59,7 +59,7 @@ from modules.plot import Plot
 LOSS_FUNCTION = 0
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False  # Default: True
+VALID_PIXELS = True  # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = True  # Default: True
@@ -273,7 +273,8 @@ def train(args):
 
     with tf.Session(graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
-        sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
+        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+        sess.run(init_op)
 
         # ===============
         #  Training Loop
@@ -489,6 +490,15 @@ def test(args):
 
         net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
 
+        tf_pred = net.get_output()
+        tf_pred_up = tf.image.resize_images(tf_pred, data.depth_size.getSize()[:2], method=tf.image.ResizeMethod.BILINEAR, align_corners=False) # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original
+
+        # Group Tensors
+        image_op = [tf_image_path, tf_image, tf_image_resized_uint8]
+        depth_op = [tf_depth_path, tf_depth, tf_depth_resized]
+        pred_op = [tf_pred, tf_pred_up]
+
+        # Print Tensors
         print("\nTensors:")
         print(tf_image_path)
         print(tf_depth_path)
@@ -496,6 +506,8 @@ def test(args):
         print(tf_depth)
         print(tf_image_resized)
         print(tf_image_resized_uint8)
+        print(tf_pred)
+        print(tf_pred_up)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
@@ -503,6 +515,9 @@ def test(args):
         # Use to load from *.ckpt file
         saver = tf.train.Saver()
         saver.restore(sess, args.model_path)
+
+        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+        sess.run(init_op)
 
         # Use to load from npy file
         # net.load(model_data_path, sess)
@@ -517,18 +532,24 @@ def test(args):
         image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)    # (228, 304, 3)
         depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.uint16)  # (128, 160, 1)
         pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)          # (128, 160, 1)
+        pred_up = np.zeros(shape=data.depth_size.getSize(), dtype=np.float32)   # (dataobj.height, dataobj.width, 1)
 
         timer = -time.time()
         for i in range(numSamples):
             timer2 = -time.time()
 
             # Evalute the network for the given image
+            # data.test_depth_filenames = [] # Only for testing the following condition!!!
             if data.test_depth_filenames:  # It's not empty
                 feed_test = {tf_image_path: data.test_image_filenames[i], tf_depth_path: data.test_depth_filenames[i]}
-                image, image_resized, depth, depth_resized, pred = sess.run([tf_image, tf_image_resized_uint8, tf_depth, tf_depth_resized, net.get_output()], feed_dict=feed_test)
+
+                _, image, image_resized = sess.run(image_op, feed_test)
+                _, depth, depth_resized = sess.run(depth_op, feed_test)
+                pred, pred_up = sess.run(pred_op, feed_test)
             else:
                 feed_test = {tf_image_path: data.test_image_filenames[i]}
-                image, image_resized, pred = sess.run([tf_image, tf_image_resized_uint8, net.get_output()], feed_dict=feed_test)
+                _, image, image_resized = sess.run(image_op, feed_test)
+                pred, pred_up = sess.run(pred_op, feed_test)
 
             # print(image.shape)
             # print(image_resized.shape)
@@ -538,6 +559,7 @@ def test(args):
             # input("test")
 
             # Prints Testing Progress
+            timer2 += time.time()
             print('step: %d/%d | t: %f' % (i + 1, numSamples, timer2))
             # break # Test
 
@@ -545,7 +567,9 @@ def test(args):
             test_plotObj.showTestResults(raw=image_resized,
                                          label=depth_resized[:, :, 0],
                                          log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
-                                         pred=pred[0, :, :, 0], i=i + 1)
+                                         pred=pred[0, :, :, 0],
+                                         pred_up=pred_up[0, :, :, 0],
+                                         i=i + 1)
 
         # Testing Finished.
         timer += time.time()
