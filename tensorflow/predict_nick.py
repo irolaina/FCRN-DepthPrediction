@@ -271,9 +271,6 @@ def train(args):
     max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
     print('\nTrain with approximately %d epochs' % max_epochs)
 
-    # ======
-    #  Run!
-    # ======
     with tf.Session(graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
@@ -289,33 +286,26 @@ def train(args):
         timer = -time.time()
         for step in range(args.max_steps + 1):
             if running:
+                # -------------------- #
+                # [Train] Session Run! #
+                # -------------------- #
                 timer2 = -time.time()
 
-                # ----- Session Run! ----- #
-                # Training
-                if args.show_train_progress:
-                    _, \
-                    batch_data, \
-                    batch_data_uint8, \
-                    batch_labels, \
-                    log_batch_labels, \
-                    batch_pred, \
-                    model.train.loss, \
-                    summary_str = sess.run([model.train_step,
-                                         model.train.tf_batch_data,
-                                         model.train.tf_batch_data_uint8,
-                                         model.train.tf_batch_labels,
-                                         model.train.tf_log_batch_labels,
-                                         model.train.fcrn.get_output(),
-                                         model.train.tf_loss,
-                                         model.summary_op])
-
-                else:
-                    _, \
-                    model.train.loss, \
-                    summary_str = sess.run([model.train_step,
-                                            model.train.tf_loss,
-                                            model.summary_op])
+                _, \
+                batch_data, \
+                batch_data_uint8, \
+                batch_labels, \
+                log_batch_labels, \
+                batch_pred, \
+                model.train.loss, \
+                summary_str = sess.run([model.train_step,
+                                        model.train.tf_batch_data,
+                                        model.train.tf_batch_data_uint8,
+                                        model.train.tf_batch_labels,
+                                        model.train.tf_log_batch_labels,
+                                        model.train.fcrn.get_output(),
+                                        model.train.tf_loss,
+                                        model.summary_op])
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -336,7 +326,7 @@ def train(args):
                     plt.pause(0.001)
                     input("proc")
 
-                # debug_data_augmentation()
+                # debug_data_augmentation() # TODO: Terminar
 
                 # Prints Training Progress
                 if step % 10 == 0:
@@ -348,8 +338,7 @@ def train(args):
 
                     timer2 += time.time()
 
-                    print(
-                        'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
+                    print('epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
                             epoch,
                             max_epochs,
                             step,
@@ -358,44 +347,46 @@ def train(args):
                             model.train.loss,
                             model.valid.loss))
 
+                # -------------------------- #
+                # [Validation] Session Run!  #
+                # -------------------------- #
                 # Detects the end of a epoch
                 if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
-                    # Validation
                     # TODO: Portar Leitura para o Tensorflow
                     # TODO: Implementar Leitura por Batches
 
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
+                        timer3 = -time.time()
                         # TODO: Otimizar
-                        feed_valid = {
-                            model.valid.tf_image: np.expand_dims(imageio.imread(data.test_image_filenames[i]), axis=0),
-                            model.valid.tf_depth: np.expand_dims(
-                                np.expand_dims(imageio.imread(data.test_depth_filenames[i]), axis=0), axis=3)}
+                        valid_image = imageio.imread(data.test_image_filenames[i])
+                        valid_depth = imageio.imread(data.test_depth_filenames[i])
+                        feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
+                                      model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+
+                        valid_image, \
+                        valid_pred, \
+                        valid_labels, \
+                        valid_log_labels, \
+                        model.valid.loss = sess.run([model.valid.tf_image_resized,
+                                                     model.valid.fcrn.get_output(),
+                                                     model.valid.tf_depth_resized,
+                                                     model.valid.tf_log_depth_resized,
+                                                     model.valid.tf_loss],
+                                                    feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            valid_image, \
-                            valid_pred, \
-                            valid_labels, \
-                            valid_log_labels, \
-                            model.valid.loss = sess.run([model.valid.tf_image_resized,
-                                                         model.valid.fcrn.get_output(),
-                                                         model.valid.tf_depth_resized,
-                                                         model.valid.tf_log_depth_resized,
-                                                         model.valid.tf_loss],
-                                                         feed_dict=feed_valid)  # FIXME: Só funciona na primeira vez
-
                             model.valid.plot.showResults(raw=valid_image[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
                                                          log_label=valid_log_labels[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
-                        else:
-                            model.valid.loss = sess.run(model.valid.tf_loss, feed_dict=feed_valid)
 
                         valid_loss_sum += model.valid.loss
 
-                        print("%d/%d\tvalid_loss_sum: %f\tvalid_loss: %f" % (
-                            i + 1, data.numTestSamples, valid_loss_sum, model.valid.loss))
+                        timer3 += time.time()
+                        print("%d/%d | valid_loss_sum: %f | valid_loss: %f | t: %4f" % (
+                            i + 1, data.numTestSamples, valid_loss_sum, model.valid.loss, timer3))
 
                     # Calculate mean value of 'valid_loss'
                     model.valid.loss = valid_loss_sum / data.numTestSamples  # Updates 'Valid_loss' value
@@ -403,8 +394,8 @@ def train(args):
 
                     # TODO: Move
                     def plotGraph(firstTime):
-                        model.train.loss_hist.append(model.train.loss)
-                        model.valid.loss_hist.append(model.valid.loss)
+                        # model.train.loss_hist.append(model.train.loss)
+                        # model.valid.loss_hist.append(model.valid.loss)
 
                         plt.figure(3)
                         plt.plot(range(len(model.train.loss_hist)), model.train.loss_hist, 'b', label='Train Loss')
@@ -431,7 +422,6 @@ def train(args):
                     model.summary_writer.add_summary(summary_str, step)
                     model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
-                # TODO: nao deveria ser np.floor?
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:
                 print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
@@ -512,7 +502,9 @@ def test(args):
         net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
 
         tf_pred = net.get_output()
-        tf_pred_up = tf.image.resize_images(tf_pred, data.depth_size.getSize()[:2], method=tf.image.ResizeMethod.BILINEAR, align_corners=False) # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original
+
+        # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original
+        tf_pred_up = tf.image.resize_images(tf_pred, data.depth_size.getSize()[:2], tf.image.ResizeMethod.BILINEAR, False)
 
         # Group Tensors
         image_op = [tf_image_path, tf_image, tf_image_resized_uint8]
@@ -594,7 +586,7 @@ def test(args):
 
         # Testing Finished.
         timer += time.time()
-        print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % (timer))
+        print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % timer)
 
         # ==============
         #  Save Results
