@@ -271,6 +271,9 @@ def train(args):
     max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
     print('\nTrain with approximately %d epochs' % max_epochs)
 
+    # ======
+    #  Run!
+    # ======
     with tf.Session(graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
@@ -290,15 +293,29 @@ def train(args):
 
                 # ----- Session Run! ----- #
                 # Training
-                # TODO: Create train_ops variable
                 if args.show_train_progress:
-                    _, batch_data, batch_data_uint8, batch_labels, log_batch_labels, batch_pred, model.train.loss, summary_str = sess.run(
-                        [model.train_step, model.train.tf_batch_data, model.train.tf_batch_data_uint8,
-                         model.train.tf_batch_labels, model.train.tf_log_batch_labels,
-                         model.train.fcrn.get_output(), model.train.tf_loss, model.summary_op])
+                    _, \
+                    batch_data, \
+                    batch_data_uint8, \
+                    batch_labels, \
+                    log_batch_labels, \
+                    batch_pred, \
+                    model.train.loss, \
+                    summary_str = sess.run([model.train_step,
+                                         model.train.tf_batch_data,
+                                         model.train.tf_batch_data_uint8,
+                                         model.train.tf_batch_labels,
+                                         model.train.tf_log_batch_labels,
+                                         model.train.fcrn.get_output(),
+                                         model.train.tf_loss,
+                                         model.summary_op])
+
                 else:
-                    _, model.train.loss, summary_str = sess.run(
-                        [model.train_step, model.train.tf_loss, model.summary_op])
+                    _, \
+                    model.train.loss, \
+                    summary_str = sess.run([model.train_step,
+                                            model.train.tf_loss,
+                                            model.summary_op])
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -344,7 +361,6 @@ def train(args):
                 # Detects the end of a epoch
                 if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
                     # Validation
-                    # TODO: Create valid_ops variable
                     # TODO: Portar Leitura para o Tensorflow
                     # TODO: Implementar Leitura por Batches
 
@@ -358,11 +374,16 @@ def train(args):
                                 np.expand_dims(imageio.imread(data.test_depth_filenames[i]), axis=0), axis=3)}
 
                         if args.show_valid_progress:
-                            valid_image, valid_pred, valid_labels, valid_log_labels, model.valid.loss = sess.run(
-                                [model.valid.tf_image_resized, model.valid.fcrn.get_output(),
-                                 model.valid.tf_depth_resized,
-                                 model.valid.tf_log_depth_resized, model.valid.tf_loss],
-                                feed_dict=feed_valid)  # FIXME: Só funciona na primeira vez
+                            valid_image, \
+                            valid_pred, \
+                            valid_labels, \
+                            valid_log_labels, \
+                            model.valid.loss = sess.run([model.valid.tf_image_resized,
+                                                         model.valid.fcrn.get_output(),
+                                                         model.valid.tf_depth_resized,
+                                                         model.valid.tf_log_depth_resized,
+                                                         model.valid.tf_loss],
+                                                         feed_dict=feed_valid)  # FIXME: Só funciona na primeira vez
 
                             model.valid.plot.showResults(raw=valid_image[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
