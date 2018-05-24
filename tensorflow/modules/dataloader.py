@@ -90,7 +90,7 @@ class Dataloader:
             self.tf_test_depth = None
             pass
 
-        print("[Dataloader] dataloader object created.")
+        print("\n[Dataloader] dataloader object created.")
 
     def getTrainData(self, mode='train'):
         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
@@ -193,7 +193,6 @@ class Dataloader:
         # print(tf_depth) # Must be float32!
 
         # Print Tensors
-        print("\nTensors:")
         print("tf_image_key: \t", tf_image_key)
         print("tf_depth_key: \t", tf_depth_key)
         print("tf_image_file: \t", tf_image_file)

@@ -87,9 +87,6 @@ appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 LOG_INITIAL_VALUE = 1
 
-firstTime = True
-
-
 # ===========
 #  Functions
 # ===========
@@ -236,7 +233,6 @@ def train(args):
     print('[%s] Selected mode: Train' % appName)
 
     # Local Variables
-    global firstTime
     global running  # Create a loop to keep the application running
     running = True
 
@@ -286,9 +282,9 @@ def train(args):
         timer = -time.time()
         for step in range(args.max_steps + 1):
             if running:
-                # -------------------- #
-                # [Train] Session Run! #
-                # -------------------- #
+                # --------------------- #
+                # [Train] Session Run!  #
+                # --------------------- #
                 timer2 = -time.time()
 
                 _, \
@@ -297,15 +293,13 @@ def train(args):
                 batch_labels, \
                 log_batch_labels, \
                 batch_pred, \
-                model.train.loss, \
-                summary_str = sess.run([model.train_step,
+                model.train.loss= sess.run([model.train_step,
                                         model.train.tf_batch_data,
                                         model.train.tf_batch_data_uint8,
                                         model.train.tf_batch_labels,
                                         model.train.tf_log_batch_labels,
                                         model.train.fcrn.get_output(),
-                                        model.train.tf_loss,
-                                        model.summary_op])
+                                        model.train.tf_loss])
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -351,6 +345,7 @@ def train(args):
                 # [Validation] Session Run!  #
                 # -------------------------- #
                 # Detects the end of a epoch
+                # if True: # Only for testing the following condition!!!
                 if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
                     # TODO: Portar Leitura para o Tensorflow
                     # TODO: Implementar Leitura por Batches
@@ -392,35 +387,15 @@ def train(args):
                     model.valid.loss = valid_loss_sum / data.numTestSamples  # Updates 'Valid_loss' value
                     print("mean(valid_loss): %f\n" % model.valid.loss)
 
-                    # TODO: Move
-                    def plotGraph(firstTime):
-                        # model.train.loss_hist.append(model.train.loss)
-                        # model.valid.loss_hist.append(model.valid.loss)
-
-                        plt.figure(3)
-                        plt.plot(range(len(model.train.loss_hist)), model.train.loss_hist, 'b', label='Train Loss')
-                        plt.plot(range(len(model.valid.loss_hist)), model.valid.loss_hist, 'r', label='Valid Loss')
-
-                        if firstTime:
-                            plt.title('Training and Validation Loss')
-                            plt.xlabel('Epochs')
-                            plt.ylabel('Loss')
-                            plt.legend()
-                            plt.draw()
-                            firstTime = False
-                        else:
-                            plt.draw()
-
-                    # plotGraph() # TODO: REATIVAR!!!!!!!!!!!
-
                     if ENABLE_EARLY_STOP:
                         if model.train.stop.check(step, model.valid.loss):  # TODO: Validar
                             break
 
-                # Write information to TensorBoard
-                if ENABLE_TENSORBOARD:
-                    model.summary_writer.add_summary(summary_str, step)
-                    model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
+                    # Write information to TensorBoard
+                    if ENABLE_TENSORBOARD:
+                        summary_str = sess.run(model.summary_op, feed_valid)
+                        model.summary_writer.add_summary(summary_str, step)
+                        model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:

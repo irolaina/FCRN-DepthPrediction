@@ -113,12 +113,29 @@ class Model(object):
             self.train_step = optimizer.minimize(self.train.tf_loss, global_step=self.train.tf_global_step)
             tf.add_to_collection("train_step", self.train_step)
 
-    # TODO: Adicionar mais summaries das variaveis internas do modelo
     def build_summaries(self):
         # Filling Summary Obj
-        with tf.name_scope("Summaries"):
+        with tf.name_scope("Train"):
             tf.summary.scalar('learning_rate', self.train.tf_learning_rate, collections=self.model_collection)
             tf.summary.scalar('loss', self.train.tf_loss, collections=self.model_collection)
+
+            tf.summary.image('input/batch_data', self.train.tf_batch_data, max_outputs=1, collections=self.model_collection)
+            # tf.summary.image('input/batch_data_uint8', self.train.tf_batch_data_uint8, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/batch_labels', self.train.tf_batch_labels, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/log_batch_labels', self.train.tf_log_batch_labels, max_outputs=1, collections=self.model_collection)
+
+            tf.summary.image('output/batch_pred', self.train.fcrn.get_output(), max_outputs=1, collections=self.model_collection)
+
+        with tf.name_scope("Valid"):
+            tf.summary.scalar('loss', self.valid.tf_loss, collections=self.model_collection)
+
+            tf.summary.image('input/image', self.valid.tf_image, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/depth', self.valid.tf_depth, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/image_resized', self.valid.tf_image_resized, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/depth_resized', self.valid.tf_depth_resized, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/log_depth_resized', self.valid.tf_log_depth_resized, max_outputs=1, collections=self.model_collection)
+
+            tf.summary.image('output/pred', self.valid.fcrn.get_output(), max_outputs=1, collections=self.model_collection)
 
     @staticmethod
     def countParams():
