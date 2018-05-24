@@ -69,8 +69,8 @@ class Dataloader:
         # Collects Dataset Info
         self.dataset_name = self.datasetObj.name
         self.dataset_path = self.datasetObj.dataset_path
-        # self.image_size = self.datasetObj.image_size
-        # self.depth_size = self.datasetObj.depth_size
+        self.image_size = self.datasetObj.image_size
+        self.depth_size = self.datasetObj.depth_size
 
         # Searches dataset image/depth filenames lists
         self.train_image_filenames, self.train_depth_filenames, self.numTrainSamples = None, None, -1

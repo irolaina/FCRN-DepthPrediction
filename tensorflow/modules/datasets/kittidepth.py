@@ -51,8 +51,8 @@ class KittiDepth(FilenamesHandler):
 
         self.name = 'kittidepth'
 
-        # self.image_size = Size(375, 1242, 3)
-        # self.depth_size = Size(375, 1242, 1)
+        self.image_size = Size(375, 1242, 3)
+        self.depth_size = Size(375, 1242, 1)
 
         print("[Dataloader] KittiDepth object created.")
 

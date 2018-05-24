@@ -55,8 +55,8 @@ class Apolloscape(FilenamesHandler):
 
         self.name = 'apolloscape'
 
-        # self.image_size = Size(2710, 3384, 3)
-        # self.depth_size = Size(2710, 3384, 1)
+        self.image_size = Size(2710, 3384, 3)
+        self.depth_size = Size(2710, 3384, 1)
 
         print("[Dataloader] Apolloscape object created.")
 
