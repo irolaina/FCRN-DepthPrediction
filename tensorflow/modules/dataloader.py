@@ -165,7 +165,7 @@ class Dataloader:
         tf_depth_key, tf_depth_file = image_reader.read(tf_train_depth_filename_queue)
 
         if self.dataset_name == 'apolloscape':
-            tf_image = tf.image.decode_jpeg(tf_image_file)
+            tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
         else:
             tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
