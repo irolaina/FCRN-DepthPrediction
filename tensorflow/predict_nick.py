@@ -79,7 +79,7 @@ SAVE_TRAINED_MODEL = True  # Default: True
 # Select Subset:
 # 0 - TestData      # Default
 # 1 - TrainData
-TEST_EVALUATE_SUBSET = 1
+TEST_EVALUATE_SUBSET = 0
 
 SAVE_TEST_DISPARITIES = True  # Default: True
 
@@ -531,11 +531,12 @@ def test(args):
 
         # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original
         tf_pred_up = tf.image.resize_images(tf_pred, data.depth_size.getSize()[:2], tf.image.ResizeMethod.BILINEAR, False)
+        tf_pred_exp = tf.exp(tf_pred_up)
 
         # Group Tensors
         image_op = [tf_image_path, tf_image, tf_image_resized_uint8]
         depth_op = [tf_depth_path, tf_depth, tf_depth_resized]
-        pred_op = [tf_pred, tf_pred_up]
+        pred_op = [tf_pred, tf_pred_up, tf_pred_exp]
 
         # Print Tensors
         print("\nTensors:")
@@ -575,11 +576,11 @@ def test(args):
 
                 _, image, image_resized = sess.run(image_op, feed_test)
                 _, depth, depth_resized = sess.run(depth_op, feed_test)
-                pred, pred_up = sess.run(pred_op, feed_test)
+                pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
             else:
                 feed_test = {tf_image_path: data.test_image_filenames[i]}
                 _, image, image_resized = sess.run(image_op, feed_test)
-                pred, pred_up = sess.run(pred_op, feed_test)
+                pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
 
             # print(image.shape)
             # print(image_resized.shape)
@@ -594,11 +595,14 @@ def test(args):
             # break # Test
 
             # Show Results
-            test_plotObj.showTestResults(raw=image_resized,
-                                         label=depth_resized[:, :, 0],
+            test_plotObj.showTestResults(image=image,
+                                         depth=depth[:, :, 0],
+                                         image_resized=image_resized,
+                                         depth_resized=depth_resized[:, :, 0],
                                          log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                          pred=pred[0, :, :, 0],
                                          pred_up=pred_up[0, :, :, 0],
+                                         pred_exp=pred_exp[0, :, :, 0],
                                          i=i + 1)
 
         # Testing Finished.
