@@ -9,17 +9,23 @@
 #  To-Do
 # =======
 # Must do
+# [Dataset] TODO: Modificar Scripts
+# [Dataset] TODO: Rodar scripts para todas as imagens do raw_data. @end deve-se ter ~96k pares de imagens/disp (esparsos) e images/disp2 (contínuos)
+
 # [Train] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Train] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Train] TODO: Reativar DataAugmentation
 # [Train] FIXME: Early Stopping
 
-# [Test] TODO: Recuperar dimensão das predições (Usar bilinear).
 # [Test] TODO: Validar Métricas
 
 # Optional
 # [Train] TODO: Dar suporte ao Make3D
 # [Train] TODO: Adicionar feature para realizar pré-carregamento do modelo pré-treinado no ImageNet
+
+# Ideas
+# TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
+# TODO: Como Monocular Depth pode auxiliar em Visual Odometry?
 
 # ===========
 #  Libraries
@@ -34,6 +40,7 @@ import pyxhook
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import modules.metrics as metricsLib
 import modules.args as argsLib
@@ -49,9 +56,9 @@ from modules.model.fcrn import ResNet50UpProj
 from modules.size import Size
 from modules.plot import Plot
 
-# =============================
-#  Framework Config - Training
-# =============================
+# ==========================
+#  [Train] Framework Config
+# ==========================
 # Select the Loss Function:
 # 0 - MSE
 # 1 - Eigen's Log Depth
@@ -66,16 +73,15 @@ ENABLE_EARLY_STOP = True  # Default: True
 ENABLE_TENSORBOARD = True  # Default: True
 SAVE_TRAINED_MODEL = True  # Default: True
 
-# =============================
-#  Framework Config - Testing
-# =============================
+# =========================
+#  [Test] Framework Config
+# =========================
 # Select Subset:
 # 0 - TestData      # Default
 # 1 - TrainData
-TEST_EVALUATE_SUBSET = 0
+TEST_EVALUATE_SUBSET = 1
 
 SAVE_TEST_DISPARITIES = True  # Default: True
-APPLY_BILINEAR_OUTPUT = False  # Default: False
 
 # ==================
 #  Global Variables
@@ -96,7 +102,7 @@ def createSaveFolder():
 
     if SAVE_TRAINED_MODEL or ENABLE_TENSORBOARD:
         # Saves the model variables to disk.
-        relative_save_path = 'output/' + appName + '/' + datetime + '/'
+        relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + datetime + '/'
         save_path = os.path.join(os.getcwd(), relative_save_path)
         save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -105,7 +111,7 @@ def createSaveFolder():
 
     return save_path, save_restore_path
 
-
+# TODO: Move
 # This function is called every time a key is presssed
 def kbevent(event):
     # print key info
@@ -114,7 +120,7 @@ def kbevent(event):
     # If the ascii value matches spacebar, terminate the while loop
     if event.Ascii == 27:
         global running
-        running = False
+        # running = False # TODO: Reativar KeyBoard Abort
 
 
 # Create hookmanager
@@ -182,31 +188,47 @@ def predict(model_data_path, image_path):
     print('[%s] Selected mode: Predict' % appName)
 
     # Default input size
-    height = 228
-    width = 304
-    channels = 3
-    batch_size = 1
+    batch_size, height, width, nchannels = 1, 228, 304, 3
 
     # Read image (uint8)
     img = Image.open(image_path)
-    img = img.resize([width, height], Image.ANTIALIAS)
-    img = np.array(img).astype('float32')
-    img = np.expand_dims(np.asarray(img), axis=0)
+    img = np.array(img)
 
+    # ------- #
+    #  Graph  #
+    # ------- #
     # Create a placeholder for the input image
-    tf_image = tf.placeholder(tf.float32, shape=(None, height, width, channels))
+    tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
+    tf_image_resized = tf.image.resize_images(tf_image, [height, width])
+    tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8) # Visual purpose
+    tf_image_input = tf.expand_dims(tf_image_resized, axis=0)
 
     with tf.variable_scope('model'):
         # Construct the network
-        net = ResNet50UpProj({'data': tf_image}, batch=batch_size, keep_prob=1, is_training=False)
+        net = ResNet50UpProj({'data': tf_image_input}, batch=batch_size, keep_prob=1, is_training=False)
 
         # for var in tf.trainable_variables():
         #     print(var)
+
+    # Merge Ops
+    pred_op = [tf_image, tf_image_resized_uint8, tf_image_input, net.get_output()]
+
+    # Print Variables
+    # print(img)
+    print(img.shape, img.dtype)
+
+    print(tf_image)
+    print(tf_image_resized)
+    print(tf_image_input)
+    print(net.get_output())
 
     with tf.Session() as sess:
         # Load the converted parameters
         print('\n[network/Predict] Loading the model')
 
+        # --------- #
+        #  Restore  #
+        # --------- #
         # Use to load from ckpt file
         saver = tf.train.Saver()
         saver.restore(sess, model_data_path)
@@ -214,13 +236,38 @@ def predict(model_data_path, image_path):
         # Use to load from npy file
         # net.load(model_data_path, sess)
 
+        # ----- #
+        #  Run  #
+        # ----- #
         # Evalute the network for the given image
-        pred = sess.run(net.get_output(), feed_dict={tf_image: img})
+        image, image_resized_uint8, image_input, pred = sess.run(pred_op, feed_dict={tf_image: img})
 
-        # Plot result
-        fig = plt.figure()
-        ii = plt.imshow(pred[0, :, :, 0], interpolation='nearest')
-        fig.colorbar(ii)
+        # --------- #
+        #  Results  #
+        # --------- #
+        fig = plt.figure(figsize=(15, 5))
+        fig.subplots_adjust(bottom=0.025, left=0.025, top=0.975, right=0.975)
+        X = [(1, 5, (1, 2)), (1, 5, 3), (1, 5, 4), (1, 5, 5)]
+        axes = []
+        for nrows, ncols, plot_number in X:
+            axes.append(fig.add_subplot(nrows, ncols, plot_number))
+
+        img1 = axes[0].imshow(image)
+        img2 = axes[1].imshow(image_resized_uint8)
+        img3 = axes[2].imshow(image_input[0])
+        img4 = axes[3].imshow(pred[0, :, :, 0])
+        # img4 = axes[3].imshow(pred[0, :, :, 0], interpolation='nearest')
+
+        axes[0].set_title('Image')
+        axes[1].set_title('Resized')
+        axes[2].set_title('Input')
+        axes[3].set_title('Pred')
+
+        # Fix Colorbar size
+        divider = make_axes_locatable(axes[3])
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        fig.colorbar(img4, cax=cax)
+
         plt.show()
 
         return pred
@@ -344,12 +391,12 @@ def train(args):
                 # -------------------------- #
                 # [Validation] Session Run!  #
                 # -------------------------- #
+                # [Valid] TODO: Portar Leitura para o Tensorflow
+                # [Valid] TODO: Implementar Leitura por Batches
+
                 # Detects the end of a epoch
                 # if True: # Only for testing the following condition!!!
                 if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
-                    # TODO: Portar Leitura para o Tensorflow
-                    # TODO: Implementar Leitura por Batches
-
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
@@ -454,7 +501,11 @@ def test(args):
         tf_image_path = tf.placeholder(tf.string)
         tf_depth_path = tf.placeholder(tf.string)
 
-        tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
+        if data.dataset_name == 'apolloscape':
+            tf_image = tf.image.decode_jpeg(tf.read_file(tf_image_path))
+        else:
+            tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
+
         if data.dataset_name == 'kittidiscrete' or \
            data.dataset_name == 'kitticontinuous' or \
            data.dataset_name == 'kitticontinuous_residential':
@@ -504,9 +555,6 @@ def test(args):
         saver = tf.train.Saver()
         saver.restore(sess, args.model_path)
 
-        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-        sess.run(init_op)
-
         # Use to load from npy file
         # net.load(model_data_path, sess)
 
@@ -515,12 +563,6 @@ def test(args):
         # ==============
         if args.show_test_results:
             test_plotObj = Plot(args.mode, title='Test Predictions')
-
-        # Memory Allocation
-        image_resized = np.zeros(shape=input_size.getSize(), dtype=np.uint8)    # (228, 304, 3)
-        depth_resized = np.zeros(shape=output_size.getSize(), dtype=np.uint16)  # (128, 160, 1)
-        pred = np.zeros(shape=output_size.getSize(), dtype=np.float32)          # (128, 160, 1)
-        pred_up = np.zeros(shape=data.depth_size.getSize(), dtype=np.float32)   # (dataobj.height, dataobj.width, 1)
 
         timer = -time.time()
         for i in range(numSamples):

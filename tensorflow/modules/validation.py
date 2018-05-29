@@ -19,7 +19,7 @@ class Validation:
     def __init__(self, args, input_size, output_size):
         # Raw Input/Output
         self.tf_image = tf.placeholder(tf.uint8,  shape=(None, None, None, 3))
-        self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
+        self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1)) # TODO: adicionar exceções, uint8
 
         self.tf_image = tf.cast(self.tf_image, tf.float32, name='raw_image')
         self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='raw_depth')
@@ -29,8 +29,8 @@ class Validation:
         self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
         self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32), name='log_depth')
 
-        # TODO: Implementar validacao por batches
-        # batch_size = 2 # TODO: Move variable
+        # TODO: Implementar validacao por batches?
+        # batch_size = 2
         #
         # self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
         #
