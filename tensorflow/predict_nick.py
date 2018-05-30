@@ -97,18 +97,11 @@ LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
-def createSaveFolder():
-    save_path = None
-    save_restore_path = None
-
-    if SAVE_TRAINED_MODEL or ENABLE_TENSORBOARD:
-        # Saves the model variables to disk.
-        relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + datetime + '/'
-        save_path = os.path.join(os.getcwd(), relative_save_path)
-        save_restore_path = os.path.join(save_path, 'restore/')
-
-        if not os.path.exists(save_restore_path):
-            os.makedirs(save_restore_path)
+def getSaveFolderPaths():
+    """Defines folders paths for saving the model variables to disk."""
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + datetime + '/'
+    save_path = os.path.join(os.getcwd(), relative_save_path)
+    save_restore_path = os.path.join(save_path, 'restore/')
 
     return save_path, save_restore_path
 
@@ -285,7 +278,7 @@ def train(args):
     global running  # Create a loop to keep the application running
     running = True
 
-    save_path, save_restore_path = createSaveFolder()  # TODO: Evitar criar pastas vazias
+    save_path, save_restore_path = getSaveFolderPaths()
 
     # ----------------------------------------- #
     #  Network Training Model - Building Graph  #
@@ -462,6 +455,9 @@ def train(args):
         #  Save Results
         # ==============
         if SAVE_TRAINED_MODEL:
+            if not os.path.exists(save_restore_path):
+                os.makedirs(save_restore_path)
+
             model.saveTrainedModel(save_restore_path, sess, model.train_saver, args.model_name)
 
         model.saveResults(datetime, epoch, max_epochs, step, args.max_steps, timer)
