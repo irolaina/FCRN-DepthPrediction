@@ -564,7 +564,11 @@ def test(args):
             test_plotObj = Plot(args.mode, title='Test Predictions')
 
         timer = -time.time()
-        for i in range(numSamples):
+        pred_list = []
+        gt_list = []
+        # for i in range(numSamples): # TODO: Descomentar
+        for i in range(5): # TODO: Only for testing
+
             timer2 = -time.time()
 
             # Evalute the network for the given image
@@ -580,6 +584,9 @@ def test(args):
                 _, image, image_resized = sess.run(image_op, feed_test)
                 pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
 
+            pred_list.append(pred_up[0])
+            gt_list.append(depth)
+
             # print(image.shape)
             # print(image_resized.shape)
             # print(depth.shape)
@@ -589,19 +596,20 @@ def test(args):
 
             # Prints Testing Progress
             timer2 += time.time()
-            print('step: %d/%d | t: %f' % (i + 1, numSamples, timer2))
+            print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
             # break # Test
 
             # Show Results
-            test_plotObj.showTestResults(image=image,
-                                         depth=depth[:, :, 0],
-                                         image_resized=image_resized,
-                                         depth_resized=depth_resized[:, :, 0],
-                                         log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
-                                         pred=pred[0, :, :, 0],
-                                         pred_up=pred_up[0, :, :, 0],
-                                         pred_exp=pred_exp[0, :, :, 0],
-                                         i=i + 1)
+            if args.show_test_results:
+                test_plotObj.showTestResults(image=image,
+                                             depth=depth[:, :, 0],
+                                             image_resized=image_resized,
+                                             depth_resized=depth_resized[:, :, 0],
+                                             log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
+                                             pred=pred[0, :, :, 0],
+                                             pred_up=pred_up[0, :, :, 0],
+                                             pred_exp=pred_exp[0, :, :, 0],
+                                             i=i + 1)
 
         # Testing Finished.
         timer += time.time()
@@ -620,13 +628,81 @@ def test(args):
 
             # np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path # FIXME: Reativar
 
-        # FIXME: Reativar
-        # # Calculate Metrics
-        # if data.test_depth_filenames:
-        #     metricsLib.evaluateTesting(pred, test_labels_o)
-        # else:
-        #     print(
-        #         "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+        # Calculate Metrics
+        if data.test_depth_filenames:
+            pred_array = np.array(pred_list)
+            gt_array = np.array(gt_list)
+
+            def evaluateTestSet(pred, gt, mask):
+                # Compute error metrics on benchmark datasets
+                # -------------------------------------------------------------------------
+
+                # make sure predictions and ground truth have same dimensions
+                if pred.shape != gt_array.shape:
+                    # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
+                    input("terminar!")
+                    pass
+
+                if mask is None:
+                    n_pxls = gt.size
+                else:
+                    n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
+
+                print('\n Errors computed over the entire test set \n')
+                print('------------------------------------------\n')
+
+                # Mean Absolute Relative Error
+                rel = np.abs(gt - pred)/ gt  # compute errors
+
+                print(pred.shape, pred.size)
+                print(gt.shape, gt.size)
+                print(n_pxls)
+                print(rel)
+                print(rel[mask])
+
+                print(rel)
+                input("antes")
+                rel[mask] = 0
+                print(rel)
+                input("depois")
+
+                # rel(~mask) = 0                      # mask out invalid ground truth pixels
+                # rel = sum(rel) / n_pxls             # average over all pixels
+                # print('Mean Absolute Relative Error: %4f\n', rel)
+                #
+                # # Root Mean Squared Error
+                # rms = (gt - pred)**2
+                # rms(~mask) = 0
+                # rms = sqrt(sum(rms) / n_pxls)
+                # print('Root Mean Squared Error: %4f\n', rms)
+                #
+                # # LOG10 Error
+                # lg10 = abs(log10(gt) - log10(pred))
+                # lg10(~mask) = 0
+                # lg10 = sum(lg10) / n_pxls
+                # print('Mean Log10 Error: %4f\n', lg10)
+                #
+                # results.rel = rel
+                # results.rms = rms
+                # results.log10 = lg10
+
+                return results
+
+            if VALID_PIXELS:
+                mask = np.where(gt_array > 0) # TODO: Adicionar ranges para cada um dos datasets
+                # print(len(mask))
+
+                imask = tf.where(gt_array > 0, tf.ones_like(gt_array), tf.zeros_like(depth))
+                depth2 = tf_depth * tf_imask
+
+            else:
+                mask = None
+
+            evaluateTestSet(pred_array, gt_array, mask)
+            # metricsLib.evaluateTesting(pred, test_labels_o)
+
+        else:
+            print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
 
 
 # ======
