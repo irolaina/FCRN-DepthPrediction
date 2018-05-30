@@ -105,7 +105,7 @@ class Plot(object):
 
         plt.pause(0.001)
 
-    def showTestResults(self, image, depth, image_resized, depth_resized, log_label, pred, pred_up, pred_exp,i):
+    def showTestResults(self, image, depth, image_resized, depth_resized, log_label, pred, pred_up, pred_exp, i):
         # predMSE = loss.np_MSE(y=pred, y_=log_label)
 
         if self.isFirstTime:

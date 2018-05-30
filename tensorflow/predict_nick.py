@@ -77,7 +77,7 @@ SAVE_TRAINED_MODEL = True  # Default: True
 #  [Test] Framework Config
 # =========================
 # Select Subset:
-# 0 - TestData      # Default
+# 0 - TestData                  # Default
 # 1 - TrainData
 TEST_EVALUATE_SUBSET = 0
 
@@ -92,6 +92,7 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 LOG_INITIAL_VALUE = 1
+
 
 # ===========
 #  Functions
@@ -110,6 +111,7 @@ def createSaveFolder():
             os.makedirs(save_restore_path)
 
     return save_path, save_restore_path
+
 
 # TODO: Move
 # This function is called every time a key is presssed
@@ -200,7 +202,7 @@ def predict(model_data_path, image_path):
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     tf_image_resized = tf.image.resize_images(tf_image, [height, width])
-    tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8) # Visual purpose
+    tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_input = tf.expand_dims(tf_image_resized, axis=0)
 
     with tf.variable_scope('model'):
@@ -340,13 +342,13 @@ def train(args):
                 batch_labels, \
                 log_batch_labels, \
                 batch_pred, \
-                model.train.loss= sess.run([model.train_step,
-                                        model.train.tf_batch_data,
-                                        model.train.tf_batch_data_uint8,
-                                        model.train.tf_batch_labels,
-                                        model.train.tf_log_batch_labels,
-                                        model.train.fcrn.get_output(),
-                                        model.train.tf_loss])
+                model.train.loss = sess.run([model.train_step,
+                                             model.train.tf_batch_data,
+                                             model.train.tf_batch_data_uint8,
+                                             model.train.tf_batch_labels,
+                                             model.train.tf_log_batch_labels,
+                                             model.train.fcrn.get_output(),
+                                             model.train.tf_loss])
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -502,7 +504,7 @@ def test(args):
         tf_depth_path = tf.placeholder(tf.string)
 
         if data.dataset_name == 'apolloscape':
-            tf_image = tf.image.decode_jpeg(tf.read_file(tf_image_path))
+            tf_image = tf.image.decode_jpeg(tf.read_file(tf_image_path), channels=3)
         else:
             tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
 

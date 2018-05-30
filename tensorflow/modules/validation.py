@@ -18,8 +18,8 @@ LOG_INITIAL_VALUE = 1
 class Validation:
     def __init__(self, args, input_size, output_size):
         # Raw Input/Output
-        self.tf_image = tf.placeholder(tf.uint8,  shape=(None, None, None, 3))
-        self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1)) # TODO: adicionar exceções, uint8
+        self.tf_image = tf.placeholder(tf.uint8, shape=(None, None, None, 3))
+        self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1))  # TODO: adicionar exceções, uint8
 
         self.tf_image = tf.cast(self.tf_image, tf.float32, name='raw_image')
         self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='raw_depth')
