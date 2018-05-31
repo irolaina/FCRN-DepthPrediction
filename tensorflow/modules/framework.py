@@ -66,7 +66,7 @@ class Model(object):
     def build_losses(self, selected_loss, valid_pixels):
         with tf.name_scope("Losses"):
             # Select Loss Function:
-            if selected_loss == 0:
+            if selected_loss == 'mse':
                 self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.fcrn.get_output(),
                                                                  self.train.tf_log_batch_labels,
                                                                  valid_pixels)
@@ -75,7 +75,7 @@ class Model(object):
                                                     self.valid.tf_log_depth_resized,
                                                     valid_pixels)
 
-            elif selected_loss == 1:
+            elif selected_loss == 'eigen':
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.train.fcrn.get_output(),
                                                                self.train.tf_log_batch_labels,
                                                                valid_pixels,
@@ -84,7 +84,7 @@ class Model(object):
                 _, self.valid.tf_loss = loss.tf_L(self.valid.fcrn.get_output(),
                                                   self.valid.tf_log_depth_resized,
                                                   valid_pixels)
-            elif selected_loss == 2:
+            elif selected_loss == 'berhu':
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.fcrn.get_output(),
                                                                    self.train.tf_log_batch_labels,
                                                                    valid_pixels)

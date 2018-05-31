@@ -60,10 +60,9 @@ from modules.plot import Plot
 #  [Train] Framework Config
 # ==========================
 # Select the Loss Function:
-# 0 - MSE
-# 1 - Eigen's Log Depth
-# 2 - BerHu
-LOSS_FUNCTION = 0
+# LOSS_FUNCTION = 'mse'   # MSE
+# LOSS_FUNCTION = 'eigen' # Eigen's Scale-invariant Mean Squared Error
+LOSS_FUNCTION = 'berhu' # BerHu
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
@@ -99,7 +98,7 @@ LOG_INITIAL_VALUE = 1
 # ===========
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + datetime + '/'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + LOSS_FUNCTION + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -564,9 +563,10 @@ def test(args):
             test_plotObj = Plot(args.mode, title='Test Predictions')
 
         timer = -time.time()
-        pred_list = []
-        gt_list = []
+        pred_list, gt_list = [], []
         for i in range(numSamples):
+        # for i in range(5): # Only for testing!
+
             timer2 = -time.time()
 
             # Evalute the network for the given image
@@ -624,16 +624,87 @@ def test(args):
             if not os.path.exists(output_directory):
                 os.makedirs(output_directory)
 
-            save_path_predictions = os.path.abspath(os.path.join(output_directory, '../')) + '/' + args.dataset + '_pred.npy'
-            np.save(save_path_predictions, pred)
+            save_path_pred = os.path.abspath(os.path.join(output_directory, '../')) + '/' + args.dataset + '_pred.npy'
 
-        # FIXME: Reativar
-        # # Calculate Metrics
+            # TODO: Quais mais variaveis preciso salvar? Não seria melhor salvar a pred_up? Seria legal usar um dictionary?
+            # data = {'pred': bla, 'pred_up': bla}
+            np.save(save_path_pred, pred)
+
+        # Calculate Metrics
         # if data.test_depth_filenames:
-        #     metricsLib.evaluateTesting(pred, test_labels_o)
-        # else:
-        #     print(
-        #         "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+        #     pred_array = np.array(pred_list)
+        #     gt_array = np.array(gt_list)
+        #
+        #     def evaluateTestSet(pred, gt, mask):
+        #         # Compute error metrics on benchmark datasets
+        #         # -------------------------------------------------------------------------
+        #
+        #         # make sure predictions and ground truth have same dimensions
+        #         if pred.shape != gt_array.shape:
+        #             # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
+        #             input("terminar!")
+        #             pass
+        #
+        #         if mask is None:
+        #             n_pxls = gt.size
+        #         else:
+        #             n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
+        #
+        #         print('\n Errors computed over the entire test set \n')
+        #         print('------------------------------------------\n')
+        #
+        #         # Mean Absolute Relative Error
+        #         rel = np.abs(gt - pred)/ gt  # compute errors
+        #
+        #         print(pred.shape, pred.size)
+        #         print(gt.shape, gt.size)
+        #         print(n_pxls)
+        #         print(rel)
+        #         print(rel[mask])
+        #
+        #         print(rel)
+        #         input("antes")
+        #         rel[mask] = 0
+        #         print(rel)
+        #         input("depois")
+        #
+        #         # rel(~mask) = 0                      # mask out invalid ground truth pixels
+        #         # rel = sum(rel) / n_pxls             # average over all pixels
+        #         # print('Mean Absolute Relative Error: %4f\n', rel)
+        #         #
+        #         # # Root Mean Squared Error
+        #         # rms = (gt - pred)**2
+        #         # rms(~mask) = 0
+        #         # rms = sqrt(sum(rms) / n_pxls)
+        #         # print('Root Mean Squared Error: %4f\n', rms)
+        #         #
+        #         # # LOG10 Error
+        #         # lg10 = abs(log10(gt) - log10(pred))
+        #         # lg10(~mask) = 0
+        #         # lg10 = sum(lg10) / n_pxls
+        #         # print('Mean Log10 Error: %4f\n', lg10)
+        #         #
+        #         # results.rel = rel
+        #         # results.rms = rms
+        #         # results.log10 = lg10
+        #
+        #         return results
+        #
+        #     if VALID_PIXELS:
+        #         mask = np.where(gt_array > 0) # TODO: Adicionar ranges para cada um dos datasets
+        #         # print(len(mask))
+        #
+        #         imask = tf.where(gt_array > 0, tf.ones_like(gt_array), tf.zeros_like(depth))
+        #         depth2 = tf_depth * tf_imask
+        #
+        #     else:
+        #         mask = None
+        #
+        #     evaluateTestSet(pred_array, gt_array, mask)
+        #     # metricsLib.evaluateTesting(pred, test_labels_o)
+
+        else:
+            print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
 
 
 # ======
