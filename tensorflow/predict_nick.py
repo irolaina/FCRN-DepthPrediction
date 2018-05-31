@@ -112,9 +112,9 @@ def kbevent(event):
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
-    if event.Ascii == 27:
+    if event.Ascii == 197: # Press 'F8' to stop training.
         global running
-        # running = False # TODO: Reativar KeyBoard Abort
+        running = False
 
 
 # Create hookmanager
