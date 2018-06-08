@@ -81,8 +81,32 @@ class KittiDiscrete(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            image_filenames_tmp = glob.glob(self.dataset_path + "2011_*/*/proc_kitti_nick/imgs/*.png")
-            depth_filenames_tmp = glob.glob(self.dataset_path + "2011_*/*/proc_kitti_nick/disp1/*.png")
+            image_filenames_tmp, depth_filenames_tmp = [], []
+
+            try:
+                selected_category = self.name.split('_')[1]
+                scenes = np.genfromtxt("data/kitti_scenes/" + selected_category + ".txt", dtype='str', delimiter='\t')
+
+                print()
+                print(scenes)
+                print(len(scenes))
+                print()
+
+                for scene in scenes:
+                    print(scene)
+                    # print(scene.split("_drive")[0])
+                    print(self.dataset_path + scene.split("_drive")[0] + "/" + scene + "/proc_kitti_nick/imgs/*.png")
+                    image_filenames_tmp += glob.glob(
+                        self.dataset_path + scene.split("_drive")[0] + "/" + scene + "/proc_kitti_nick/imgs/*.png")
+                    depth_filenames_tmp += glob.glob(
+                        self.dataset_path + scene.split("_drive")[0] + "/" + scene + "/proc_kitti_nick/disp1/*.png")
+
+                    print(len(image_filenames_tmp))
+                    # print(len(depth_filenames_tmp))
+
+            except IndexError:
+                image_filenames_tmp = glob.glob(self.dataset_path + "2011_*/*/proc_kitti_nick/imgs/*.png")
+                depth_filenames_tmp = glob.glob(self.dataset_path + "2011_*/*/proc_kitti_nick/disp1/*.png")
 
             # print(image_filenames_tmp)
             # print(len(image_filenames_tmp))
