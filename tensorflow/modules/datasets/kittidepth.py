@@ -86,7 +86,7 @@ class KittiDepth(FilenamesHandler):
             image_filenames_tmp = []
             depth_filenames_tmp = []
 
-            image_filenames_tmp = glob.glob(self.dataset_path + 'raw_data/data/*/image_02/data/*.png') + glob.glob(self.dataset_path + 'raw_data/data/*/image_03/data/*.png')
+            image_filenames_tmp = glob.glob(self.dataset_path + 'raw_data/2011_*/*/image_02/data/*.png') + glob.glob(self.dataset_path + 'raw_data/2011_*/*/image_03/data/*.png')
             depth_filenames_tmp = glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_02/*.png') + glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_03/*.png')
 
             # print(image_filenames_tmp)

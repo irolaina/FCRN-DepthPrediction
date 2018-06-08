@@ -48,7 +48,7 @@ class KittiDiscrete(FilenamesHandler):
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/raw_data/data/"
+            self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/raw_data/"
 
         self.name = 'kittidiscrete'
 
@@ -81,8 +81,8 @@ class KittiDiscrete(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            image_filenames_tmp = glob.glob(self.dataset_path + "*/proc2/imgs/*.png") + glob.glob(self.dataset_path + "*/proc_kitti/imgs/*.png")
-            depth_filenames_tmp = glob.glob(self.dataset_path + "*/proc2/disp1/*.png") + glob.glob(self.dataset_path + "*/proc_kitti/disp1/*.png")
+            image_filenames_tmp = glob.glob(self.dataset_path + "2011_*/*/proc_kitti_nick/imgs/*.png")
+            depth_filenames_tmp = glob.glob(self.dataset_path + "2011_*/*/proc_kitti_nick/disp1/*.png")
 
             # print(image_filenames_tmp)
             # print(len(image_filenames_tmp))
