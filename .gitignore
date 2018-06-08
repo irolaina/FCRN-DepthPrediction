@@ -1,0 +1,16 @@
+# Exclude Folders
+.idea/*
+models/*
+misc/*
+!misc/getDatasetInfo/
+tensorflow/output/*
+tensorflow/tmp/*
+!tensorflow/tmp/reproduce_random_shuffle_error.py
+# Exclude Extensions
+*/.DS_Store
+*.pyc
+*.DS_Store
+
+# Exclude Files
+matlab/predictions_NYUval.mat
+tensorflow/results.txt

@@ -1,0 +1,295 @@
+0 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0027_sync/ 	188/188	
+1 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0061_sync/ 	703/703	
+2 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0028_sync/ 	422/430	!!!
+3 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0029_sync/ 	430/430	
+4 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0032_sync/ 	390/390	
+5 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0035_sync/ 	131/131	
+6 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0036_sync/ 	283/803	!!!
+7 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0039_sync/ 	395/395	
+8 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0046_sync/ 	125/125	
+9 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0048_sync/ 	22/22	
+10 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0051_sync/ 	438/438	
+11 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0052_sync/ 	78/78	
+12 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0056_sync/ 	294/294	
+13 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0057_sync/ 	361/361	
+14 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0059_sync/ 	373/373	
+15 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0060_sync/ 	78/78	
+16 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0064_sync/ 	570/570	
+17 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0070_sync/ 	420/420	
+18 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0079_sync/ 	100/100	
+19 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0084_sync/ 	383/383	
+20 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0086_sync/ 	706/706	
+21 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0087_sync/ 	729/729	
+22 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0091_sync/ 	340/340	
+23 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0093_sync/ 	433/433	
+24 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0095_sync/ 	268/268	
+25 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0096_sync/ 	441/475	!!!
+26 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0101_sync/ 	663/936	!!!
+27 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0104_sync/ 	312/312	
+28 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0106_sync/ 	227/227	
+29 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0113_sync/ 	87/87	
+30 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0117_sync/ 	660/660	
+31 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0001_sync/ 	108/108	
+32 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0002_sync/ 	77/77	
+33 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0005_sync/ 	154/154	
+34 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0009_sync/ 	443/447	!!!
+35 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0011_sync/ 	233/233	
+36 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0013_sync/ 	144/144	
+37 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0014_sync/ 	314/314	
+38 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0015_sync/ 	297/297	
+39 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0017_sync/ 	114/114	
+40 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0018_sync/ 	270/270	
+41 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0019_sync/ 	481/481	
+42 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0020_sync/ 	86/86	
+43 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0022_sync/ 	699/800	!!!
+44 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_26/2011_09_26_drive_0023_sync/ 	474/474	
+45 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0065_sync/ 	39/39	
+46 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0066_sync/ 	29/29	
+47 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0068_sync/ 	67/67	
+48 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0070_sync/ 	39/39	
+49 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0071_sync/ 	43/43	
+50 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0075_sync/ 	70/70	
+51 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0077_sync/ 	42/42	
+52 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0078_sync/ 	37/37	
+53 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0080_sync/ 	40/40	
+54 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0082_sync/ 	75/75	
+55 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0086_sync/ 	30/30	
+56 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0087_sync/ 	82/82	
+57 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0089_sync/ 	38/38	
+58 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0090_sync/ 	46/46	
+59 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0095_sync/ 	41/41	
+60 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0096_sync/ 	45/45	
+61 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0098_sync/ 	44/44	
+62 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0100_sync/ 	77/77	
+63 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0102_sync/ 	46/46	
+64 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0103_sync/ 	38/38	
+65 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0104_sync/ 	44/44	
+66 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0106_sync/ 	75/75	
+67 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0108_sync/ 	48/48	
+68 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0110_sync/ 	63/63	
+69 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0113_sync/ 	74/74	
+70 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0117_sync/ 	36/36	
+71 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0119_sync/ 	77/77	
+72 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0121_sync/ 	46/46	
+73 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0125_sync/ 	59/59	
+74 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0126_sync/ 	32/32	
+75 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0128_sync/ 	29/29	
+76 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0132_sync/ 	73/73	
+77 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0134_sync/ 	55/55	
+78 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0135_sync/ 	42/42	
+79 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0136_sync/ 	31/31	
+80 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0138_sync/ 	68/68	
+81 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0141_sync/ 	71/71	
+82 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0143_sync/ 	32/32	
+83 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0145_sync/ 	36/36	
+84 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0146_sync/ 	71/71	
+85 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0149_sync/ 	46/46	
+86 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0153_sync/ 	90/90	
+87 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0155_sync/ 	48/48	
+88 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0156_sync/ 	30/30	
+89 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0160_sync/ 	41/41	
+90 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0161_sync/ 	37/37	
+91 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0162_sync/ 	38/38	
+92 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0165_sync/ 	83/83	
+93 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0166_sync/ 	39/39	
+94 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0167_sync/ 	54/54	
+95 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0168_sync/ 	57/57	
+96 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0171_sync/ 	28/28	
+97 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0174_sync/ 	54/54	
+98 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0177_sync/ 	78/78	
+99 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0179_sync/ 	43/43	
+100 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0183_sync/ 	39/39	
+101 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0057_sync/ 	74/74	
+102 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0094_sync/ 	86/86	
+103 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0122_sync/ 	43/43	
+104 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0154_sync/ 	43/43	
+105 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0184_sync/ 	86/86	
+106 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0185_sync/ 	80/80	
+107 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0186_sync/ 	41/41	
+108 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0187_sync/ 	55/55	
+109 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0191_sync/ 	38/38	
+110 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0192_sync/ 	85/85	
+111 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0195_sync/ 	39/39	
+112 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0198_sync/ 	63/63	
+113 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0199_sync/ 	35/35	
+114 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0201_sync/ 	83/83	
+115 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0204_sync/ 	51/51	
+116 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0205_sync/ 	35/35	
+117 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0208_sync/ 	54/54	
+118 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0209_sync/ 	86/86	
+119 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0214_sync/ 	42/42	
+120 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0216_sync/ 	59/59	
+121 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0220_sync/ 	78/78	
+122 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0222_sync/ 	54/54	
+123 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0001_sync/ 	106/106	
+124 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0002_sync/ 	376/376	
+125 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0016_sync/ 	186/186	
+126 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0021_sync/ 	209/209	
+127 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0034_sync/ 	49/49	
+128 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0035_sync/ 	35/35	
+129 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0037_sync/ 	89/89	
+130 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0038_sync/ 	110/110	
+131 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0039_sync/ 	352/352	
+132 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0043_sync/ 	145/145	
+133 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0045_sync/ 	43/43	
+134 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0047_sync/ 	31/31	
+135 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0053_sync/ 	68/68	
+136 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_28/2011_09_28_drive_0054_sync/ 	45/45	
+137 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_29/2011_09_29_drive_0004_sync/ 	339/339	
+138 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_29/2011_09_29_drive_0026_sync/ 	158/158	
+139 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_29/2011_09_29_drive_0071_sync/ 	1059/1059	
+140 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_30/2011_09_30_drive_0016_sync/ 	279/279	
+141 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_30/2011_09_30_drive_0018_sync/ 	1163/2762	!!!
+142 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_30/2011_09_30_drive_0020_sync/ 	808/1104	!!!
+143 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_30/2011_09_30_drive_0027_sync/ 	1106/1106	
+144 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_30/2011_09_30_drive_0028_sync/ 	951/5177	!!!
+145 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_30/2011_09_30_drive_0033_sync/ 	1048/1594	!!!
+146 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_09_30/2011_09_30_drive_0034_sync/ 	1224/1224	
+147 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_10_03/2011_10_03_drive_0027_sync/ 	1057/4544	!!!
+148 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_10_03/2011_10_03_drive_0034_sync/ 	277/4663	!!!
+149 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_10_03/2011_10_03_drive_0042_sync/ 	893/1170	!!!
+150 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/2011_10_03/2011_10_03_drive_0047_sync/ 	837/837	
+151 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/calibration/2011_09_26_drive_0119_sync/ 	0/11	!!!
+152 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/calibration/2011_09_28_drive_0225_sync/ 	0/14	!!!
+153 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/calibration/2011_09_29_drive_0108_sync/ 	0/14	!!!
+154 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/calibration/2011_09_30_drive_0072_sync/ 	0/5	!!!
+155 /home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/calibration/2011_10_03_drive_0058_sync/ 	0/29	!!!
+0 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0039_sync/ 	395/385	
+1 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0091_sync/ 	340/330	
+2 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0043_sync/ 	145/135	
+3 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0082_sync/ 	75/65	
+4 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0110_sync/ 	63/53	
+5 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0143_sync/ 	32/22	
+6 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0171_sync/ 	28/18	
+7 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0204_sync/ 	51/41	
+8 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0001_sync/ 	108/98	
+9 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0009_sync/ 	443/433	
+10 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0011_sync/ 	233/223	
+11 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0014_sync/ 	314/304	
+12 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0015_sync/ 	297/287	
+13 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0017_sync/ 	114/104	
+14 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0018_sync/ 	270/260	
+15 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0019_sync/ 	481/471	
+16 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0022_sync/ 	699/790	!!!
+17 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0027_sync/ 	188/178	
+18 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0028_sync/ 	422/420	!!!
+19 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0029_sync/ 	430/420	
+20 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0032_sync/ 	390/380	
+21 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0035_sync/ 	131/121	
+22 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0046_sync/ 	125/115	
+23 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0048_sync/ 	22/12	
+24 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0051_sync/ 	438/428	
+25 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0052_sync/ 	78/68	
+26 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0056_sync/ 	294/284	
+27 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0057_sync/ 	361/351	
+28 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0059_sync/ 	373/363	
+29 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0060_sync/ 	78/68	
+30 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0061_sync/ 	703/693	
+31 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0064_sync/ 	570/560	
+32 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0070_sync/ 	420/410	
+33 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0084_sync/ 	383/373	
+34 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0086_sync/ 	706/696	
+35 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0087_sync/ 	729/719	
+36 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0093_sync/ 	433/423	
+37 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0096_sync/ 	441/465	!!!
+38 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0101_sync/ 	663/926	!!!
+39 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0104_sync/ 	312/302	
+40 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0106_sync/ 	227/217	
+41 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_26_drive_0117_sync/ 	660/650	
+42 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0001_sync/ 	106/96	
+43 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0002_sync/ 	376/366	
+44 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0016_sync/ 	186/176	
+45 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0021_sync/ 	209/199	
+46 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0034_sync/ 	49/39	
+47 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0035_sync/ 	35/25	
+48 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0038_sync/ 	110/100	
+49 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0039_sync/ 	352/342	
+50 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0045_sync/ 	43/33	
+51 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0047_sync/ 	31/21	
+52 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0053_sync/ 	68/58	
+53 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0054_sync/ 	45/35	
+54 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0057_sync/ 	74/64	
+55 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0065_sync/ 	39/29	
+56 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0066_sync/ 	29/19	
+57 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0068_sync/ 	67/57	
+58 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0070_sync/ 	39/29	
+59 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0071_sync/ 	43/33	
+60 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0075_sync/ 	70/60	
+61 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0077_sync/ 	42/32	
+62 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0078_sync/ 	37/27	
+63 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0080_sync/ 	40/30	
+64 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0086_sync/ 	30/20	
+65 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0087_sync/ 	82/72	
+66 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0089_sync/ 	38/28	
+67 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0090_sync/ 	46/36	
+68 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0094_sync/ 	86/76	
+69 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0095_sync/ 	41/31	
+70 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0096_sync/ 	45/35	
+71 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0098_sync/ 	44/34	
+72 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0100_sync/ 	77/67	
+73 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0102_sync/ 	46/36	
+74 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0103_sync/ 	38/28	
+75 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0104_sync/ 	44/34	
+76 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0106_sync/ 	75/65	
+77 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0108_sync/ 	48/38	
+78 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0113_sync/ 	74/64	
+79 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0117_sync/ 	36/26	
+80 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0119_sync/ 	77/67	
+81 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0121_sync/ 	46/36	
+82 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0122_sync/ 	43/33	
+83 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0125_sync/ 	59/49	
+84 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0126_sync/ 	32/22	
+85 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0128_sync/ 	29/19	
+86 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0132_sync/ 	73/63	
+87 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0134_sync/ 	55/45	
+88 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0135_sync/ 	42/32	
+89 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0136_sync/ 	31/21	
+90 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0138_sync/ 	68/58	
+91 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0141_sync/ 	71/61	
+92 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0145_sync/ 	36/26	
+93 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0146_sync/ 	71/61	
+94 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0149_sync/ 	46/36	
+95 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0153_sync/ 	90/80	
+96 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0154_sync/ 	43/33	
+97 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0155_sync/ 	48/38	
+98 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0156_sync/ 	30/20	
+99 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0160_sync/ 	41/31	
+100 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0161_sync/ 	37/27	
+101 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0162_sync/ 	38/28	
+102 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0165_sync/ 	83/73	
+103 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0166_sync/ 	39/29	
+104 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0167_sync/ 	54/44	
+105 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0168_sync/ 	57/47	
+106 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0174_sync/ 	54/44	
+107 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0177_sync/ 	78/68	
+108 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0179_sync/ 	43/33	
+109 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0183_sync/ 	39/29	
+110 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0184_sync/ 	86/76	
+111 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0185_sync/ 	80/70	
+112 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0186_sync/ 	41/31	
+113 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0187_sync/ 	55/45	
+114 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0191_sync/ 	38/28	
+115 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0192_sync/ 	85/75	
+116 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0195_sync/ 	39/29	
+117 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0198_sync/ 	63/53	
+118 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0199_sync/ 	35/25	
+119 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0201_sync/ 	83/73	
+120 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0205_sync/ 	35/25	
+121 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0208_sync/ 	54/44	
+122 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0209_sync/ 	86/76	
+123 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0214_sync/ 	42/32	
+124 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0216_sync/ 	59/49	
+125 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0220_sync/ 	78/68	
+126 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_28_drive_0222_sync/ 	54/44	
+127 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_29_drive_0004_sync/ 	339/329	
+128 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_29_drive_0071_sync/ 	1059/1049	
+129 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_30_drive_0018_sync/ 	1163/2752	!!!
+130 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_30_drive_0020_sync/ 	808/1094	!!!
+131 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_30_drive_0027_sync/ 	1106/1096	
+132 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_30_drive_0028_sync/ 	951/5167	!!!
+133 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_30_drive_0033_sync/ 	1048/1584	!!!
+134 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_09_30_drive_0034_sync/ 	1224/1214	
+135 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_10_03_drive_0027_sync/ 	1057/4534	!!!
+136 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_10_03_drive_0034_sync/ 	277/4653	!!!
+137 /home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/2011_10_03_drive_0042_sync/ 	893/1160	!!!
+Done.
