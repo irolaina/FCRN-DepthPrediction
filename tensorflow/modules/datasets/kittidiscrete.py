@@ -43,14 +43,14 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 class KittiDiscrete(FilenamesHandler):
-    def __init__(self, machine):
+    def __init__(self, name, machine):
         super().__init__()
         if machine == 'olorin':
             self.dataset_path = ''
         elif machine == 'xps':
             self.dataset_path = "/media/nicolas/Nícolas/datasets/kitti/raw_data/"
 
-        self.name = 'kittidiscrete'
+        self.name = name
 
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
