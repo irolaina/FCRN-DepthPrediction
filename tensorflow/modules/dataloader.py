@@ -38,15 +38,21 @@ def getFilenamesTensors(image_filenames, depth_filenames):
 # ===================
 class Dataloader:
     def __init__(self, args):
+        # Defines dataset_root path depending on which machine is used.
+        if args.machine == 'xps':
+            dataset_root = "/media/nicolas/Nícolas/datasets/"
+        elif args.machine == 'olorin':
+            dataset_root = "/media/olorin/Documentos/datasets/"
+
         # Detects which dataset was selected and creates the 'datasetObj'.
         self.selectedDataset = args.dataset
         # print(selectedDataset)
 
         if self.selectedDataset == 'apolloscape':
-            self.datasetObj = Apolloscape(self.selectedDataset, args.machine)
+            self.datasetObj = Apolloscape(dataset_root, self.selectedDataset)
 
         elif self.selectedDataset == 'kittidepth':
-            self.datasetObj = KittiDepth(self.selectedDataset, args.machine)
+            self.datasetObj = KittiDepth(dataset_root, self.selectedDataset)
 
         elif self.selectedDataset == 'kittidiscrete' or \
              self.selectedDataset == 'kittidiscrete_city' or \
@@ -54,7 +60,7 @@ class Dataloader:
              self.selectedDataset == 'kittidiscrete_road' or \
              self.selectedDataset == 'kittidiscrete_campus' or \
              self.selectedDataset == 'kittidiscrete_person':
-            self.datasetObj = KittiDiscrete(self.selectedDataset, args.machine)
+            self.datasetObj = KittiDiscrete(dataset_root, self.selectedDataset)
 
         elif self.selectedDataset == 'kitticontinuous' or \
              self.selectedDataset == 'kitticontinuous_city' or \
@@ -62,10 +68,10 @@ class Dataloader:
              self.selectedDataset == 'kitticontinuous_road' or \
              self.selectedDataset == 'kitticontinuous_campus' or \
              self.selectedDataset == 'kitticontinuous_person':
-            self.datasetObj = KittiContinuous(self.selectedDataset, args.machine)
+            self.datasetObj = KittiContinuous(dataset_root, self.selectedDataset)
 
         elif self.selectedDataset == 'nyudepth':
-            self.datasetObj = NyuDepth(self.selectedDataset, args.machine)
+            self.datasetObj = NyuDepth(dataset_root, self.selectedDataset)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "

@@ -65,12 +65,9 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 class NyuDepth(FilenamesHandler):
-    def __init__(self, name, machine):
+    def __init__(self, dataset_root, name):
         super().__init__()
-        if machine == 'olorin':
-            self.dataset_path = ''
-        elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/data/images/"
+        self.dataset_path = dataset_root + "nyu-depth-v2/data/images/"
 
         self.name = name
 

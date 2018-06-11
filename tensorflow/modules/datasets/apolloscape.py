@@ -46,12 +46,9 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 class Apolloscape(FilenamesHandler):
-    def __init__(self, name, machine):
+    def __init__(self, dataset_root, name):
         super().__init__()
-        if machine == 'olorin':
-            self.dataset_path = ''
-        elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/apolloscape/data/"
+        self.dataset_path = dataset_root + "apolloscape/data/"
 
         self.name = name
 
