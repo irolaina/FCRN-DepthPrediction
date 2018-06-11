@@ -339,13 +339,17 @@ def train(args):
                 batch_labels, \
                 log_batch_labels, \
                 batch_pred, \
-                model.train.loss = sess.run([model.train_step,
-                                             model.train.tf_batch_data,
-                                             model.train.tf_batch_data_uint8,
-                                             model.train.tf_batch_labels,
-                                             model.train.tf_log_batch_labels,
-                                             model.train.fcrn.get_output(),
-                                             model.train.tf_loss])
+                model.train.loss, \
+                summary_train_loss = sess.run([model.train_step,
+                                               model.train.tf_batch_data,
+                                               model.train.tf_batch_data_uint8,
+                                               model.train.tf_batch_labels,
+                                               model.train.tf_log_batch_labels,
+                                               model.train.fcrn.get_output(),
+                                               model.train.tf_loss,
+                                               model.tf_summary_train_loss])
+
+                model.summary_writer.add_summary(summary_train_loss, step)
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -376,6 +380,8 @@ def train(args):
                                                      log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
+
+
                     timer2 += time.time()
 
                     print('epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
@@ -386,6 +392,9 @@ def train(args):
                             timer2,
                             model.train.loss,
                             model.valid.loss))
+
+                if step % 1000 == 0:
+                    model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 # -------------------------- #
                 # [Validation] Session Run!  #
@@ -439,8 +448,8 @@ def train(args):
 
                     # Write information to TensorBoard
                     if ENABLE_TENSORBOARD:
-                        summary_str = sess.run(model.summary_op, feed_valid)
-                        model.summary_writer.add_summary(summary_str, step)
+                        summary = sess.run(model.summary_op, feed_valid)
+                        model.summary_writer.add_summary(summary, step)
                         model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))

@@ -117,7 +117,7 @@ class Model(object):
         # Filling Summary Obj
         with tf.name_scope("Train"):
             tf.summary.scalar('learning_rate', self.train.tf_learning_rate, collections=self.model_collection)
-            tf.summary.scalar('loss', self.train.tf_loss, collections=self.model_collection)
+            self.tf_summary_train_loss = tf.summary.scalar('loss', self.train.tf_loss, collections=self.model_collection)
 
             tf.summary.image('input/batch_data', self.train.tf_batch_data, max_outputs=1, collections=self.model_collection)
             # tf.summary.image('input/batch_data_uint8', self.train.tf_batch_data_uint8, max_outputs=1, collections=self.model_collection)
