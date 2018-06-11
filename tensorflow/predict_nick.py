@@ -344,8 +344,10 @@ def train(args):
                                              model.train.tf_batch_data_uint8,
                                              model.train.tf_batch_labels,
                                              model.train.tf_log_batch_labels,
-                                             model.train.fcrn.get_output(),
+                                             model.train.tf_pred,
                                              model.train.tf_loss])
+
+                # pred2 = sess.run(model.train.tf_pred2)
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -371,10 +373,14 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
+                        # plt.figure(100)
+                        # plt.imshow(pred2[0, :, :, 0])
+
                         model.train.plot.showResults(raw=batch_data_uint8[0],
                                                      label=batch_labels[0, :, :, 0],
                                                      log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
+
 
                     timer2 += time.time()
 

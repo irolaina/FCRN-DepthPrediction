@@ -23,7 +23,7 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image, tf_depth, input_size, output_size):
+    def __init__(self, args, tf_image, tf_depth, input_size, output_size, max_depth):
         with tf.name_scope('Input'):
             self.tf_image = tf_image
             self.tf_depth = tf_depth
@@ -56,6 +56,13 @@ class Train:
                                               name='log_batch_labels')
 
         self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
+        self.tf_pred = self.fcrn.get_output()
+
+        # TODO: Validar
+        # TODO: Estou setando os valores capados em zero, acredito que devo setar com o valor máximo
+        # Caps Predictions above a certain distance(meters). Inspired from Monodepth's article.
+        tf_imask = tf.where(self.tf_pred < tf.log(tf.constant(max_depth)), tf.ones_like(self.tf_pred), tf.zeros_like(self.tf_pred))
+        self.tf_pred = self.tf_pred * tf_imask
 
         with tf.name_scope('Train'):
             # Count the number of steps taken.
@@ -96,7 +103,7 @@ class Train:
         tf.add_to_collection('batch_data', self.tf_batch_data)
         tf.add_to_collection('batch_labels', self.tf_batch_labels)
         tf.add_to_collection('log_batch_labels', self.tf_log_batch_labels)
-        tf.add_to_collection('pred', self.fcrn.get_output())
+        tf.add_to_collection('pred', self.tf_pred)
 
         tf.add_to_collection('global_step', self.tf_global_step)
         tf.add_to_collection('learning_rate', self.tf_learning_rate)
