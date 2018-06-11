@@ -58,10 +58,10 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth)
+            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth)
+            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
 
     def build_losses(self, selected_loss, valid_pixels):
         with tf.name_scope("Losses"):

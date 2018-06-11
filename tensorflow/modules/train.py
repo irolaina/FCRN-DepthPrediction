@@ -23,14 +23,27 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image, tf_depth, input_size, output_size, max_depth):
+    def __init__(self, args, tf_image, tf_depth, input_size, output_size, max_depth, dataset_name):
         with tf.name_scope('Input'):
+            # Raw Input/Output
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
+            # Crops Input and Depth Images (Removes Sky)
+            if dataset_name[0:5] == 'kitti':
+                tf_image_shape = tf.shape(tf_image)
+                tf_depth_shape = tf.shape(tf_depth)
+
+                crop_height_perc = tf.constant(0.3, tf.float32)
+                tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
+                tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+
+                self.tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
+                self.tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+
             # Downsizes Input and Depth Images
-            self.tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
-            self.tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
+            self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
+            self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
             self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
 
             # ==============
