@@ -58,11 +58,8 @@ class Train:
         self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
         self.tf_pred = self.fcrn.get_output()
 
-        # TODO: Validar
-        # TODO: Estou setando os valores capados em zero, acredito que devo setar com o valor máximo
-        # Caps Predictions above a certain distance(meters). Inspired from Monodepth's article.
-        tf_imask = tf.where(self.tf_pred < tf.log(tf.constant(max_depth)), tf.ones_like(self.tf_pred), tf.zeros_like(self.tf_pred))
-        self.tf_pred = self.tf_pred * tf_imask
+        # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
+        self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
 
         with tf.name_scope('Train'):
             # Count the number of steps taken.

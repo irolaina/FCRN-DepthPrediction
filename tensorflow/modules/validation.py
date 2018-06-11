@@ -16,7 +16,7 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 class Validation:
-    def __init__(self, args, input_size, output_size):
+    def __init__(self, args, input_size, output_size, max_depth):
         # Raw Input/Output
         self.tf_image = tf.placeholder(tf.uint8, shape=(None, None, None, 3))
         self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1))  # TODO: adicionar exceções, uint8
@@ -27,6 +27,7 @@ class Validation:
         # Network Input/Output
         self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
         self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
+        self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
         self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32), name='log_depth')
 
         # TODO: Implementar validacao por batches?
@@ -44,6 +45,10 @@ class Validation:
         #     min_after_dequeue=0)
 
         self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, batch=args.batch_size, keep_prob=1, is_training=False)
+        self.tf_pred = self.fcrn.get_output()
+
+        # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
+        self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
 
         with tf.name_scope('Valid'):
             self.tf_loss = None
@@ -57,5 +62,6 @@ class Validation:
         print(self.tf_image)
         print(self.tf_depth)
         print(self.tf_image_resized)
+        print(self.tf_image_resized_uint8)
         print(self.tf_depth_resized)
         print(self.tf_log_depth_resized)
