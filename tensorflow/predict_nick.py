@@ -9,23 +9,27 @@
 #  To-Do
 # =======
 # Must do
-# [Dataset] TODO: Modificar Scripts
-# [Dataset] TODO: Rodar scripts para todas as imagens do raw_data. @end deve-se ter ~96k pares de imagens/disp (esparsos) e images/disp2 (contínuos)
+# [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
+# [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
-# [Train] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
-# [Train] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Train] TODO: Reativar DataAugmentation
 # [Train] FIXME: Early Stopping
 
+# [Test] TODO: Vitor sugeriu fazer listas de cenas de acordo com o contexto. Evitar misturar tudo. Ex: treinar no residential -> testar no campus
 # [Test] TODO: Validar Métricas
+# [Test] FIXME: Por quê o range da exp(Pred) é muito menor que o range do label em metros?
+# [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 
 # Optional
+# [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
 # [Train] TODO: Dar suporte ao Make3D
 # [Train] TODO: Adicionar feature para realizar pré-carregamento do modelo pré-treinado no ImageNet
 
 # Ideas
 # TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
 # TODO: Como Monocular Depth pode auxiliar em Visual Odometry?
+# TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
+# TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
 
 # ===========
 #  Libraries
@@ -98,7 +102,8 @@ LOG_INITIAL_VALUE = 1
 # ===========
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + LOSS_FUNCTION + '/' + datetime + '/'
+    valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/'+ LOSS_FUNCTION + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -503,9 +508,8 @@ def test(args):
         else:
             tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
 
-        if data.dataset_name == 'kittidiscrete' or \
-           data.dataset_name == 'kitticontinuous' or \
-           data.dataset_name == 'kitticontinuous_residential':
+        if data.dataset_name.split('_')[0] == 'kittidiscrete' or \
+           data.dataset_name.split('_')[0] == 'kitticontinuous':
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)

@@ -99,11 +99,11 @@ class Model(object):
             if self.args.l2norm:
                 self.train.tf_loss += loss.calculateL2norm()
 
-            print("\n[Network/Loss] Loss Function: %s" % self.loss_name)
             if valid_pixels:
                 print("[Network/Loss] Compute: Ignore invalid pixels")
             else:
                 print("[Network/Loss] Loss: All Pixels")
+            print("\n[Network/Loss] Loss Function: %s" % self.loss_name)
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
