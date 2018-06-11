@@ -153,4 +153,4 @@ class Plot(object):
 
         self.fig.canvas.set_window_title("Test Predictions [%d]" % i)
 
-        plt.pause(0.5)
+        plt.pause(1)

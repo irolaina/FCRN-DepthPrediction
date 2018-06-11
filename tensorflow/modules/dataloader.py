@@ -15,7 +15,6 @@ from modules.datasets.apolloscape import Apolloscape
 from modules.datasets.kittidepth import KittiDepth
 from modules.datasets.kittidiscrete import KittiDiscrete
 from modules.datasets.kitticontinuous import KittiContinuous
-from modules.datasets.kitticontinuous_residential import KittiContinuousResidential
 from modules.datasets.nyudepth import NyuDepth
 
 # ==================
@@ -39,27 +38,40 @@ def getFilenamesTensors(image_filenames, depth_filenames):
 # ===================
 class Dataloader:
     def __init__(self, args):
+        # Defines dataset_root path depending on which machine is used.
+        if args.machine == 'xps':
+            dataset_root = "/media/nicolas/Nícolas/datasets/"
+        elif args.machine == 'olorin':
+            dataset_root = "/media/olorin/Documentos/datasets/"
+
         # Detects which dataset was selected and creates the 'datasetObj'.
         self.selectedDataset = args.dataset
         # print(selectedDataset)
 
         if self.selectedDataset == 'apolloscape':
-            self.datasetObj = Apolloscape(args.machine)
+            self.datasetObj = Apolloscape(dataset_root, self.selectedDataset)
 
         elif self.selectedDataset == 'kittidepth':
-            self.datasetObj = KittiDepth(args.machine)
+            self.datasetObj = KittiDepth(dataset_root, self.selectedDataset)
 
-        elif self.selectedDataset == 'kittidiscrete':
-            self.datasetObj = KittiDiscrete(args.machine)
+        elif self.selectedDataset == 'kittidiscrete' or \
+             self.selectedDataset == 'kittidiscrete_city' or \
+             self.selectedDataset == 'kittidiscrete_residential' or \
+             self.selectedDataset == 'kittidiscrete_road' or \
+             self.selectedDataset == 'kittidiscrete_campus' or \
+             self.selectedDataset == 'kittidiscrete_person':
+            self.datasetObj = KittiDiscrete(dataset_root, self.selectedDataset)
 
-        elif self.selectedDataset == 'kitticontinuous':
-            self.datasetObj = KittiContinuous(args.machine)
-
-        elif self.selectedDataset == 'kitticontinuous_residential':
-            self.datasetObj = KittiContinuousResidential(args.machine)
+        elif self.selectedDataset == 'kitticontinuous' or \
+             self.selectedDataset == 'kitticontinuous_city' or \
+             self.selectedDataset == 'kitticontinuous_residential' or \
+             self.selectedDataset == 'kitticontinuous_road' or \
+             self.selectedDataset == 'kitticontinuous_campus' or \
+             self.selectedDataset == 'kitticontinuous_person':
+            self.datasetObj = KittiContinuous(dataset_root, self.selectedDataset)
 
         elif self.selectedDataset == 'nyudepth':
-            self.datasetObj = NyuDepth(args.machine)
+            self.datasetObj = NyuDepth(dataset_root, self.selectedDataset)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "
@@ -145,9 +157,8 @@ class Dataloader:
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
         elif self.dataset_name == 'kittidepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
-        elif self.dataset_name == 'kittidiscrete' or \
-             self.dataset_name == 'kitticontinuous' or \
-             self.dataset_name == 'kitticontinuous_residential':
+        elif self.dataset_name.split('_')[0] == 'kittidiscrete' or \
+             self.dataset_name.split('_')[0] == 'kitticontinuous':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
         elif self.dataset_name == 'nyudepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
@@ -169,9 +180,8 @@ class Dataloader:
         else:
             tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
-        if self.dataset_name == 'kittidiscrete' or \
-           self.dataset_name == 'kitticontinuous' or \
-           self.dataset_name == 'kitticontinuous_residential':
+        if self.dataset_name.split('_')[0] == 'kittidiscrete' or \
+           self.dataset_name.split('_')[0] == 'kitticontinuous':
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)

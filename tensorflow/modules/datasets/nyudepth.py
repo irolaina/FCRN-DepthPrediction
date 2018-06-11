@@ -65,17 +65,17 @@ LOG_INITIAL_VALUE = 1
 #  Class Declaration
 # ===================
 class NyuDepth(FilenamesHandler):
-    def __init__(self, machine):
+    def __init__(self, dataset_root, name):
         super().__init__()
-        if machine == 'olorin':
-            self.dataset_path = ''
-        elif machine == 'xps':
-            self.dataset_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/data/images/"
+        self.dataset_path = dataset_root + "nyu-depth-v2/data/images/"
 
-        self.name = 'nyudepth'
+        self.name = name
 
         self.image_size = Size(480, 640, 3)
         self.depth_size = Size(480, 640, 1)
+
+        # Max Depth to limit predictions
+        self.max_depth = 10.0
 
         print("[Dataloader] NyuDepth object created.")
 

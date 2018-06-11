@@ -9,23 +9,27 @@
 #  To-Do
 # =======
 # Must do
-# [Dataset] TODO: Modificar Scripts
-# [Dataset] TODO: Rodar scripts para todas as imagens do raw_data. @end deve-se ter ~96k pares de imagens/disp (esparsos) e images/disp2 (contínuos)
+# [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
+# [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
-# [Train] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
-# [Train] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Train] TODO: Reativar DataAugmentation
 # [Train] FIXME: Early Stopping
 
+# [Test] TODO: Vitor sugeriu fazer listas de cenas de acordo com o contexto. Evitar misturar tudo. Ex: treinar no residential -> testar no campus
 # [Test] TODO: Validar Métricas
+# [Test] FIXME: Por quê o range da exp(Pred) é muito menor que o range do label em metros?
+# [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 
 # Optional
+# [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
 # [Train] TODO: Dar suporte ao Make3D
 # [Train] TODO: Adicionar feature para realizar pré-carregamento do modelo pré-treinado no ImageNet
 
 # Ideas
 # TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
 # TODO: Como Monocular Depth pode auxiliar em Visual Odometry?
+# TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
+# TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
 
 # ===========
 #  Libraries
@@ -60,10 +64,9 @@ from modules.plot import Plot
 #  [Train] Framework Config
 # ==========================
 # Select the Loss Function:
-# 0 - MSE
-# 1 - Eigen's Log Depth
-# 2 - BerHu
-LOSS_FUNCTION = 0
+# LOSS_FUNCTION = 'mse'   # MSE
+# LOSS_FUNCTION = 'eigen' # Eigen's Scale-invariant Mean Squared Error
+LOSS_FUNCTION = 'berhu' # BerHu
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
@@ -99,7 +102,8 @@ LOG_INITIAL_VALUE = 1
 # ===========
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + datetime + '/'
+    valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/'+ LOSS_FUNCTION + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -113,9 +117,9 @@ def kbevent(event):
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
-    if event.Ascii == 27:
+    if event.Ascii == 197: # Press 'F8' to stop training.
         global running
-        # running = False # TODO: Reativar KeyBoard Abort
+        running = False
 
 
 # Create hookmanager
@@ -201,12 +205,12 @@ def predict(model_data_path, image_path):
     with tf.variable_scope('model'):
         # Construct the network
         net = ResNet50UpProj({'data': tf_image_input}, batch=batch_size, keep_prob=1, is_training=False)
-
+        tf_pred = net.get_output()
         # for var in tf.trainable_variables():
         #     print(var)
 
     # Merge Ops
-    pred_op = [tf_image, tf_image_resized_uint8, tf_image_input, net.get_output()]
+    pred_op = [tf_image, tf_image_resized_uint8, tf_image_input, tf_pred]
 
     # Print Variables
     # print(img)
@@ -215,7 +219,7 @@ def predict(model_data_path, image_path):
     print(tf_image)
     print(tf_image_resized)
     print(tf_image_input)
-    print(net.get_output())
+    print(tf_pred)
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -340,8 +344,10 @@ def train(args):
                                              model.train.tf_batch_data_uint8,
                                              model.train.tf_batch_labels,
                                              model.train.tf_log_batch_labels,
-                                             model.train.fcrn.get_output(),
+                                             model.train.tf_pred,
                                              model.train.tf_loss])
+
+                # pred2 = sess.run(model.train.tf_pred2)
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -367,10 +373,14 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
+                        # plt.figure(100)
+                        # plt.imshow(pred2[0, :, :, 0])
+
                         model.train.plot.showResults(raw=batch_data_uint8[0],
                                                      label=batch_labels[0, :, :, 0],
                                                      log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
+
 
                     timer2 += time.time()
 
@@ -403,18 +413,20 @@ def train(args):
                                       model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
 
                         valid_image, \
+                        valid_image_uint8, \
                         valid_pred, \
                         valid_labels, \
                         valid_log_labels, \
                         model.valid.loss = sess.run([model.valid.tf_image_resized,
-                                                     model.valid.fcrn.get_output(),
+                                                     model.valid.tf_image_resized_uint8,
+                                                     model.valid.tf_pred,
                                                      model.valid.tf_depth_resized,
                                                      model.valid.tf_log_depth_resized,
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            model.valid.plot.showResults(raw=valid_image[0, :, :],
+                            model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
                                                          log_label=valid_log_labels[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
@@ -504,9 +516,8 @@ def test(args):
         else:
             tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
 
-        if data.dataset_name == 'kittidiscrete' or \
-           data.dataset_name == 'kitticontinuous' or \
-           data.dataset_name == 'kitticontinuous_residential':
+        if data.dataset_name.split('_')[0] == 'kittidiscrete' or \
+           data.dataset_name.split('_')[0] == 'kitticontinuous':
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
@@ -524,7 +535,6 @@ def test(args):
         tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
 
         net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
-
         tf_pred = net.get_output()
 
         # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original
@@ -564,7 +574,10 @@ def test(args):
             test_plotObj = Plot(args.mode, title='Test Predictions')
 
         timer = -time.time()
+        pred_list, gt_list = [], []
         for i in range(numSamples):
+        # for i in range(5): # Only for testing!
+
             timer2 = -time.time()
 
             # Evalute the network for the given image
@@ -580,6 +593,9 @@ def test(args):
                 _, image, image_resized = sess.run(image_op, feed_test)
                 pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
 
+            pred_list.append(pred_up[0])
+            gt_list.append(depth)
+
             # print(image.shape)
             # print(image_resized.shape)
             # print(depth.shape)
@@ -589,19 +605,20 @@ def test(args):
 
             # Prints Testing Progress
             timer2 += time.time()
-            print('step: %d/%d | t: %f' % (i + 1, numSamples, timer2))
+            print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
             # break # Test
 
             # Show Results
-            test_plotObj.showTestResults(image=image,
-                                         depth=depth[:, :, 0],
-                                         image_resized=image_resized,
-                                         depth_resized=depth_resized[:, :, 0],
-                                         log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
-                                         pred=pred[0, :, :, 0],
-                                         pred_up=pred_up[0, :, :, 0],
-                                         pred_exp=pred_exp[0, :, :, 0],
-                                         i=i + 1)
+            if args.show_test_results:
+                test_plotObj.showTestResults(image=image,
+                                             depth=depth[:, :, 0],
+                                             image_resized=image_resized,
+                                             depth_resized=depth_resized[:, :, 0],
+                                             log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
+                                             pred=pred[0, :, :, 0],
+                                             pred_up=pred_up[0, :, :, 0],
+                                             pred_exp=pred_exp[0, :, :, 0],
+                                             i=i + 1)
 
         # Testing Finished.
         timer += time.time()
@@ -618,15 +635,87 @@ def test(args):
             if not os.path.exists(output_directory):
                 os.makedirs(output_directory)
 
-            # np.save(output_directory[:-7] + 'test_pred.npy', pred)  # The indexing removes 'restore' from folder path # FIXME: Reativar
+            save_path_pred = os.path.abspath(os.path.join(output_directory, '../')) + '/' + args.dataset + '_pred.npy'
 
-        # FIXME: Reativar
-        # # Calculate Metrics
+            # TODO: Quais mais variaveis preciso salvar? Não seria melhor salvar a pred_up? Seria legal usar um dictionary?
+            # data = {'pred': bla, 'pred_up': bla}
+            np.save(save_path_pred, pred)
+
+        # Calculate Metrics
         # if data.test_depth_filenames:
-        #     metricsLib.evaluateTesting(pred, test_labels_o)
-        # else:
-        #     print(
-        #         "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+        #     pred_array = np.array(pred_list)
+        #     gt_array = np.array(gt_list)
+        #
+        #     def evaluateTestSet(pred, gt, mask):
+        #         # Compute error metrics on benchmark datasets
+        #         # -------------------------------------------------------------------------
+        #
+        #         # make sure predictions and ground truth have same dimensions
+        #         if pred.shape != gt_array.shape:
+        #             # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
+        #             input("terminar!")
+        #             pass
+        #
+        #         if mask is None:
+        #             n_pxls = gt.size
+        #         else:
+        #             n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
+        #
+        #         print('\n Errors computed over the entire test set \n')
+        #         print('------------------------------------------\n')
+        #
+        #         # Mean Absolute Relative Error
+        #         rel = np.abs(gt - pred)/ gt  # compute errors
+        #
+        #         print(pred.shape, pred.size)
+        #         print(gt.shape, gt.size)
+        #         print(n_pxls)
+        #         print(rel)
+        #         print(rel[mask])
+        #
+        #         print(rel)
+        #         input("antes")
+        #         rel[mask] = 0
+        #         print(rel)
+        #         input("depois")
+        #
+        #         # rel(~mask) = 0                      # mask out invalid ground truth pixels
+        #         # rel = sum(rel) / n_pxls             # average over all pixels
+        #         # print('Mean Absolute Relative Error: %4f\n', rel)
+        #         #
+        #         # # Root Mean Squared Error
+        #         # rms = (gt - pred)**2
+        #         # rms(~mask) = 0
+        #         # rms = sqrt(sum(rms) / n_pxls)
+        #         # print('Root Mean Squared Error: %4f\n', rms)
+        #         #
+        #         # # LOG10 Error
+        #         # lg10 = abs(log10(gt) - log10(pred))
+        #         # lg10(~mask) = 0
+        #         # lg10 = sum(lg10) / n_pxls
+        #         # print('Mean Log10 Error: %4f\n', lg10)
+        #         #
+        #         # results.rel = rel
+        #         # results.rms = rms
+        #         # results.log10 = lg10
+        #
+        #         return results
+        #
+        #     if VALID_PIXELS:
+        #         mask = np.where(gt_array > 0) # TODO: Adicionar ranges para cada um dos datasets
+        #         # print(len(mask))
+        #
+        #         imask = tf.where(gt_array > 0, tf.ones_like(gt_array), tf.zeros_like(depth))
+        #         depth2 = tf_depth * tf_imask
+        #
+        #     else:
+        #         mask = None
+        #
+        #     evaluateTestSet(pred_array, gt_array, mask)
+        #     # metricsLib.evaluateTesting(pred, test_labels_o)
+
+        else:
+            print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
 
 
 # ======

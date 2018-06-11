@@ -110,9 +110,9 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     return loss_name, tf_loss
 
 
-# ------------------------------ #
-#  Training Loss - Eigen,Fergus  #
-# ------------------------------ #
+# ------------------------------------------- #
+#  Eigen's Scale-invariant Mean Squared Error #
+# ------------------------------------------- #
 def gradient_x(img):
     gx = img[:, :, :-1] - img[:, :, 1:]
 
