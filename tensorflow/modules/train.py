@@ -72,6 +72,7 @@ class Train:
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
+        # TODO: Isto pode inserir uma descontinuidade no treinamento da rede?
         self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
 
         with tf.name_scope('Train'):
