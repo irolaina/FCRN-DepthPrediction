@@ -18,13 +18,16 @@ LOG_INITIAL_VALUE = 1
 class Validation:
     def __init__(self, args, input_size, output_size, max_depth, dataset_name):
         # Raw Input/Output
-        self.tf_image = tf.placeholder(tf.uint8, shape=(None, None, None, 3), name='raw_image')
+        self.tf_image = tf.placeholder(tf.uint8, shape=(None, None, None, 3))
 
         if dataset_name.split('_')[0] == 'kittidiscrete' or \
            dataset_name.split('_')[0] == 'kitticontinuous':
-            self.tf_depth = tf.placeholder(tf.uint8, shape=(None, None, None, 1), name='raw_depth')
+            self.tf_depth = tf.placeholder(tf.uint8, shape=(None, None, None, 1))
         else:
-            self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1), name='raw_depth')
+            self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
+
+        self.tf_image = tf.cast(self.tf_image, tf.float32, name='raw_image')
+        self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='raw_depth')
 
         # Crops Input and Depth Images (Removes Sky)
         if dataset_name[0:5] == 'kitti':
