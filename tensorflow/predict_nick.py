@@ -14,7 +14,6 @@
 
 # [Train] FIXME: Early Stopping
 
-# [Test] TODO: Vitor sugeriu fazer listas de cenas de acordo com o contexto. Evitar misturar tudo. Ex: treinar no residential -> testar no campus
 # [Test] TODO: Validar Métricas
 # [Test] FIXME: Por quê o range da exp(Pred) é muito menor que o range do label em metros?
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
@@ -629,7 +628,7 @@ def test(args):
                                              log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
-                                             pred_exp=pred_exp[0, :, :, 0],
+                                             log_depth=np.log(depth[:, :, 0] + LOG_INITIAL_VALUE),
                                              i=i + 1)
 
         # Testing Finished.
