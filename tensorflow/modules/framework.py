@@ -58,7 +58,7 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
+            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name, self.args.data_aug)
 
         with tf.variable_scope("model", reuse=True):
             self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)

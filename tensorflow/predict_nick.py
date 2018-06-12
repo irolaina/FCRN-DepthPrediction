@@ -12,7 +12,6 @@
 # [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
-# [Train] TODO: Reativar DataAugmentation
 # [Train] FIXME: Early Stopping
 
 # [Test] TODO: Vitor sugeriu fazer listas de cenas de acordo com o contexto. Evitar misturar tudo. Ex: treinar no residential -> testar no campus
@@ -71,10 +70,10 @@ LOSS_FUNCTION = 'berhu' # BerHu
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True  # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = False  # Default: False
-ENABLE_EARLY_STOP = True  # Default: True
-ENABLE_TENSORBOARD = True  # Default: True
-SAVE_TRAINED_MODEL = True  # Default: True
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+ENABLE_EARLY_STOP = True        # Default: True
+ENABLE_TENSORBOARD = True       # Default: True
+SAVE_TRAINED_MODEL = True       # Default: True
 
 # =========================
 #  [Test] Framework Config

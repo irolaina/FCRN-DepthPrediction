@@ -23,11 +23,14 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image, tf_depth, input_size, output_size, max_depth, dataset_name):
+    def __init__(self, args, tf_image, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
             self.tf_image = tf_image
             self.tf_depth = tf_depth
+
+            if enableDataAug:
+                self.tf_image, self.tf_depth = self.augment_image_pair(self.tf_image, self.tf_depth)
 
             # Crops Input and Depth Images (Removes Sky)
             if dataset_name[0:5] == 'kitti':
@@ -72,7 +75,6 @@ class Train:
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
-        # TODO: Isto pode inserir uma descontinuidade no treinamento da rede?
         self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
 
         with tf.name_scope('Train'):
@@ -128,20 +130,21 @@ class Train:
 
         # randomly shift gamma
         random_gamma = tf.random_uniform([], 0.8, 1.2)
-        image_aug = image_aug ** random_gamma
+        image_aug = tf.cast(image_aug, tf.float32) ** random_gamma
 
         # randomly shift brightness
         random_brightness = tf.random_uniform([], 0.5, 2.0)
         image_aug = image_aug * random_brightness
 
-        # randomly shift color
-        random_colors = tf.random_uniform([3], 0.8, 1.2)
-        white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])
-        color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
-        image_aug *= color_image
-
-        # saturate
-        image_aug = tf.clip_by_value(image_aug, 0, 1)
+        # TODO: Validar transformações abaixo
+        # # randomly shift color
+        # random_colors = tf.random_uniform([3], 0.8, 1.2)
+        # white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])
+        # color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
+        # image_aug *= color_image
+        #
+        # # saturate
+        # image_aug = tf.clip_by_value(image_aug, 0, 1)
 
         return image_aug, depth_aug
 
