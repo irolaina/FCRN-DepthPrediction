@@ -4,9 +4,13 @@ Run Single Prediction:
     
 Train:
 
-    python3 predict_nick.py -m train -s kitticontinuous_residential --max_steps 1000 -d 0.5 --ldecay --gpu 0 -t
-    python3 predict_nick_tf_read.py -m train -s kitticontinuous_residential --max_steps 10 -d 0.5 --ldecay --gpu 0 -t
-    python3 predict_nick_tf_read.py -m train -s kitticontinuous_residential --max_steps 1000 --ldecay --l2norm --gpu 0 -t -v
+    XPS:
+    
+    python3 predict_nick.py -m train --machine xps --gpu 0 -s kitticontinuous_residential --max_steps 1000 -d 0.5 --ldecay --l2norm -t -v
+    
+    Olorin:
+    
+    python3 predict_nick.py -m train --machine olorin --gpu 0 -s kittidiscrete --max_steps 10 --ldecay --l2norm
     
 Test:
 

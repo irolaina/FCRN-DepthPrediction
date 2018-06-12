@@ -56,8 +56,8 @@ class Apolloscape(FilenamesHandler):
         self.depth_size = Size(2710, 3384, 1)
 
         # Max Depth to limit predictions
-        self.max_depth = 80.0   # TODO: Este valor está correto?
-
+        self.max_depth = None
+        
         print("[Dataloader] Apolloscape object created.")
 
     def getFilenamesLists(self, mode):
