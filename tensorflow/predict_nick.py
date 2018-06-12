@@ -205,12 +205,12 @@ def predict(model_data_path, image_path):
     with tf.variable_scope('model'):
         # Construct the network
         net = ResNet50UpProj({'data': tf_image_input}, batch=batch_size, keep_prob=1, is_training=False)
-
+        tf_pred = net.get_output()
         # for var in tf.trainable_variables():
         #     print(var)
 
     # Merge Ops
-    pred_op = [tf_image, tf_image_resized_uint8, tf_image_input, net.get_output()]
+    pred_op = [tf_image, tf_image_resized_uint8, tf_image_input, tf_pred]
 
     # Print Variables
     # print(img)
@@ -219,7 +219,7 @@ def predict(model_data_path, image_path):
     print(tf_image)
     print(tf_image_resized)
     print(tf_image_input)
-    print(net.get_output())
+    print(tf_pred)
 
     with tf.Session() as sess:
         # Load the converted parameters
@@ -349,7 +349,7 @@ def train(args):
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
 
-                model.summary_writer.add_summary(summary_train_loss, step)
+                # pred2 = sess.run(model.train.tf_pred2)
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -375,12 +375,13 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
+                        # plt.figure(100)
+                        # plt.imshow(pred2[0, :, :, 0])
+
                         model.train.plot.showResults(raw=batch_data_uint8[0],
                                                      label=batch_labels[0, :, :, 0],
                                                      log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
-
-
 
                     timer2 += time.time()
 
@@ -416,18 +417,20 @@ def train(args):
                                       model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
 
                         valid_image, \
+                        valid_image_uint8, \
                         valid_pred, \
                         valid_labels, \
                         valid_log_labels, \
                         model.valid.loss = sess.run([model.valid.tf_image_resized,
-                                                     model.valid.fcrn.get_output(),
+                                                     model.valid.tf_image_resized_uint8,
+                                                     model.valid.tf_pred,
                                                      model.valid.tf_depth_resized,
                                                      model.valid.tf_log_depth_resized,
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            model.valid.plot.showResults(raw=valid_image[0, :, :],
+                            model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
                                                          log_label=valid_log_labels[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
@@ -536,7 +539,6 @@ def test(args):
         tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
 
         net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
-
         tf_pred = net.get_output()
 
         # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original

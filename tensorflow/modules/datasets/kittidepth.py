@@ -51,6 +51,9 @@ class KittiDepth(FilenamesHandler):
         self.image_size = Size(375, 1242, 3)
         self.depth_size = Size(375, 1242, 1)
 
+        # Max Depth to limit predictions
+        self.max_depth = 80.0
+
         print("[Dataloader] KittiDepth object created.")
 
     def getFilenamesLists(self, mode):

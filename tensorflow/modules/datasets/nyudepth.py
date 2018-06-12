@@ -74,6 +74,9 @@ class NyuDepth(FilenamesHandler):
         self.image_size = Size(480, 640, 3)
         self.depth_size = Size(480, 640, 1)
 
+        # Max Depth to limit predictions
+        self.max_depth = 10.0
+
         print("[Dataloader] NyuDepth object created.")
 
     def getFilenamesLists(self, mode):

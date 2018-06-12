@@ -58,38 +58,38 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size)
+            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, self.input_size, self.output_size)
+            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
 
     def build_losses(self, selected_loss, valid_pixels):
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selected_loss == 'mse':
-                self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.tf_pred,
                                                                  self.train.tf_log_batch_labels,
                                                                  valid_pixels)
 
-                _, self.valid.tf_loss = loss.tf_MSE(self.valid.fcrn.get_output(),
+                _, self.valid.tf_loss = loss.tf_MSE(self.valid.tf_pred,
                                                     self.valid.tf_log_depth_resized,
                                                     valid_pixels)
 
             elif selected_loss == 'eigen':
-                self.loss_name, self.train.tf_loss = loss.tf_L(self.train.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
                                                                self.train.tf_log_batch_labels,
                                                                valid_pixels,
                                                                gamma=0.5)
 
-                _, self.valid.tf_loss = loss.tf_L(self.valid.fcrn.get_output(),
+                _, self.valid.tf_loss = loss.tf_L(self.valid.tf_pred,
                                                   self.valid.tf_log_depth_resized,
                                                   valid_pixels)
             elif selected_loss == 'berhu':
-                self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.fcrn.get_output(),
+                self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.tf_pred,
                                                                    self.train.tf_log_batch_labels,
                                                                    valid_pixels)
 
-                _, self.valid.tf_loss = loss.tf_BerHu(self.valid.fcrn.get_output(),
+                _, self.valid.tf_loss = loss.tf_BerHu(self.valid.tf_pred,
                                                       self.valid.tf_log_depth_resized,
                                                       valid_pixels)
             else:
@@ -124,7 +124,7 @@ class Model(object):
             tf.summary.image('input/batch_labels', self.train.tf_batch_labels, max_outputs=1, collections=self.model_collection)
             tf.summary.image('input/log_batch_labels', self.train.tf_log_batch_labels, max_outputs=1, collections=self.model_collection)
 
-            tf.summary.image('output/batch_pred', self.train.fcrn.get_output(), max_outputs=1, collections=self.model_collection)
+            tf.summary.image('output/batch_pred', self.train.tf_pred, max_outputs=1, collections=self.model_collection)
 
         with tf.name_scope("Valid"):
             tf.summary.scalar('loss', self.valid.tf_loss, collections=self.model_collection)
