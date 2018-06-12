@@ -521,12 +521,25 @@ def test(args):
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
 
+        # Crops Input and Depth Images (Removes Sky)
+        if data.dataset_name[0:5] == 'kitti':
+            tf_image_shape = tf.shape(tf_image)
+            tf_depth_shape = tf.shape(tf_depth)
+
+            crop_height_perc = tf.constant(0.3, tf.float32)
+            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
+            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+
+            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
+            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = data.rawdepth2meters(tf_depth)
 
         # tf_image.set_shape(input_size.getSize())
         # tf_depth.set_shape(output_size.getSize())
 
+        # Downsizes Input and Depth Images
         tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
         tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
         tf_image_resized = tf.expand_dims(tf_image_resized, axis=0)  # Model's Input size requirement
