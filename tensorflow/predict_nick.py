@@ -64,17 +64,17 @@ from modules.plot import Plot
 #  [Train] Framework Config
 # ==========================
 # Select the Loss Function:
-# LOSS_FUNCTION = 'mse'   # MSE
-# LOSS_FUNCTION = 'eigen' # Eigen's Scale-invariant Mean Squared Error
-LOSS_FUNCTION = 'berhu' # BerHu
+# LOSS_FUNCTION = 'mse'     # MSE
+# LOSS_FUNCTION = 'eigen'   # Eigen's Scale-invariant Mean Squared Error
+LOSS_FUNCTION = 'berhu'     # BerHu
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True  # Default: True
+VALID_PIXELS = True             # Default: True
 
-TRAIN_ON_SINGLE_IMAGE = False  # Default: False
-ENABLE_EARLY_STOP = True  # Default: True
-ENABLE_TENSORBOARD = True  # Default: True
-SAVE_TRAINED_MODEL = True  # Default: True
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+ENABLE_EARLY_STOP = True        # Default: True
+ENABLE_TENSORBOARD = True       # Default: True
+SAVE_TRAINED_MODEL = True       # Default: True
 
 # =========================
 #  [Test] Framework Config
@@ -84,7 +84,7 @@ SAVE_TRAINED_MODEL = True  # Default: True
 # 1 - TrainData
 TEST_EVALUATE_SUBSET = 0
 
-SAVE_TEST_DISPARITIES = True  # Default: True
+SAVE_TEST_DISPARITIES = True    # Default: True
 
 # ==================
 #  Global Variables
@@ -103,7 +103,7 @@ LOG_INITIAL_VALUE = 1
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
     valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/'+ LOSS_FUNCTION + '/' + datetime + '/'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + LOSS_FUNCTION + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -117,7 +117,7 @@ def kbevent(event):
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
-    if event.Ascii == 197: # Press 'F8' to stop training.
+    if event.Ascii == 197:  # Press 'F8' to stop training.
         global running
         running = False
 
