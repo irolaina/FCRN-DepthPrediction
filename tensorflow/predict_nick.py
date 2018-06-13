@@ -405,8 +405,8 @@ def train(args):
                 # [Valid] TODO: Implementar Leitura por Batches
 
                 # Detects the end of a epoch
-                if True: # Only for testing the following condition!!!
-                # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
+                # if True: # Only for testing the following condition!!!
+                if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
@@ -430,29 +430,11 @@ def train(args):
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
-
-                        valid_image1 = sess.run(model.valid.tf_image,feed_dict=feed_valid)
-                        valid_depth1 = sess.run(model.valid.tf_depth,feed_dict=feed_valid)
-                        valid_image2 = sess.run(model.valid.tf_image2, feed_dict=feed_valid)
-                        valid_depth2 = sess.run(model.valid.tf_depth2, feed_dict=feed_valid)
-                        # valid_image_float32 = sess.run(model.valid.tf_image_float32, feed_dict=feed_valid)
-                        # valid_depth_float32 = sess.run(model.valid.tf_depth_float32, feed_dict=feed_valid)
-
-                        print(valid_image1.shape, valid_image1.dtype)
-                        print(valid_depth1.shape, valid_depth1.dtype)
-                        print(valid_image2.shape, valid_image2.dtype)
-                        print(valid_depth2.shape, valid_depth2.dtype)
-                        # print(valid_image_float32.shape)
-                        # print(valid_depth_float32.shape)
-                        input("oi")
-
                         if args.show_valid_progress:
                             model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
                                                          log_label=valid_log_labels[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
-
-                        input("stop")
 
                         valid_loss_sum += model.valid.loss
 
