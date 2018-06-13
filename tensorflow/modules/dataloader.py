@@ -39,6 +39,8 @@ def getFilenamesTensors(image_filenames, depth_filenames):
 class Dataloader:
     def __init__(self, args):
         # Defines dataset_root path depending on which machine is used.
+        dataset_root = None
+
         if args.machine == 'xps':
             dataset_root = "/media/nicolas/Nícolas/datasets/"
         elif args.machine == 'olorin':

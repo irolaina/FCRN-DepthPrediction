@@ -112,6 +112,7 @@ class Train:
         print(self.tf_global_step)
         print(self.tf_learning_rate)
         print()
+        # input("train")
 
     def trainCollection(self):
         tf.add_to_collection('batch_data', self.tf_batch_data)

@@ -13,6 +13,7 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
 # [Train] FIXME: Early Stopping
+# [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
 
 # [Test] TODO: Validar Métricas
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
@@ -59,9 +60,9 @@ from modules.utils import total_size
 #  [Train] Framework Config
 # ==========================
 # Select the Loss Function:
-# LOSS_FUNCTION = 'mse'   # MSE
-# LOSS_FUNCTION = 'eigen' # Eigen's Scale-invariant Mean Squared Error
-LOSS_FUNCTION = 'berhu' # BerHu
+# LOSS_FUNCTION = 'mse'     # MSE
+# LOSS_FUNCTION = 'eigen'   # Eigen's Scale-invariant Mean Squared Error
+LOSS_FUNCTION = 'berhu'     # BerHu
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = True             # Default: True
@@ -98,7 +99,7 @@ LOG_INITIAL_VALUE = 1
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
     valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/'+ LOSS_FUNCTION + '/' + datetime + '/'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + LOSS_FUNCTION + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -112,7 +113,7 @@ def kbevent(event):
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
-    if event.Ascii == 197: # Press 'F8' to stop training.
+    if event.Ascii == 197:  # Press 'F8' to stop training.
         global running
         running = False
 
@@ -287,13 +288,15 @@ def train(args):
                 batch_labels, \
                 log_batch_labels, \
                 batch_pred, \
-                model.train.loss = sess.run([model.train_step,
-                                             model.train.tf_batch_data,
-                                             model.train.tf_batch_data_uint8,
-                                             model.train.tf_batch_labels,
-                                             model.train.tf_log_batch_labels,
-                                             model.train.tf_pred,
-                                             model.train.tf_loss])
+                model.train.loss, \
+                summary_train_loss = sess.run([model.train_step,
+                                               model.train.tf_batch_data,
+                                               model.train.tf_batch_data_uint8,
+                                               model.train.tf_batch_labels,
+                                               model.train.tf_log_batch_labels,
+                                               model.train.fcrn.get_output(),
+                                               model.train.tf_loss,
+                                               model.tf_summary_train_loss])
 
                 # pred2 = sess.run(model.train.tf_pred2)
 
@@ -329,7 +332,6 @@ def train(args):
                                                      log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
-
                     timer2 += time.time()
 
                     print('epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
@@ -340,6 +342,9 @@ def train(args):
                             timer2,
                             model.train.loss,
                             model.valid.loss))
+
+                if step % 1000 == 0:
+                    model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 # -------------------------- #
                 # [Validation] Session Run!  #
@@ -357,8 +362,8 @@ def train(args):
                         # TODO: Otimizar
                         valid_image = imageio.imread(data.test_image_filenames[i])
                         valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
-                                      model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+                        feed_valid = {model.valid.tf_image: valid_image,
+                                      model.valid.tf_depth: np.expand_dims(valid_depth, axis=2)}
 
                         valid_image, \
                         valid_image_uint8, \
@@ -395,8 +400,8 @@ def train(args):
 
                     # Write information to TensorBoard
                     if ENABLE_TENSORBOARD:
-                        summary_str = sess.run(model.summary_op, feed_valid)
-                        model.summary_writer.add_summary(summary_str, step)
+                        summary = sess.run(model.summary_op, feed_valid)
+                        model.summary_writer.add_summary(summary, step)
                         model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
