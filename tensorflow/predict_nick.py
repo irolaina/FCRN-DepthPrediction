@@ -32,31 +32,29 @@
 # ===========
 #  Libraries
 # ===========
-import imageio
 import os
 import warnings
 import time
-import sys
 import pyxhook
-
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import imageio
+import sys
+
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-import modules.metrics as metricsLib
-import modules.args as argsLib
-
 from PIL import Image
-from sys import getsizeof, stderr
-from itertools import chain
-from collections import deque
+
+# Custom Libraries
+import modules.args as argsLib
+import modules.metrics as metricsLib
 
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.model.fcrn import ResNet50UpProj
 from modules.size import Size
 from modules.plot import Plot
+from modules.utils import total_size
 
 # ==========================
 #  [Train] Framework Config
@@ -67,7 +65,7 @@ from modules.plot import Plot
 LOSS_FUNCTION = 'berhu' # BerHu
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True  # Default: True
+VALID_PIXELS = True             # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
@@ -82,7 +80,7 @@ SAVE_TRAINED_MODEL = True       # Default: True
 # 1 - TrainData
 TEST_EVALUATE_SUBSET = 0
 
-SAVE_TEST_DISPARITIES = True  # Default: True
+SAVE_TEST_DISPARITIES = True    # Default: True
 
 # ==================
 #  Global Variables
@@ -129,53 +127,6 @@ hookman.HookKeyboard()
 # Start our listener
 hookman.start()
 
-
-def total_size(o, handlers=None, verbose=False):
-    """ Returns the approximate memory footprint an object and all of its contents.
-
-    Automatically finds the contents of the following builtin containers and
-    their subclasses:  tuple, list, deque, dict, set and frozenset.
-    To search other containers, add handlers to iterate over their contents:
-
-        handlers = {SomeContainerClass: iter,
-                    OtherContainerClass: OtherContainerClass.get_elements}
-
-    """
-
-    if handlers is None:
-        handlers = {}
-
-    def dict_handler(d):
-        return chain.from_iterable(d.items())
-
-    all_handlers = {tuple: iter,
-                    list: iter,
-                    deque: iter,
-                    dict: dict_handler,
-                    set: iter,
-                    frozenset: iter,
-                    }
-    all_handlers.update(handlers)  # user handlers take precedence
-    seen = set()  # track which object id's have already been seen
-    default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
-
-    def sizeof(var):
-        if id(var) in seen:  # do not double count the same object
-            return 0
-        seen.add(id(var))
-        s = getsizeof(var, default_size)
-
-        if verbose:
-            print(s, type(var), repr(var), file=stderr)
-
-        for typ, handler in all_handlers.items():
-            if isinstance(var, typ):
-                # noinspection PyCallingNonCallable
-                s += sum(map(sizeof, handler(var)))
-                break
-        return s
-
-    return sizeof(o)
 
 
 # ========= #
