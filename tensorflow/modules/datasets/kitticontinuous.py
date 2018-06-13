@@ -53,7 +53,7 @@ class KittiContinuous(FilenamesHandler):
         self.depth_size = Size(375, 1242, 1)
 
         # Max Depth to limit predictions
-        self.max_depth = 80.0
+        self.max_depth = 85.0
 
         print("[Dataloader] KittiContinuous object created.")
 

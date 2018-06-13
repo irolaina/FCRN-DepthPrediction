@@ -12,7 +12,6 @@
 # [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
-# [Train] TODO: Reativar DataAugmentation
 # [Train] FIXME: Early Stopping
 # [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
 
