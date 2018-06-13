@@ -169,8 +169,8 @@ class Dataloader:
     def readData(self, image_filenames, depth_filenames):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
-        tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames, shuffle=False)  # TODO: Add capacity?
-        tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames, shuffle=False)  # TODO: Add capacity?
+        tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames, shuffle=False)
+        tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames, shuffle=False)
 
         # Reads images
         image_reader = tf.WholeFileReader()

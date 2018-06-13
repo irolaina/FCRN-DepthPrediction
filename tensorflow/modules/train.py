@@ -29,7 +29,7 @@ class Train:
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
-            if enableDataAug:
+            if enableDataAug: # FIXME: Not working properly yet
                 self.tf_image, self.tf_depth = self.augment_image_pair(self.tf_image, self.tf_depth)
 
             # Crops Input and Depth Images (Removes Sky)

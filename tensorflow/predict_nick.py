@@ -15,9 +15,7 @@
 # [Train] FIXME: Early Stopping
 # [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
 
-# [Test] TODO: Vitor sugeriu fazer listas de cenas de acordo com o contexto. Evitar misturar tudo. Ex: treinar no residential -> testar no campus
 # [Test] TODO: Validar Métricas
-# [Test] FIXME: Por quê o range da exp(Pred) é muito menor que o range do label em metros?
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 
 # Optional
@@ -34,31 +32,29 @@
 # ===========
 #  Libraries
 # ===========
-import imageio
 import os
 import warnings
 import time
-import sys
 import pyxhook
-
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import imageio
+import sys
+
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-import modules.metrics as metricsLib
-import modules.args as argsLib
-
 from PIL import Image
-from sys import getsizeof, stderr
-from itertools import chain
-from collections import deque
+
+# Custom Libraries
+import modules.args as argsLib
+import modules.metrics as metricsLib
 
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.model.fcrn import ResNet50UpProj
 from modules.size import Size
 from modules.plot import Plot
+from modules.utils import total_size
 
 # ==========================
 #  [Train] Framework Config
@@ -131,53 +127,6 @@ hookman.HookKeyboard()
 # Start our listener
 hookman.start()
 
-
-def total_size(o, handlers=None, verbose=False):
-    """ Returns the approximate memory footprint an object and all of its contents.
-
-    Automatically finds the contents of the following builtin containers and
-    their subclasses:  tuple, list, deque, dict, set and frozenset.
-    To search other containers, add handlers to iterate over their contents:
-
-        handlers = {SomeContainerClass: iter,
-                    OtherContainerClass: OtherContainerClass.get_elements}
-
-    """
-
-    if handlers is None:
-        handlers = {}
-
-    def dict_handler(d):
-        return chain.from_iterable(d.items())
-
-    all_handlers = {tuple: iter,
-                    list: iter,
-                    deque: iter,
-                    dict: dict_handler,
-                    set: iter,
-                    frozenset: iter,
-                    }
-    all_handlers.update(handlers)  # user handlers take precedence
-    seen = set()  # track which object id's have already been seen
-    default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
-
-    def sizeof(var):
-        if id(var) in seen:  # do not double count the same object
-            return 0
-        seen.add(id(var))
-        s = getsizeof(var, default_size)
-
-        if verbose:
-            print(s, type(var), repr(var), file=stderr)
-
-        for typ, handler in all_handlers.items():
-            if isinstance(var, typ):
-                # noinspection PyCallingNonCallable
-                s += sum(map(sizeof, handler(var)))
-                break
-        return s
-
-    return sizeof(o)
 
 
 # ========= #
@@ -526,12 +475,25 @@ def test(args):
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
 
+        # Crops Input and Depth Images (Removes Sky)
+        if data.dataset_name[0:5] == 'kitti':
+            tf_image_shape = tf.shape(tf_image)
+            tf_depth_shape = tf.shape(tf_depth)
+
+            crop_height_perc = tf.constant(0.3, tf.float32)
+            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
+            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+
+            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
+            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = data.rawdepth2meters(tf_depth)
 
         # tf_image.set_shape(input_size.getSize())
         # tf_depth.set_shape(output_size.getSize())
 
+        # Downsizes Input and Depth Images
         tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
         tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
         tf_image_resized = tf.expand_dims(tf_image_resized, axis=0)  # Model's Input size requirement
@@ -541,14 +503,12 @@ def test(args):
         net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
         tf_pred = net.get_output()
 
-        # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original
-        tf_pred_up = tf.image.resize_images(tf_pred, data.depth_size.getSize()[:2], tf.image.ResizeMethod.BILINEAR, False)
-        tf_pred_exp = tf.exp(tf_pred_up)
+        tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, False)
 
         # Group Tensors
         image_op = [tf_image_path, tf_image, tf_image_resized_uint8]
         depth_op = [tf_depth_path, tf_depth, tf_depth_resized]
-        pred_op = [tf_pred, tf_pred_up, tf_pred_exp]
+        pred_op = [tf_pred, tf_pred_up]
 
         # Print Tensors
         print("\nTensors:")
@@ -591,11 +551,11 @@ def test(args):
 
                 _, image, image_resized = sess.run(image_op, feed_test)
                 _, depth, depth_resized = sess.run(depth_op, feed_test)
-                pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
+                pred, pred_up = sess.run(pred_op, feed_test)
             else:
                 feed_test = {tf_image_path: data.test_image_filenames[i]}
                 _, image, image_resized = sess.run(image_op, feed_test)
-                pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
+                pred, pred_up = sess.run(pred_op, feed_test)
 
             pred_list.append(pred_up[0])
             gt_list.append(depth)
@@ -621,7 +581,7 @@ def test(args):
                                              log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
-                                             pred_exp=pred_exp[0, :, :, 0],
+                                             log_depth=np.log(depth[:, :, 0] + LOG_INITIAL_VALUE),
                                              i=i + 1)
 
         # Testing Finished.
