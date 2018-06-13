@@ -18,17 +18,19 @@ LOG_INITIAL_VALUE = 1
 class Validation:
     def __init__(self, args, input_size, output_size, max_depth, dataset_name):
         # Raw Input/Output
-        self.tf_image = tf.placeholder(tf.uint8, shape=(None, None, None, 3))
+        self.tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
 
         if dataset_name.split('_')[0] == 'kittidiscrete' or \
            dataset_name.split('_')[0] == 'kitticontinuous':
-            self.tf_depth = tf.placeholder(tf.uint8, shape=(None, None, None, 1))
+            self.tf_depth = tf.placeholder(tf.uint8, shape=(None, None, 1))
         else:
-            self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
+            self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, 1))
 
-        self.tf_image = tf.cast(self.tf_image, tf.float32, name='raw_image')
-        self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='raw_depth')
+        # Convert uint8/uint16 to float32
+        self.tf_image = tf.cast(self.tf_image, tf.float32, name='image')
+        self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='depth')
 
+        # FIXME: Not working for kittidepth
         # Crops Input and Depth Images (Removes Sky)
         if dataset_name[0:5] == 'kitti':
             tf_image_shape = tf.shape(self.tf_image)
@@ -48,25 +50,12 @@ class Validation:
         self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
         self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32), name='log_depth')
 
-        # TODO: Implementar validacao por batches?
-        # batch_size = 2
-        #
-        # self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
-        #
-        # # Creates Training Batch Tensors
-        # self.tf_batch_data_resized, self.tf_batch_data, self.tf_batch_labels = tf.train.shuffle_batch(
-        #     # [tf_image_key, tf_depth_key],           # Enable for Debugging the filename strings.
-        #     [self.tf_image_resized_uint8, self.tf_image_resized, self.tf_depth_resized],  # Enable for debugging images
-        #     batch_size=batch_size,
-        #     num_threads=1,
-        #     capacity=16,
-        #     min_after_dequeue=0)
-
-        self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, batch=args.batch_size, keep_prob=1, is_training=False)
+        self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1, is_training=False)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
-        self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
+        if max_depth is not None:
+            self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
 
         with tf.name_scope('Valid'):
             self.tf_loss = None
@@ -83,3 +72,5 @@ class Validation:
         print(self.tf_image_resized_uint8)
         print(self.tf_depth_resized)
         print(self.tf_log_depth_resized)
+        print()
+        # input("valid")

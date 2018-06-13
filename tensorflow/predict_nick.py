@@ -14,6 +14,7 @@
 
 # [Train] TODO: Reativar DataAugmentation
 # [Train] FIXME: Early Stopping
+# [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
 
 # [Test] TODO: Vitor sugeriu fazer listas de cenas de acordo com o contexto. Evitar misturar tudo. Ex: treinar no residential -> testar no campus
 # [Test] TODO: Validar Métricas
@@ -404,8 +405,8 @@ def train(args):
                 # [Valid] TODO: Implementar Leitura por Batches
 
                 # Detects the end of a epoch
-                # if True: # Only for testing the following condition!!!
-                if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
+                if True: # Only for testing the following condition!!!
+                # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
@@ -413,8 +414,8 @@ def train(args):
                         # TODO: Otimizar
                         valid_image = imageio.imread(data.test_image_filenames[i])
                         valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
-                                      model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+                        feed_valid = {model.valid.tf_image: valid_image,
+                                      model.valid.tf_depth: np.expand_dims(valid_depth, axis=2)}
 
                         valid_image, \
                         valid_image_uint8, \
@@ -429,11 +430,29 @@ def train(args):
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
+
+                        valid_image1 = sess.run(model.valid.tf_image,feed_dict=feed_valid)
+                        valid_depth1 = sess.run(model.valid.tf_depth,feed_dict=feed_valid)
+                        valid_image2 = sess.run(model.valid.tf_image2, feed_dict=feed_valid)
+                        valid_depth2 = sess.run(model.valid.tf_depth2, feed_dict=feed_valid)
+                        # valid_image_float32 = sess.run(model.valid.tf_image_float32, feed_dict=feed_valid)
+                        # valid_depth_float32 = sess.run(model.valid.tf_depth_float32, feed_dict=feed_valid)
+
+                        print(valid_image1.shape, valid_image1.dtype)
+                        print(valid_depth1.shape, valid_depth1.dtype)
+                        print(valid_image2.shape, valid_image2.dtype)
+                        print(valid_depth2.shape, valid_depth2.dtype)
+                        # print(valid_image_float32.shape)
+                        # print(valid_depth_float32.shape)
+                        input("oi")
+
                         if args.show_valid_progress:
                             model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
                                                          log_label=valid_log_labels[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
+
+                        input("stop")
 
                         valid_loss_sum += model.valid.loss
 
