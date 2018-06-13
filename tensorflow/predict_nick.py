@@ -15,7 +15,6 @@
 # [Train] FIXME: Early Stopping
 
 # [Test] TODO: Validar Métricas
-# [Test] FIXME: Por quê o range da exp(Pred) é muito menor que o range do label em metros?
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 
 # Optional
@@ -499,14 +498,12 @@ def test(args):
         net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
         tf_pred = net.get_output()
 
-        # TODO: Algumas imagens não possuem o tamanho 'oficial', mais correto seria ler o tamanho da imagem e recuperar o tamanho original
-        tf_pred_up = tf.image.resize_images(tf_pred, data.depth_size.getSize()[:2], tf.image.ResizeMethod.BILINEAR, False)
-        tf_pred_exp = tf.exp(tf_pred_up)
+        tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, False)
 
         # Group Tensors
         image_op = [tf_image_path, tf_image, tf_image_resized_uint8]
         depth_op = [tf_depth_path, tf_depth, tf_depth_resized]
-        pred_op = [tf_pred, tf_pred_up, tf_pred_exp]
+        pred_op = [tf_pred, tf_pred_up]
 
         # Print Tensors
         print("\nTensors:")
@@ -549,11 +546,11 @@ def test(args):
 
                 _, image, image_resized = sess.run(image_op, feed_test)
                 _, depth, depth_resized = sess.run(depth_op, feed_test)
-                pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
+                pred, pred_up = sess.run(pred_op, feed_test)
             else:
                 feed_test = {tf_image_path: data.test_image_filenames[i]}
                 _, image, image_resized = sess.run(image_op, feed_test)
-                pred, pred_up, pred_exp = sess.run(pred_op, feed_test)
+                pred, pred_up = sess.run(pred_op, feed_test)
 
             pred_list.append(pred_up[0])
             gt_list.append(depth)
