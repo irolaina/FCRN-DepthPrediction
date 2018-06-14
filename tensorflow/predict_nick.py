@@ -353,8 +353,8 @@ def train(args):
                 # [Valid] TODO: Implementar Leitura por Batches
 
                 # Detects the end of a epoch
-                # if True: # Only for testing the following condition!!!
-                if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
+                if True: # Only for testing the following condition!!!
+                # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
@@ -362,8 +362,8 @@ def train(args):
                         # TODO: Otimizar
                         valid_image = imageio.imread(data.test_image_filenames[i])
                         valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image: valid_image,
-                                      model.valid.tf_depth: np.expand_dims(valid_depth, axis=2)}
+                        feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
+                                      model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
 
                         valid_image, \
                         valid_image_uint8, \
