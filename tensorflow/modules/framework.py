@@ -100,7 +100,7 @@ class Model(object):
                 self.train.tf_loss += loss.calculateL2norm()
 
             if valid_pixels:
-                print("\n[Network/Loss] Compute: Ignore invalid pixels")
+                print("[Network/Loss] Compute: Ignore invalid pixels")
             else:
                 print("\n[Network/Loss] Loss: All Pixels")
             print("[Network/Loss] Loss Function: %s" % self.loss_name)

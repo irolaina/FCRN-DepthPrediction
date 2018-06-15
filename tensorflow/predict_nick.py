@@ -13,6 +13,7 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
 # [Train] FIXME: Early Stopping
+# [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
 
 # [Test] TODO: Validar Métricas
 # [Test] FIXME: Por quê o range da exp(Pred) é muito menor que o range do label em metros?
@@ -520,17 +521,18 @@ def test(args):
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
 
-        # Crops Input and Depth Images (Removes Sky)
-        if data.dataset_name[0:5] == 'kitti':
-            tf_image_shape = tf.shape(tf_image)
-            tf_depth_shape = tf.shape(tf_depth)
-
-            crop_height_perc = tf.constant(0.3, tf.float32)
-            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
-
-            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+        # TODO: Segundo o vitor não faz sentido remover o céu no test
+        # # Crops Input and Depth Images (Removes Sky)
+        # if data.dataset_name[0:5] == 'kitti':
+        #     tf_image_shape = tf.shape(tf_image)
+        #     tf_depth_shape = tf.shape(tf_depth)
+        #
+        #     crop_height_perc = tf.constant(0.3, tf.float32)
+        #     tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
+        #     tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+        #
+        #     tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
+        #     tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = data.rawdepth2meters(tf_depth)

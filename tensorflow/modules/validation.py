@@ -26,8 +26,13 @@ class Validation:
         else:
             self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
 
-        self.tf_image = tf.cast(self.tf_image, tf.float32, name='raw_image')
-        self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='raw_depth')
+        # Convert uint8/uint16 to float32
+        self.tf_image = tf.cast(self.tf_image, tf.float32, name='image')
+        self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='depth')
+
+        # Workaround for assigning bug
+        self.tf_image2 = self.tf_image
+        self.tf_depth2 = self.tf_depth
 
         # Crops Input and Depth Images (Removes Sky)
         if dataset_name[0:5] == 'kitti':
@@ -35,15 +40,16 @@ class Validation:
             tf_depth_shape = tf.shape(self.tf_depth)
 
             crop_height_perc = tf.constant(0.3, tf.float32)
-            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[1], tf.float32)
+            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[1], tf.float32)
 
-            self.tf_image = self.tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-            self.tf_depth = self.tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+            # FIXME: Why changing to self.tf_image e self.tf_depth doesn't work?
+            self.tf_image2 = self.tf_image[:, tf.cast(tf_image_new_height, tf.int32):, :]
+            self.tf_depth2 = self.tf_depth[:, tf.cast(tf_depth_new_height, tf.int32):, :]
 
         # Downsizes Input and Depth Images
-        self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
-        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
+        self.tf_image_resized = tf.image.resize_images(self.tf_image2, [input_size.height, input_size.width])
+        self.tf_depth_resized = tf.image.resize_images(self.tf_depth2, [output_size.height, output_size.width])
 
         self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
         self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32), name='log_depth')
@@ -70,3 +76,5 @@ class Validation:
         print(self.tf_image_resized_uint8)
         print(self.tf_depth_resized)
         print(self.tf_log_depth_resized)
+        print()
+        # input("valid")
