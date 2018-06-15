@@ -65,7 +65,7 @@ from modules.utils import total_size
 LOSS_FUNCTION = 'berhu'     # BerHu
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True             # Default: True
+VALID_PIXELS = False             # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
@@ -298,7 +298,7 @@ def train(args):
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
 
-                # pred2 = sess.run(model.train.tf_pred2)
+                model.summary_writer.add_summary(summary_train_loss, step)
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
