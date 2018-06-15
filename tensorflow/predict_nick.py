@@ -324,9 +324,6 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
-                        # plt.figure(100)
-                        # plt.imshow(pred2[0, :, :, 0])
-
                         model.train.plot.showResults(raw=batch_data_uint8[0],
                                                      label=batch_labels[0, :, :, 0],
                                                      log_label=log_batch_labels[0, :, :, 0],
@@ -475,6 +472,19 @@ def test(args):
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
 
+        # TODO: Remover?
+        # Crops Input and Depth Images (Removes Sky)
+        if data.dataset_name[0:5] == 'kitti':
+            tf_image_shape = tf.shape(tf_image)
+            tf_depth_shape = tf.shape(tf_depth)
+
+            crop_height_perc = tf.constant(0.3, tf.float32)
+            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
+            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+
+            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
+            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = data.rawdepth2meters(tf_depth)
 
@@ -527,8 +537,8 @@ def test(args):
 
         timer = -time.time()
         pred_list, gt_list = [], []
-        for i in range(numSamples):
-        # for i in range(5): # Only for testing!
+        # for i in range(numSamples):
+        for i in range(50): # Only for testing!
 
             timer2 = -time.time()
 
@@ -545,8 +555,7 @@ def test(args):
                 _, image, image_resized = sess.run(image_op, feed_test)
                 pred, pred_up = sess.run(pred_op, feed_test)
 
-            pred_list.append(pred_up[0])
-            gt_list.append(depth)
+            log_depth = np.log(depth[:, :, 0] + LOG_INITIAL_VALUE)
 
             # print(image.shape)
             # print(image_resized.shape)
@@ -554,6 +563,10 @@ def test(args):
             # print(depth_resized.shape)
             # print(pred.shape)
             # input("test")
+
+            # Fill arrays for later on metrics evaluation
+            pred_list.append(pred_up[0, : , :, 0])
+            gt_list.append(log_depth)
 
             # Prints Testing Progress
             timer2 += time.time()
@@ -569,7 +582,7 @@ def test(args):
                                              log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
-                                             log_depth=np.log(depth[:, :, 0] + LOG_INITIAL_VALUE),
+                                             log_depth=log_depth,
                                              i=i + 1)
 
         # Testing Finished.
@@ -594,77 +607,119 @@ def test(args):
             np.save(save_path_pred, pred)
 
         # Calculate Metrics
-        # if data.test_depth_filenames:
-        #     pred_array = np.array(pred_list)
-        #     gt_array = np.array(gt_list)
-        #
-        #     def evaluateTestSet(pred, gt, mask):
-        #         # Compute error metrics on benchmark datasets
-        #         # -------------------------------------------------------------------------
-        #
-        #         # make sure predictions and ground truth have same dimensions
-        #         if pred.shape != gt_array.shape:
-        #             # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
-        #             input("terminar!")
-        #             pass
-        #
-        #         if mask is None:
-        #             n_pxls = gt.size
-        #         else:
-        #             n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
-        #
-        #         print('\n Errors computed over the entire test set \n')
-        #         print('------------------------------------------\n')
-        #
-        #         # Mean Absolute Relative Error
-        #         rel = np.abs(gt - pred)/ gt  # compute errors
-        #
-        #         print(pred.shape, pred.size)
-        #         print(gt.shape, gt.size)
-        #         print(n_pxls)
-        #         print(rel)
-        #         print(rel[mask])
-        #
-        #         print(rel)
-        #         input("antes")
-        #         rel[mask] = 0
-        #         print(rel)
-        #         input("depois")
-        #
-        #         # rel(~mask) = 0                      # mask out invalid ground truth pixels
-        #         # rel = sum(rel) / n_pxls             # average over all pixels
-        #         # print('Mean Absolute Relative Error: %4f\n', rel)
-        #         #
-        #         # # Root Mean Squared Error
-        #         # rms = (gt - pred)**2
-        #         # rms(~mask) = 0
-        #         # rms = sqrt(sum(rms) / n_pxls)
-        #         # print('Root Mean Squared Error: %4f\n', rms)
-        #         #
-        #         # # LOG10 Error
-        #         # lg10 = abs(log10(gt) - log10(pred))
-        #         # lg10(~mask) = 0
-        #         # lg10 = sum(lg10) / n_pxls
-        #         # print('Mean Log10 Error: %4f\n', lg10)
-        #         #
-        #         # results.rel = rel
-        #         # results.rms = rms
-        #         # results.log10 = lg10
-        #
-        #         return results
-        #
-        #     if VALID_PIXELS:
-        #         mask = np.where(gt_array > 0) # TODO: Adicionar ranges para cada um dos datasets
-        #         # print(len(mask))
-        #
-        #         imask = tf.where(gt_array > 0, tf.ones_like(gt_array), tf.zeros_like(depth))
-        #         depth2 = tf_depth * tf_imask
-        #
-        #     else:
-        #         mask = None
-        #
-        #     evaluateTestSet(pred_array, gt_array, mask)
-        #     # metricsLib.evaluateTesting(pred, test_labels_o)
+        if data.test_depth_filenames:
+            pred_array = np.array(pred_list)
+            gt_array = np.array(gt_list)
+
+            # Link: https://github.com/iro-cp/FCRN-DepthPrediction/issues/45
+            def evaluateTestSetLaina(pred, gt):
+                # Mask Valid Values
+                mask = np.where(gt > 0)  # TODO: funciona pra todos os datasets?
+
+                # print(mask)
+                # print(len(mask))
+
+                # print("Before")
+                # print(pred.shape)
+                # print(gt.shape)
+
+                pred = pred[mask]
+                gt = gt[mask]
+
+                # print("After")
+                # print(pred.shape)
+                # print(gt.shape)
+
+                thresh = np.maximum((gt / pred), (pred / gt))
+                a1 = (thresh < 1.25).mean()
+                a2 = (thresh < 1.25 ** 2).mean()
+                a3 = (thresh < 1.25 ** 3).mean()
+
+                rmse = (gt - pred) ** 2
+                rmse = np.sqrt(rmse.mean())
+
+                rmse_log = (np.log(gt) - np.log(pred)) ** 2 # FIXME: Acredito que seja necessário adicionar um valor LOG_INITIAL_VALUE, mas nao sei se a metrica permite isso
+                rmse_log = np.sqrt(rmse_log.mean())
+
+                abs_rel = np.mean(np.abs(gt - pred) / gt)
+
+                sq_rel = np.mean(((gt - pred) ** 2) / gt)
+
+                print()
+                print("----- Metrics -----")
+                # print("thr:", thresh)
+                print("a1:", a1)
+                print("a2:", a2)
+                print("a3:", a3)
+                print("rmse:", rmse)
+                print("rmse_log:", rmse_log)
+                print("abs_rel:", abs_rel)
+                print("sq_rel:", sq_rel)
+                # input("metrics")
+
+            evaluateTestSetLaina(pred_array, gt_array)
+
+            # def evaluateTestSet(pred, gt, mask):
+            #     # Compute error metrics on benchmark datasets
+            #     # -------------------------------------------------------------------------
+            #
+            #     # make sure predictions and ground truth have same dimensions
+            #     if pred.shape != gt_array.shape:
+            #         # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
+            #         input("terminar!")
+            #         pass
+            #
+            #     if mask is None:
+            #         n_pxls = gt.size
+            #     else:
+            #         n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
+            #
+            #     print('\n Errors computed over the entire test set \n')
+            #     print('------------------------------------------\n')
+            #
+            #     # Mean Absolute Relative Error
+            #     rel = np.abs(gt - pred)/ gt  # compute errors
+            #
+            #     print(pred.shape, pred.size)
+            #     print(gt.shape, gt.size)
+            #     print(n_pxls)
+            #     print(rel)
+            #     print(rel[mask])
+            #
+            #         print(rel)
+            #         input("antes")
+            #         rel[mask] = 0
+            #         print(rel)
+            #         input("depois")
+            #
+            #         # rel(~mask) = 0                      # mask out invalid ground truth pixels
+            #         # rel = sum(rel) / n_pxls             # average over all pixels
+            #         # print('Mean Absolute Relative Error: %4f\n', rel)
+            #         #
+            #         # # Root Mean Squared Error
+            #         # rms = (gt - pred)**2
+            #         # rms(~mask) = 0
+            #         # rms = sqrt(sum(rms) / n_pxls)
+            #         # print('Root Mean Squared Error: %4f\n', rms)
+            #         #
+            #         # # LOG10 Error
+            #         # lg10 = abs(log10(gt) - log10(pred))
+            #         # lg10(~mask) = 0
+            #         # lg10 = sum(lg10) / n_pxls
+            #         # print('Mean Log10 Error: %4f\n', lg10)
+            #         #
+            #         # results.rel = rel
+            #         # results.rms = rms
+            #         # results.log10 = lg10
+            #
+            #         return results
+            #
+            #     if VALID_PIXELS:
+            #
+
+
+            # evaluateTestSet(pred_array, gt_array, mask)
+            # metricsLib.evaluateTesting(pred, test_labels_o)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
