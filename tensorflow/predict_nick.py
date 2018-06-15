@@ -65,7 +65,7 @@ from modules.utils import total_size
 LOSS_FUNCTION = 'berhu'     # BerHu
 
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = True             # Default: True
+VALID_PIXELS = False             # Default: True
 
 TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
@@ -298,7 +298,7 @@ def train(args):
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
 
-                # pred2 = sess.run(model.train.tf_pred2)
+                model.summary_writer.add_summary(summary_train_loss, step)
 
                 def debug_data_augmentation():
                     fig, axes = plt.subplots(nrows=2, ncols=2)
@@ -362,8 +362,8 @@ def train(args):
                         # TODO: Otimizar
                         valid_image = imageio.imread(data.test_image_filenames[i])
                         valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image: valid_image,
-                                      model.valid.tf_depth: np.expand_dims(valid_depth, axis=2)}
+                        feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
+                                      model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
 
                         valid_image, \
                         valid_image_uint8, \
