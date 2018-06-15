@@ -32,15 +32,15 @@
 # ===========
 #  Libraries
 # ===========
+import imageio
 import os
 import warnings
 import time
+import sys
 import pyxhook
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import imageio
-import sys
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from PIL import Image
@@ -400,8 +400,8 @@ def train(args):
 
                     # Write information to TensorBoard
                     if ENABLE_TENSORBOARD:
-                        summary = sess.run(model.summary_op, feed_valid)
-                        model.summary_writer.add_summary(summary, step)
+                        summary_str = sess.run(model.summary_op, feed_valid)
+                        model.summary_writer.add_summary(summary_str, step)
                         model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
@@ -474,18 +474,6 @@ def test(args):
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
-
-        # Crops Input and Depth Images (Removes Sky)
-        if data.dataset_name[0:5] == 'kitti':
-            tf_image_shape = tf.shape(tf_image)
-            tf_depth_shape = tf.shape(tf_depth)
-
-            crop_height_perc = tf.constant(0.3, tf.float32)
-            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
-
-            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = data.rawdepth2meters(tf_depth)
