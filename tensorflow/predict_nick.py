@@ -15,8 +15,14 @@
 # [Train] FIXME: Early Stopping
 # [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
 
-# [Test] TODO: Validar Métricas
+# [Test] TODO: Procurar métricas mais recentes de outros trabalhos
+# [Test] TODO: Ver métricas do trabalho DORN. Dep: Instalar Caffe
+# [Test] TODO: Ver do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
+# [Test] TODO: Validar Métricas
+
+# Known Bugs
+# [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -47,7 +53,9 @@ from PIL import Image
 
 # Custom Libraries
 import modules.args as argsLib
-import modules.metrics as metricsLib
+import modules.metrics as myMetrics
+import modules.metrics_laina as LainaMetrics
+import modules.metrics_laina as MonodepthMetrics
 
 from modules.dataloader import Dataloader
 from modules.framework import Model
@@ -612,8 +620,9 @@ def test(args):
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
 
-            metricsLib.evaluateTestSetLaina(pred_array, gt_array)
-            metricsLib.evaluateTesting(pred_array, gt_array)
+            # LainaMetrics.evaluate(pred_array, gt_array)
+            # myMetrics.evaluate(pred_array, gt_array)
+            MonodepthMetrics.evaluate(pred_array, gt_array)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
