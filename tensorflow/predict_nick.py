@@ -38,15 +38,15 @@
 # ===========
 #  Libraries
 # ===========
-import imageio
 import os
 import warnings
 import time
-import sys
 import pyxhook
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import imageio
+import sys
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from PIL import Image
@@ -55,7 +55,7 @@ from PIL import Image
 import modules.args as argsLib
 import modules.metrics as myMetrics
 import modules.metrics_laina as LainaMetrics
-import modules.metrics_laina as MonodepthMetrics
+import modules.metrics_monodepth as MonodepthMetrics
 
 from modules.dataloader import Dataloader
 from modules.framework import Model
@@ -107,7 +107,7 @@ LOG_INITIAL_VALUE = 1
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
     valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + LOSS_FUNCTION + '/' + datetime + '/'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + args.loss + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -256,7 +256,7 @@ def train(args):
         data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
-        model = Model(args, data, LOSS_FUNCTION, VALID_PIXELS)
+        model = Model(args, data, args.loss, VALID_PIXELS)
         model.collectSummaries(save_path, graph)
         model.createTrainSaver()
 
@@ -545,9 +545,10 @@ def test(args):
 
         timer = -time.time()
         pred_list, gt_list = [], []
-        # for i in range(numSamples):
-        for i in range(5): # Only for testing!
+        for i in range(numSamples):
+        # for i in range(5): # Only for testing!
         # for i in range(50):  # Only for testing!
+        # for i in range(200):  # Only for testing!
 
             timer2 = -time.time()
 
@@ -574,8 +575,18 @@ def test(args):
             # input("test")
 
             # Fill arrays for later on metrics evaluation
-            pred_list.append(pred_up[0, : , :, 0])
+            pred_list.append(pred_up[0, :, :, 0])
             gt_list.append(log_depth)
+
+            # plt.figure()
+            # plt.imshow(pred_up[0, :, :, 0])
+            # plt.colorbar()
+            # plt.figure()
+            # plt.imshow(log_depth)
+            # plt.colorbar()
+            # plt.draw()
+            # plt.pause(0.01)
+            # input("oi")
 
             # Prints Testing Progress
             timer2 += time.time()
