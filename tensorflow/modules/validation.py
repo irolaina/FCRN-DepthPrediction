@@ -32,6 +32,7 @@ class Validation:
 
         # Workaround for assigning bug
         self.tf_image2 = self.tf_image
+        self.tf_depth2 = self.tf_depth
 
         # Crops Input and Depth Images (Removes Sky)
         if dataset_name[0:5] == 'kitti':
