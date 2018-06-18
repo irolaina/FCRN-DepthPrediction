@@ -5,28 +5,124 @@
 # ===========
 import numpy as np
 
-
-# TODO: Comparar métricas abaixo com as que eu implementei.
-# Link: https://github.com/iro-cp/FCRN-DepthPrediction/issues/45
-# thresh = np.maximum((gt / pred), (pred / gt))
-# a1 = (thresh < 1.25).mean()
-# a2 = (thresh < 1.25 ** 2).mean()
-# a3 = (thresh < 1.25 ** 3).mean()
-#
-# rmse = (gt - pred) ** 2
-# rmse = np.sqrt(rmse.mean())
-#
-# rmse_log = (np.log(gt) - np.log(pred)) ** 2
-# rmse_log = np.sqrt(rmse_log.mean())
-#
-# abs_rel = np.mean(np.abs(gt - pred) / gt)
-#
-# sq_rel = np.mean(((gt - pred) ** 2) / gt)
-
 # ===========
 #  Functions
 # ===========
 # TODO: Validar, usar o arquivo error_metrics.m da Iro Laina
+# Link: https://github.com/iro-cp/FCRN-DepthPrediction/issues/45
+def evaluateTestSetLaina(pred_array, gt_array):
+    # print((gt_array / pred_array))
+    # print((pred_array / gt_array))
+    # thr = np.maximum((gt_array / pred_array), (pred_array / gt_array))
+
+    # pred_aux, gt_aux = [], []
+    # for i in range(len(pred_array)):
+    #     pred = pred_array[i]
+    #     gt = gt_array[i]
+    #
+    #     mask = np.where(gt > 0)
+    #
+    #     pred = pred[mask]
+    #     gt = gt[mask]
+    #
+    #     pred_aux.append(pred)
+    #     gt_aux.append(gt)
+    #
+    #     print(pred.shape)
+    #     print(gt.shape)
+    #
+    # pred = np.array(pred_aux)
+    # gt = np.array(gt_aux)
+    #
+    # print(pred.shape, pred.dtype)
+    # print(gt.shape, gt.dtype)
+    # input("aki")
+
+    # ------------------- #
+    #  Mask Valid Pixels  #
+    # ------------------- #
+    # TODO: Metodo abaixo só funciona com o NYUDepth
+    valid_px = False
+
+    print("Before")
+    print(pred_array.shape, pred_array.dtype)
+    print(gt_array.shape, gt_array.dtype)
+
+    if valid_px:
+        # Mask Valid Values
+        mask = np.where(gt_array > 0)  # TODO: funciona pra todos os datasets?
+
+        # print(mask)
+        # print(len(mask))
+
+        pred = pred_array[mask]
+        gt = gt_array[mask]
+
+    else:
+        pred = pred_array
+        gt = gt_array
+
+    print("After")
+    print(pred.shape, pred.dtype)
+    print(gt.shape, gt.dtype)
+
+    # ----------- #
+    #  Threshold  #
+    # ----------- #
+    thr = np.maximum((gt / pred), (pred / gt))
+    d1 = (thr < 1.25).mean()
+    d2 = (thr < 1.25 ** 2).mean()
+    d3 = (thr < 1.25 ** 3).mean()
+
+    # -------------- #
+    #  RMSE(linear)  #
+    # -------------- #
+    rmse = (gt - pred) ** 2
+    rmse = np.sqrt(rmse.mean())
+
+    # ----------- #
+    #  RMSE(log)  #
+    # ----------- #
+    # TODO: Devo usar log ou log10?
+    # FIXME: Acredito que seja necessário adicionar um valor LOG_INITIAL_VALUE, mas nao sei se a metrica permite isso
+    rmse_log = (np.log(gt) - np.log(pred)) ** 2
+    rmse_log = np.sqrt(rmse_log.mean())
+
+    # mask_aux = np.where(np.log(pred) < 0)
+    # mask_aux2 = np.where(np.isinf(np.log(pred)))
+    # pred2 = pred[mask_aux]
+    # pred3 = pred[mask_aux2]
+    # print(pred2)
+    # print(pred3)
+    # print(np.log(pred2))
+    # print(np.log(pred3))
+    # input("oi")
+
+    # ------------------------- #
+    #  Abs Relative Difference  #
+    # ------------------------- #
+    abs_rel = np.mean(np.abs(gt - pred) / gt)
+
+    # ----------------------------- #
+    #  Squared Relative Difference  #
+    # ----------------------------- #
+    sq_rel = np.mean(((gt - pred) ** 2) / gt)
+
+    print()
+    print("# ----------------- #")
+    print("#  Metrics Results  #")
+    print("# ----------------- #")
+    # print("thr:", thr)
+    print("d1:", d1)
+    print("d2:", d2)
+    print("d3:", d3)
+    print("rmse:", rmse)
+    print("rmse_log:", rmse_log)
+    print("abs_rel:", abs_rel)
+    print("sq_rel:", sq_rel)
+    # input("metrics")
+
+
 def evaluateTesting(fine, labels):
     print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
     print("Input")
@@ -41,13 +137,18 @@ def evaluateTesting(fine, labels):
     print("Threshold sig < 1.25:", np_Threshold(fine, labels, thr=1.25))
     print("Threshold sig < 1.25^2:", np_Threshold(fine, labels, thr=pow(1.25, 2)))
     print("Threshold sig < 1.25^3:", np_Threshold(fine, labels, thr=pow(1.25, 3)))
-    print("AbsRelativeDifference:", np_AbsRelativeDifference(fine, labels))
-    print("SqrRelativeDifference:", np_SquaredRelativeDifference(fine, labels))
     print("RMSE(linear):", np_RMSE_linear(fine, labels))
     print("RMSE(log):", np_RMSE_log(fine, labels))
+    print("AbsRelativeDifference:", np_AbsRelativeDifference(fine, labels))
+    print("SqrRelativeDifference:", np_SquaredRelativeDifference(fine, labels))
+    print()
     print("RMSE(log, scale inv.):", np_RMSE_log_scaleInv(fine, labels))
 
 
+# ------------------- #
+#  Mask Valid Pixels  #
+# ------------------- #
+# TODO: Métrica é aplicada em todos ou apenas nos pixeis válidos? TODOS
 def np_maskOutInvalidPixels(y, y_):
     # Index Vectors for Valid Pixels
     nvalids_idx = np.where(y_ > 0)
@@ -64,7 +165,6 @@ def np_maskOutInvalidPixels(y, y_):
 # ----------- #
 #  Threshold  #
 # ----------- #
-# TODO: Métrica é aplicada em todos ou apenas nos pixeis válidos? TODOS
 def np_Threshold(y, y_, thr):
     # Check if y and y* have the same dimensions
     assert (y.shape == y_.shape), "Houston we've got a problem"
@@ -125,7 +225,7 @@ def np_SquaredRelativeDifference(y, y_):
     y, y_, nvalids_idx, npixels_valid = np_maskOutInvalidPixels(y, y_)
 
     # Calculate Absolute Relative Difference
-    value = sum(pow((abs(y - y_) / y_), 2) / abs(npixels_total))
+    value = sum((abs(y - y_) ** 2 / y_) / abs(npixels_total))
     # value = sum(pow((abs(y - y_) / y_), 2) / abs(npixels_valid))
 
     return value

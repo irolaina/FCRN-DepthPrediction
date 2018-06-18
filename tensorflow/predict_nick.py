@@ -538,7 +538,8 @@ def test(args):
         timer = -time.time()
         pred_list, gt_list = [], []
         # for i in range(numSamples):
-        for i in range(50): # Only for testing!
+        for i in range(5): # Only for testing!
+        # for i in range(50):  # Only for testing!
 
             timer2 = -time.time()
 
@@ -611,115 +612,8 @@ def test(args):
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
 
-            # Link: https://github.com/iro-cp/FCRN-DepthPrediction/issues/45
-            def evaluateTestSetLaina(pred, gt):
-                # Mask Valid Values
-                mask = np.where(gt > 0)  # TODO: funciona pra todos os datasets?
-
-                # print(mask)
-                # print(len(mask))
-
-                # print("Before")
-                # print(pred.shape)
-                # print(gt.shape)
-
-                pred = pred[mask]
-                gt = gt[mask]
-
-                # print("After")
-                # print(pred.shape)
-                # print(gt.shape)
-
-                thresh = np.maximum((gt / pred), (pred / gt))
-                a1 = (thresh < 1.25).mean()
-                a2 = (thresh < 1.25 ** 2).mean()
-                a3 = (thresh < 1.25 ** 3).mean()
-
-                rmse = (gt - pred) ** 2
-                rmse = np.sqrt(rmse.mean())
-
-                rmse_log = (np.log(gt) - np.log(pred)) ** 2 # FIXME: Acredito que seja necessário adicionar um valor LOG_INITIAL_VALUE, mas nao sei se a metrica permite isso
-                rmse_log = np.sqrt(rmse_log.mean())
-
-                abs_rel = np.mean(np.abs(gt - pred) / gt)
-
-                sq_rel = np.mean(((gt - pred) ** 2) / gt)
-
-                print()
-                print("----- Metrics -----")
-                # print("thr:", thresh)
-                print("a1:", a1)
-                print("a2:", a2)
-                print("a3:", a3)
-                print("rmse:", rmse)
-                print("rmse_log:", rmse_log)
-                print("abs_rel:", abs_rel)
-                print("sq_rel:", sq_rel)
-                # input("metrics")
-
-            evaluateTestSetLaina(pred_array, gt_array)
-
-            # def evaluateTestSet(pred, gt, mask):
-            #     # Compute error metrics on benchmark datasets
-            #     # -------------------------------------------------------------------------
-            #
-            #     # make sure predictions and ground truth have same dimensions
-            #     if pred.shape != gt_array.shape:
-            #         # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
-            #         input("terminar!")
-            #         pass
-            #
-            #     if mask is None:
-            #         n_pxls = gt.size
-            #     else:
-            #         n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
-            #
-            #     print('\n Errors computed over the entire test set \n')
-            #     print('------------------------------------------\n')
-            #
-            #     # Mean Absolute Relative Error
-            #     rel = np.abs(gt - pred)/ gt  # compute errors
-            #
-            #     print(pred.shape, pred.size)
-            #     print(gt.shape, gt.size)
-            #     print(n_pxls)
-            #     print(rel)
-            #     print(rel[mask])
-            #
-            #         print(rel)
-            #         input("antes")
-            #         rel[mask] = 0
-            #         print(rel)
-            #         input("depois")
-            #
-            #         # rel(~mask) = 0                      # mask out invalid ground truth pixels
-            #         # rel = sum(rel) / n_pxls             # average over all pixels
-            #         # print('Mean Absolute Relative Error: %4f\n', rel)
-            #         #
-            #         # # Root Mean Squared Error
-            #         # rms = (gt - pred)**2
-            #         # rms(~mask) = 0
-            #         # rms = sqrt(sum(rms) / n_pxls)
-            #         # print('Root Mean Squared Error: %4f\n', rms)
-            #         #
-            #         # # LOG10 Error
-            #         # lg10 = abs(log10(gt) - log10(pred))
-            #         # lg10(~mask) = 0
-            #         # lg10 = sum(lg10) / n_pxls
-            #         # print('Mean Log10 Error: %4f\n', lg10)
-            #         #
-            #         # results.rel = rel
-            #         # results.rms = rms
-            #         # results.log10 = lg10
-            #
-            #         return results
-            #
-            #     if VALID_PIXELS:
-            #
-
-
-            # evaluateTestSet(pred_array, gt_array, mask)
-            # metricsLib.evaluateTesting(pred, test_labels_o)
+            metricsLib.evaluateTestSetLaina(pred_array, gt_array)
+            metricsLib.evaluateTesting(pred_array, gt_array)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
