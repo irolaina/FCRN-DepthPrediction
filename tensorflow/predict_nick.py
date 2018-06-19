@@ -85,7 +85,7 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
-
+LOG_INITIAL_VALUE = 1
 
 # ===========
 #  Functions
@@ -485,7 +485,7 @@ def test(args):
                 tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
 
         # True Depth Value Calculation. May vary from dataset to dataset.
-        tf_depth = data.rawdepth2meters(tf_depth)
+        tf_depth = data.rawdepth2meters(data.dataset_name, tf_depth)
 
         # tf_image.set_shape(input_size.getSize())
         # tf_depth.set_shape(output_size.getSize())
