@@ -27,15 +27,15 @@ class Validation:
             self.tf_depth_raw = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
 
         # True Depth Value Calculation. May vary from dataset to dataset.
-        self.tf_depth3 = Dataloader.rawdepth2meters(args.dataset, self.tf_depth_raw)
+        self.tf_depth_meters = Dataloader.rawdepth2meters(args.dataset, self.tf_depth_raw)
 
         # Convert uint8/uint16 to float32
         self.tf_image_raw = tf.cast(self.tf_image_raw, tf.float32, name='image')
         # self.tf_depth = tf.cast(self.tf_depth, tf.float32, name='depth')
 
         # Workaround for assigning bug
-        self.tf_image2 = self.tf_image_raw
-        self.tf_depth2 = self.tf_depth3
+        self.tf_image = self.tf_image_raw
+        self.tf_depth = self.tf_depth_meters
 
         # Crops Input and Depth Images (Removes Sky)
         if dataset_name[0:5] == 'kitti':
@@ -47,16 +47,12 @@ class Validation:
             tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[1], tf.float32)
 
             # FIXME: Why changing to self.tf_image e self.tf_depth doesn't work?
-            self.tf_image2 = self.tf_image_raw[:, tf.cast(tf_image_new_height, tf.int32):, :]
-            self.tf_depth2 = self.tf_depth_raw[:, tf.cast(tf_depth_new_height, tf.int32):, :]
-
-        print(self.tf_image2)
-        print(self.tf_depth2)
-        input("valid")
+            self.tf_image = self.tf_image_raw[:, tf.cast(tf_image_new_height, tf.int32):, :]
+            self.tf_depth = self.tf_depth_raw[:, tf.cast(tf_depth_new_height, tf.int32):, :]
 
         # Downsizes Input and Depth Images
-        self.tf_image_resized = tf.image.resize_images(self.tf_image2, [input_size.height, input_size.width])
-        self.tf_depth_resized = tf.image.resize_images(self.tf_depth2, [output_size.height, output_size.width])
+        self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
+        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
 
         self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
 
@@ -76,8 +72,8 @@ class Validation:
             self.plot = Plot(args.mode, title='Validation Prediction')
 
         print("[Network/Validation] Validation Tensors created.")
-        print(self.tf_image2)
-        print(self.tf_depth2)
+        print(self.tf_image)
+        print(self.tf_depth)
         print(self.tf_image_resized)
         print(self.tf_image_resized_uint8)
         print(self.tf_depth_resized)
