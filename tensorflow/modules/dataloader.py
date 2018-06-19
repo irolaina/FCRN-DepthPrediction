@@ -20,7 +20,6 @@ from modules.datasets.nyudepth import NyuDepth
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
