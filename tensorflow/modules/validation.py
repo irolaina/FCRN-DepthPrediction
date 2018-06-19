@@ -5,6 +5,7 @@ import tensorflow as tf
 
 from .model.fcrn import ResNet50UpProj
 from .plot import Plot
+from .dataloader import Dataloader
 
 # ==================
 #  Global Variables
@@ -24,6 +25,9 @@ class Validation:
             self.tf_depth = tf.placeholder(tf.uint8, shape=(None, None, None, 1))
         else:
             self.tf_depth = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
+
+        # True Depth Value Calculation. May vary from dataset to dataset.
+        self.tf_depth = Dataloader.rawdepth2meters(args.dataset, self.tf_depth)
 
         # Convert uint8/uint16 to float32
         self.tf_image = tf.cast(self.tf_image, tf.float32, name='image')

@@ -30,12 +30,11 @@ class Plot(object):
         self.fig, self.axes = None, None
 
         if mode == 'train':  # and Validation
-            self.fig, self.axes = plt.subplots(7, 1, figsize=(15, 5))
-            self.axes[0] = plt.subplot(231)
-            self.axes[1] = plt.subplot(232)
-            self.axes[2] = plt.subplot(233)
-            self.axes[3] = plt.subplot(234)
-            self.axes[4] = plt.subplot(235)
+            self.fig, self.axes = plt.subplots(7, 1, figsize=(10, 5))
+            self.axes[0] = plt.subplot(221)
+            self.axes[1] = plt.subplot(222)
+            self.axes[3] = plt.subplot(223)
+            self.axes[4] = plt.subplot(224)
 
             # Sets Titles
             self.axes[0].set_title("Image")
