@@ -85,7 +85,6 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -281,14 +280,12 @@ def train(args):
                 batch_data, \
                 batch_data_uint8, \
                 batch_labels, \
-                log_batch_labels, \
                 batch_pred, \
                 model.train.loss, \
                 summary_train_loss = sess.run([model.train_step,
                                                model.train.tf_batch_data,
                                                model.train.tf_batch_data_uint8,
                                                model.train.tf_batch_labels,
-                                               model.train.tf_log_batch_labels,
                                                model.train.fcrn.get_output(),
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
@@ -324,7 +321,6 @@ def train(args):
 
                         model.train.plot.showResults(raw=batch_data_uint8[0],
                                                      label=batch_labels[0, :, :, 0],
-                                                     log_label=log_batch_labels[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
                     timer2 += time.time()
@@ -364,19 +360,16 @@ def train(args):
                         valid_image_uint8, \
                         valid_pred, \
                         valid_labels, \
-                        valid_log_labels, \
                         model.valid.loss = sess.run([model.valid.tf_image_resized,
                                                      model.valid.tf_image_resized_uint8,
                                                      model.valid.tf_pred,
                                                      model.valid.tf_depth_resized,
-                                                     model.valid.tf_log_depth_resized,
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
                             model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
                                                          label=valid_labels[0, :, :, 0],
-                                                         log_label=valid_log_labels[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
@@ -576,10 +569,8 @@ def test(args):
                                              depth=depth[:, :, 0],
                                              image_resized=image_resized,
                                              depth_resized=depth_resized[:, :, 0],
-                                             log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
-                                             log_depth=np.log(depth[:, :, 0] + LOG_INITIAL_VALUE),
                                              i=i + 1)
 
         # Testing Finished.

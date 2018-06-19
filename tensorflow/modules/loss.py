@@ -130,7 +130,7 @@ def gradient_y(img):
 
     return gy
 
-
+# TODO: Revisar o uso do log nesta function loss
 def tf_L(tf_log_y, tf_log_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Eigen's Log Depth"
 

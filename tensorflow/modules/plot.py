@@ -40,7 +40,6 @@ class Plot(object):
             # Sets Titles
             self.axes[0].set_title("Image")
             self.axes[1].set_title("Label")
-            self.axes[2].set_title("log(Label)")
             self.axes[3].set_title("Pred")
             self.axes[4].set_title("MSE(Pred)")
 
@@ -63,7 +62,6 @@ class Plot(object):
             self.axes[4].set_title("log(Label)")
             self.axes[5].set_title("Pred")
             self.axes[6].set_title("up(Pred)")
-            self.axes[7].set_title("log(Depth)")
 
         self.fig.canvas.set_window_title(title)
         # self.fig.set_size_inches(9, 5)
@@ -71,19 +69,17 @@ class Plot(object):
 
         self.isFirstTime = True
 
-    def showResults(self, raw, label, log_label, pred):
-        predMSE = loss.np_MSE(y=pred, y_=log_label)
+    def showResults(self, raw, label, pred):
+        predMSE = loss.np_MSE(y=pred, y_=label)
 
         if self.isFirstTime:
             self.cax1 = self.axes[0].imshow(raw)
             self.cax2 = self.axes[1].imshow(label)
-            self.cax3 = self.axes[2].imshow(log_label)
             self.cax4 = self.axes[3].imshow(pred)
             self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
 
             # Creates ColorBars
             self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
-            self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[2])
             self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
             self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
 
@@ -91,21 +87,19 @@ class Plot(object):
         else:
             # Updates Colorbars
             updateColorBar(self.cbar2, label)
-            updateColorBar(self.cbar3, log_label)
             updateColorBar(self.cbar4, pred)
             updateColorBar(self.cbar5, predMSE)
 
             # Updates Images
             self.cax1.set_data(raw)
             self.cax2.set_data(label)
-            self.cax3.set_data(log_label)
             self.cax4.set_data(pred)
             self.cax5.set_data(predMSE)
             plt.draw()
 
         plt.pause(0.001)
 
-    def showTestResults(self, image, depth, image_resized, depth_resized, log_label, pred, pred_up, log_depth, i):
+    def showTestResults(self, image, depth, image_resized, depth_resized, pred, pred_up, i):
         # predMSE = loss.np_MSE(y=pred, y_=log_label)
 
         if self.isFirstTime:
@@ -113,10 +107,8 @@ class Plot(object):
             self.cax1 = self.axes[1].imshow(depth)
             self.cax2 = self.axes[2].imshow(image_resized)
             self.cax3 = self.axes[3].imshow(depth_resized)
-            self.cax4 = self.axes[4].imshow(log_label)
             self.cax5 = self.axes[5].imshow(pred)
             self.cax6 = self.axes[6].imshow(pred_up)
-            self.cax7 = self.axes[7].imshow(log_depth)
             # self.cax7 = self.axes[6].imshow(predMSE, cmap='jet')
 
             # Creates ColorBars
@@ -134,20 +126,16 @@ class Plot(object):
             # Updates Colorbars
             updateColorBar(self.cbar1, depth)
             updateColorBar(self.cbar3, depth_resized)
-            updateColorBar(self.cbar4, log_label)
             updateColorBar(self.cbar5, pred)
             updateColorBar(self.cbar6, pred_up)
-            updateColorBar(self.cbar7, log_depth)
 
             # Updates Images
             self.cax0.set_data(image)
             self.cax1.set_data(depth)
             self.cax2.set_data(image_resized)
             self.cax3.set_data(depth_resized)
-            self.cax4.set_data(log_label)
             self.cax5.set_data(pred)
             self.cax6.set_data(pred_up)
-            self.cax7.set_data(log_depth)
             # self.cax7.set_data(predMSE)
             plt.draw()
 
