@@ -85,7 +85,6 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -357,8 +356,8 @@ def train(args):
                         # TODO: Otimizar
                         valid_image = imageio.imread(data.test_image_filenames[i])
                         valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image: np.expand_dims(valid_image, axis=0),
-                                      model.valid.tf_depth: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+                        feed_valid = {model.valid.tf_image_raw: np.expand_dims(valid_image, axis=0),
+                                      model.valid.tf_depth_raw: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
 
                         valid_image, \
                         valid_image_uint8, \

@@ -14,7 +14,6 @@ from modules.validation import Validation
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -102,7 +101,7 @@ class Model(object):
             if valid_pixels:
                 print("[Network/Loss] Compute: Ignore invalid pixels")
             else:
-                print("\n[Network/Loss] Loss: All Pixels")
+                print("[Network/Loss] Loss: All Pixels")
             print("[Network/Loss] Loss Function: %s" % self.loss_name)
 
     def build_optimizer(self):

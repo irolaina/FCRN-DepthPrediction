@@ -8,8 +8,6 @@ import tensorflow as tf
 #  Global Variables
 # ==================
 TRAINING_L2NORM_BETA = 1e-3
-LOG_INITIAL_VALUE = 1
-
 
 # ===========
 #  Functions
