@@ -13,8 +13,15 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
 # [Train] FIXME: Early Stopping
-# [Test] TODO: Validar Métricas
+
+# [Test] TODO: Procurar métricas mais recentes de outros trabalhos
+# [Test] TODO: Ver métricas do trabalho DORN. Dep: Instalar Caffe
+# [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
+# [Test] TODO: Validar Métricas
+
+# Known Bugs
+# [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -47,6 +54,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import modules.args as argsLib
 from modules.dataloader import Dataloader
 from modules.framework import Model
+import modules.metrics as myMetrics
+import modules.metrics_laina as LainaMetrics
+import modules.metrics_monodepth as MonodepthMetrics
 from modules.model.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.size import Size
@@ -481,15 +491,11 @@ def test(args):
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
 
-            pred_list.append(pred_up[0])
-            gt_list.append(depth)
+            log_depth = np.log(depth[:, :, 0] + LOG_INITIAL_VALUE)
 
-            # print(image.shape)
-            # print(image_resized.shape)
-            # print(depth.shape)
-            # print(depth_resized.shape)
-            # print(pred.shape)
-            # input("test")
+            # Fill arrays for later on metrics evaluation
+            pred_list.append(pred_up[0, :, :, 0])
+            gt_list.append(log_depth)
 
             # Prints Testing Progress
             timer2 += time.time()
@@ -505,7 +511,7 @@ def test(args):
                                              log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
-                                             log_depth=np.log(depth[:, :, 0] + LOG_INITIAL_VALUE),
+                                             log_depth=log_depth,
                                              i=i + 1)
 
         # Testing Finished.
@@ -530,77 +536,15 @@ def test(args):
             np.save(save_path_pred, pred)
 
         # Calculate Metrics
-        # if data.test_depth_filenames:
-        #     pred_array = np.array(pred_list)
-        #     gt_array = np.array(gt_list)
-        #
-        #     def evaluateTestSet(pred, gt, mask):
-        #         # Compute error metrics on benchmark datasets
-        #         # -------------------------------------------------------------------------
-        #
-        #         # make sure predictions and ground truth have same dimensions
-        #         if pred.shape != gt_array.shape:
-        #             # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
-        #             input("terminar!")
-        #             pass
-        #
-        #         if mask is None:
-        #             n_pxls = gt.size
-        #         else:
-        #             n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
-        #
-        #         print('\n Errors computed over the entire test set \n')
-        #         print('------------------------------------------\n')
-        #
-        #         # Mean Absolute Relative Error
-        #         rel = np.abs(gt - pred)/ gt  # compute errors
-        #
-        #         print(pred.shape, pred.size)
-        #         print(gt.shape, gt.size)
-        #         print(n_pxls)
-        #         print(rel)
-        #         print(rel[mask])
-        #
-        #         print(rel)
-        #         input("antes")
-        #         rel[mask] = 0
-        #         print(rel)
-        #         input("depois")
-        #
-        #         # rel(~mask) = 0                      # mask out invalid ground truth pixels
-        #         # rel = sum(rel) / n_pxls             # average over all pixels
-        #         # print('Mean Absolute Relative Error: %4f\n', rel)
-        #         #
-        #         # # Root Mean Squared Error
-        #         # rms = (gt - pred)**2
-        #         # rms(~mask) = 0
-        #         # rms = sqrt(sum(rms) / n_pxls)
-        #         # print('Root Mean Squared Error: %4f\n', rms)
-        #         #
-        #         # # LOG10 Error
-        #         # lg10 = abs(log10(gt) - log10(pred))
-        #         # lg10(~mask) = 0
-        #         # lg10 = sum(lg10) / n_pxls
-        #         # print('Mean Log10 Error: %4f\n', lg10)
-        #         #
-        #         # results.rel = rel
-        #         # results.rms = rms
-        #         # results.log10 = lg10
-        #
-        #         return results
-        #
-        #     if VALID_PIXELS:
-        #         mask = np.where(gt_array > 0) # TODO: Adicionar ranges para cada um dos datasets
-        #         # print(len(mask))
-        #
-        #         imask = tf.where(gt_array > 0, tf.ones_like(gt_array), tf.zeros_like(depth))
-        #         depth2 = tf_depth * tf_imask
-        #
-        #     else:
-        #         mask = None
-        #
-        #     evaluateTestSet(pred_array, gt_array, mask)
-        #     # metricsLib.evaluateTesting(pred, test_labels_o)
+        if data.test_depth_filenames:
+            print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
+
+            pred_array = np.array(pred_list)
+            gt_array = np.array(gt_list)
+
+            LainaMetrics.evaluate(pred_array, gt_array)
+            myMetrics.evaluate(pred_array, gt_array)
+            MonodepthMetrics.evaluate(pred_array, gt_array)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")

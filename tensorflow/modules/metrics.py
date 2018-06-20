@@ -5,49 +5,57 @@
 # ===========
 import numpy as np
 
-
-# TODO: Comparar métricas abaixo com as que eu implementei.
-# Link: https://github.com/iro-cp/FCRN-DepthPrediction/issues/45
-# thresh = np.maximum((gt / pred), (pred / gt))
-# a1 = (thresh < 1.25).mean()
-# a2 = (thresh < 1.25 ** 2).mean()
-# a3 = (thresh < 1.25 ** 3).mean()
-#
-# rmse = (gt - pred) ** 2
-# rmse = np.sqrt(rmse.mean())
-#
-# rmse_log = (np.log(gt) - np.log(pred)) ** 2
-# rmse_log = np.sqrt(rmse_log.mean())
-#
-# abs_rel = np.mean(np.abs(gt - pred) / gt)
-#
-# sq_rel = np.mean(((gt - pred) ** 2) / gt)
-
 # ===========
 #  Functions
 # ===========
-# TODO: Validar, usar o arquivo error_metrics.m da Iro Laina
-def evaluateTesting(fine, labels):
-    print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
-    print("Input")
-    print("predFine:", fine.shape)
-    print("labels:", labels.shape)
-    print()
-
+def evaluate(pred_array, gt_array):
     # Calculates Metrics
+    # TODO: Função abaixo pode ser otimizada, uma vez q não é necessario calcular thr = np.maximum... 3 vezes.
+    d1 = np_Threshold(pred_array, gt_array, thr=1.25)
+    d2 = np_Threshold(pred_array, gt_array, thr=1.25 ** 2)
+    d3 = np_Threshold(pred_array, gt_array, thr=1.25 ** 3)
+
+    rmse = np_RMSE_linear(pred_array, gt_array)
+
+    rmse_log = np_RMSE_log(pred_array, gt_array)
+
+    abs_rel = np_AbsRelativeDifference(pred_array, gt_array)
+
+    sq_rel = np_SquaredRelativeDifference(pred_array, gt_array)
+
+    rmse_log_scaleinv = np_RMSE_log_scaleInv(pred_array, gt_array)
+
+    print()
     print("# ----------------- #")
     print("#  Metrics Results  #")
     print("# ----------------- #")
-    print("Threshold sig < 1.25:", np_Threshold(fine, labels, thr=1.25))
-    print("Threshold sig < 1.25^2:", np_Threshold(fine, labels, thr=pow(1.25, 2)))
-    print("Threshold sig < 1.25^3:", np_Threshold(fine, labels, thr=pow(1.25, 3)))
-    print("AbsRelativeDifference:", np_AbsRelativeDifference(fine, labels))
-    print("SqrRelativeDifference:", np_SquaredRelativeDifference(fine, labels))
-    print("RMSE(linear):", np_RMSE_linear(fine, labels))
-    print("RMSE(log):", np_RMSE_log(fine, labels))
-    print("RMSE(log, scale inv.):", np_RMSE_log_scaleInv(fine, labels))
+    # # print("thr:", thr)
+    # print("d1:", d1)
+    # print("d2:", d2)
+    # print("d3:", d3)
+    # print("rmse:", rmse)
+    # print("rmse_log:", rmse_log)
+    # print("abs_rel:", abs_rel)
+    # print("sq_rel:", sq_rel)
+    # print("rmse_log_scaleinv:", rmse_log_scaleinv)
+    # # input("metrics")
+
+    print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('abs_rel', 'sq_rel', 'rms', 'log_rms',
+                                                                                  'd1_all', 'd1', 'd2', 'd3'))
+    print("{:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}".format(abs_rel,
+                                                                                                  sq_rel,
+                                                                                                  rmse,
+                                                                                                  rmse_log,
+                                                                                                  0.0,
+                                                                                                  d1,
+                                                                                                  d2,
+                                                                                                  d3))
 
 
+# ------------------- #
+#  Mask Valid Pixels  #
+# ------------------- #
+# TODO: Métrica é aplicada em todos ou apenas nos pixeis válidos? TODOS
 def np_maskOutInvalidPixels(y, y_):
     # Index Vectors for Valid Pixels
     nvalids_idx = np.where(y_ > 0)
@@ -64,7 +72,6 @@ def np_maskOutInvalidPixels(y, y_):
 # ----------- #
 #  Threshold  #
 # ----------- #
-# TODO: Métrica é aplicada em todos ou apenas nos pixeis válidos? TODOS
 def np_Threshold(y, y_, thr):
     # Check if y and y* have the same dimensions
     assert (y.shape == y_.shape), "Houston we've got a problem"
@@ -125,7 +132,7 @@ def np_SquaredRelativeDifference(y, y_):
     y, y_, nvalids_idx, npixels_valid = np_maskOutInvalidPixels(y, y_)
 
     # Calculate Absolute Relative Difference
-    value = sum(pow((abs(y - y_) / y_), 2) / abs(npixels_total))
+    value = sum((abs(y - y_) ** 2 / y_) / abs(npixels_total))
     # value = sum(pow((abs(y - y_) / y_), 2) / abs(npixels_valid))
 
     return value
