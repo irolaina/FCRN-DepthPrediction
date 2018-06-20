@@ -146,7 +146,7 @@ class Dataloader:
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
     @staticmethod
-    def rawdepth2meters(dataset_name, tf_depth):
+    def rawdepth2meters(tf_depth, dataset_name):
         """True Depth Value Calculation. May vary from dataset to dataset."""
         if dataset_name == 'apolloscape':
             # Changes the invalid pixel value (65353) to 0.
@@ -163,6 +163,22 @@ class Dataloader:
         elif dataset_name == 'nyudepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
         return tf_depth
+
+    @staticmethod
+    def removeSky(tf_image, tf_depth, dataset_name):
+        """Crops Input and Depth Images (Removes Sky)"""
+        if dataset_name[0:5] == 'kitti':
+            tf_image_shape = tf.shape(tf_image)
+            tf_depth_shape = tf.shape(tf_depth)
+
+            crop_height_perc = tf.constant(0.3, tf.float32)
+            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
+            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+
+            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
+            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+
+        return tf_image, tf_depth
 
     def readData(self, image_filenames, depth_filenames):
         # Creates Inputs Queue.
@@ -197,7 +213,7 @@ class Dataloader:
         # print(tf_depth)   # Must be uint16/uin8!
 
         # True Depth Value Calculation. May vary from dataset to dataset.
-        tf_depth = self.rawdepth2meters(self.dataset_name, tf_depth)
+        tf_depth = self.rawdepth2meters(tf_depth, self.dataset_name)
 
         # print(tf_image) # Must be uint8!
         # print(tf_depth) # Must be float32!

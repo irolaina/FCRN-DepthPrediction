@@ -28,7 +28,7 @@ class Validation:
             self.tf_depth_raw = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
 
         # True Depth Value Calculation. May vary from dataset to dataset.
-        self.tf_depth_meters = Dataloader.rawdepth2meters(args.dataset, self.tf_depth_raw)
+        self.tf_depth_meters = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
 
         # Convert uint8/uint16 to float32
         self.tf_image_raw = tf.cast(self.tf_image_raw, tf.float32, name='image')
@@ -39,6 +39,9 @@ class Validation:
         self.tf_depth = self.tf_depth_meters
 
         # Crops Input and Depth Images (Removes Sky)
+        # self.tf_image, self.tf_depth = Dataloader.removeSky(self.tf_image_raw, self.tf_depth_raw, dataset_name) # FIXME: Why doesn't it work?
+
+        # Workaround
         if dataset_name[0:5] == 'kitti':
             tf_image_shape = tf.shape(self.tf_image_raw)
             tf_depth_shape = tf.shape(self.tf_depth_raw)
@@ -47,7 +50,6 @@ class Validation:
             tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[1], tf.float32)
             tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[1], tf.float32)
 
-            # FIXME: Why changing to self.tf_image e self.tf_depth doesn't work?
             self.tf_image = self.tf_image_raw[:, tf.cast(tf_image_new_height, tf.int32):, :]
             self.tf_depth = self.tf_depth_raw[:, tf.cast(tf_depth_new_height, tf.int32):, :]
 

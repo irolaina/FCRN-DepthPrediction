@@ -7,6 +7,7 @@ import tensorflow as tf
 from collections import deque
 from .model.fcrn import ResNet50UpProj
 from .plot import Plot
+from .dataloader import Dataloader
 
 # ==================
 #  Global Variables
@@ -33,16 +34,7 @@ class Train:
                 self.tf_image, self.tf_depth = self.augment_image_pair(self.tf_image, self.tf_depth)
 
             # Crops Input and Depth Images (Removes Sky)
-            if dataset_name[0:5] == 'kitti':
-                tf_image_shape = tf.shape(tf_image)
-                tf_depth_shape = tf.shape(tf_depth)
-
-                crop_height_perc = tf.constant(0.3, tf.float32)
-                tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-                tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
-
-                self.tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-                self.tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+            self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
 
             # Downsizes Input and Depth Images
             self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
