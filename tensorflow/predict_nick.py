@@ -18,6 +18,7 @@
 # [Test] TODO: Ver métricas do trabalho DORN. Dep: Instalar Caffe
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
+# [Test] TODO: Implementar Métricas em Batches
 # [Test] TODO: Validar Métricas
 
 # Known Bugs
@@ -52,16 +53,15 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Custom Libraries
 import modules.args as argsLib
-from modules.dataloader import Dataloader
-from modules.framework import Model
 import modules.metrics as myMetrics
 import modules.metrics_laina as LainaMetrics
 import modules.metrics_monodepth as MonodepthMetrics
+from modules.dataloader import Dataloader
+from modules.framework import Model
 from modules.model.fcrn import ResNet50UpProj
 from modules.plot import Plot
-from modules.size import Size
-from modules.utils import total_size
 from modules.test import Test
+from modules.utils import total_size
 
 # ==========================
 #  [Train] Framework Config
