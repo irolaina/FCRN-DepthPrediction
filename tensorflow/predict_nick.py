@@ -87,6 +87,7 @@ appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 LOG_INITIAL_VALUE = 1
 
+
 # ===========
 #  Functions
 # ===========
@@ -394,8 +395,8 @@ def train(args):
 
                     # Write information to TensorBoard
                     if ENABLE_TENSORBOARD:
-                        summary = sess.run(model.summary_op, feed_valid)
-                        model.summary_writer.add_summary(summary, step)
+                        summary_str = sess.run(model.summary_op, feed_valid)
+                        model.summary_writer.add_summary(summary_str, step)
                         model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
