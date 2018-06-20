@@ -76,8 +76,8 @@ class Train:
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
-        if max_depth is not None:
-            self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
+        # if max_depth is not None:
+        #     self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
 
         with tf.name_scope('Train'):
             # Count the number of steps taken.

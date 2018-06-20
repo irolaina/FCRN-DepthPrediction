@@ -31,7 +31,6 @@ from ..filenames import FilenamesHandler
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 
 # ===========

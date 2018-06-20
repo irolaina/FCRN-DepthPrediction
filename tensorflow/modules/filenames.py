@@ -11,7 +11,6 @@ import time
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
