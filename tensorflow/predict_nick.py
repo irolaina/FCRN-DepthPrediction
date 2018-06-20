@@ -33,27 +33,25 @@
 #  Libraries
 # ===========
 import os
-import warnings
+import sys
 import time
+import warnings
+
+import imageio
+import matplotlib.pyplot as plt
+import numpy as np
 import pyxhook
 import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-import imageio
-import sys
-
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from PIL import Image
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Custom Libraries
 import modules.args as argsLib
-import modules.metrics as metricsLib
-
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.model.fcrn import ResNet50UpProj
-from modules.size import Size
 from modules.plot import Plot
+from modules.size import Size
 from modules.utils import total_size
 
 # ==========================
@@ -121,7 +119,6 @@ hookman.KeyDown = kbevent
 hookman.HookKeyboard()
 # Start our listener
 hookman.start()
-
 
 
 # ========= #

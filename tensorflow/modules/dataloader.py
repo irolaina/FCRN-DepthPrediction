@@ -1,21 +1,19 @@
 # ===========
 #  Libraries
 # ===========
-import os
-import random
 import sys
+
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
-import imageio
-
 from skimage import transform
 
 from modules.datasets.apolloscape import Apolloscape
+from modules.datasets.kitticontinuous import KittiContinuous
 from modules.datasets.kittidepth import KittiDepth
 from modules.datasets.kittidiscrete import KittiDiscrete
-from modules.datasets.kitticontinuous import KittiContinuous
 from modules.datasets.nyudepth import NyuDepth
+
 
 # ==================
 #  Global Variables
