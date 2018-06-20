@@ -13,8 +13,6 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
 # [Train] FIXME: Early Stopping
-# [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
-
 # [Test] TODO: Validar Métricas
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 
@@ -53,6 +51,7 @@ from modules.model.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.size import Size
 from modules.utils import total_size
+from modules.test import Test
 
 # ==========================
 #  [Train] Framework Config
@@ -316,9 +315,6 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
-                        # plt.figure(100)
-                        # plt.imshow(pred2[0, :, :, 0])
-
                         model.train.plot.showResults(raw=batch_data_uint8[0],
                                                      label=batch_labels[0, :, :, 0],
                                                      log_label=log_batch_labels[0, :, :, 0],
@@ -447,74 +443,7 @@ def test(args):
         data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
         numSamples = data.numTrainSamples
 
-    # Construct the network
-    with tf.variable_scope('model'):
-        input_size = Size(228, 304, 3)
-        output_size = Size(128, 160, 1)
-        batch_size = 1
-
-        tf_image_path = tf.placeholder(tf.string)
-        tf_depth_path = tf.placeholder(tf.string)
-
-        if data.dataset_name == 'apolloscape':
-            tf_image = tf.image.decode_jpeg(tf.read_file(tf_image_path), channels=3)
-        else:
-            tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
-
-        if data.dataset_name.split('_')[0] == 'kittidiscrete' or \
-           data.dataset_name.split('_')[0] == 'kitticontinuous':
-            tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
-        else:
-            tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
-
-        # TODO: Remover? Segundo o vitor não faz sentido remover o céu no test
-        removeSky = True
-        if removeSky:
-            # Crops Input and Depth Images (Removes Sky)
-            if data.dataset_name[0:5] == 'kitti':
-                tf_image_shape = tf.shape(tf_image)
-                tf_depth_shape = tf.shape(tf_depth)
-
-                crop_height_perc = tf.constant(0.3, tf.float32)
-                tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-                tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
-
-                tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-                tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
-
-        # True Depth Value Calculation. May vary from dataset to dataset.
-        tf_depth = data.rawdepth2meters(data.dataset_name, tf_depth)
-
-        # tf_image.set_shape(input_size.getSize())
-        # tf_depth.set_shape(output_size.getSize())
-
-        # Downsizes Input and Depth Images
-        tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
-        tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
-        tf_image_resized = tf.expand_dims(tf_image_resized, axis=0)  # Model's Input size requirement
-
-        tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
-
-        net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
-        tf_pred = net.get_output()
-
-        tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, False)
-
-        # Group Tensors
-        image_op = [tf_image_path, tf_image, tf_image_resized_uint8]
-        depth_op = [tf_depth_path, tf_depth, tf_depth_resized]
-        pred_op = [tf_pred, tf_pred_up]
-
-        # Print Tensors
-        print("\nTensors:")
-        print(tf_image_path)
-        print(tf_depth_path)
-        print(tf_image)
-        print(tf_depth)
-        print(tf_image_resized)
-        print(tf_image_resized_uint8)
-        print(tf_pred)
-        print(tf_pred_up)
+    model = Test(data)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
@@ -542,15 +471,15 @@ def test(args):
             # Evalute the network for the given image
             # data.test_depth_filenames = [] # Only for testing the following condition!!!
             if data.test_depth_filenames:  # It's not empty
-                feed_test = {tf_image_path: data.test_image_filenames[i], tf_depth_path: data.test_depth_filenames[i]}
+                feed_test = {model.tf_image_path: data.test_image_filenames[i], model.tf_depth_path: data.test_depth_filenames[i]}
 
-                _, image, image_resized = sess.run(image_op, feed_test)
-                _, depth, depth_resized = sess.run(depth_op, feed_test)
-                pred, pred_up = sess.run(pred_op, feed_test)
+                _, image, image_resized = sess.run(model.image_op, feed_test)
+                _, depth, depth_resized = sess.run(model.depth_op, feed_test)
+                pred, pred_up = sess.run(model.pred_op, feed_test)
             else:
-                feed_test = {tf_image_path: data.test_image_filenames[i]}
-                _, image, image_resized = sess.run(image_op, feed_test)
-                pred, pred_up = sess.run(pred_op, feed_test)
+                feed_test = {model.tf_image_path: data.test_image_filenames[i]}
+                _, image, image_resized = sess.run(model.image_op, feed_test)
+                pred, pred_up = sess.run(model.pred_op, feed_test)
 
             pred_list.append(pred_up[0])
             gt_list.append(depth)
