@@ -66,9 +66,6 @@ from modules.utils import total_size
 # ==========================
 #  [Train] Framework Config
 # ==========================
-# Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False             # Default: True
-
 TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
@@ -100,8 +97,8 @@ LOG_INITIAL_VALUE = 1
 # ===========
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
-    valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + args.loss + '/' + datetime + '/'
+    px_str = args.px + '_px'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -249,7 +246,7 @@ def train(args):
         data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
-        model = Model(args, data, args.loss, VALID_PIXELS)
+        model = Model(args, data)
         model.collectSummaries(save_path, graph)
         model.createTrainSaver()
 

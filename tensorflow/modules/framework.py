@@ -24,8 +24,13 @@ from modules.validation import Validation
 #  Class Declaration
 # ===================
 class Model(object):
-    def __init__(self, args, data, selected_loss, valid_pixels):
+    def __init__(self, args, data):
         self.args = args
+
+        selected_loss = args.loss
+        selected_px = args.px
+
+        args.loss, args.px
 
         self.input_size = Size(228, 304, 3)
         self.output_size = Size(128, 160, 1)
@@ -44,7 +49,7 @@ class Model(object):
 
         # Invoke Methods
         self.build_model(data)
-        self.build_losses(selected_loss, valid_pixels)
+        self.build_losses(selected_loss, selected_px)
         self.build_optimizer()
         self.build_summaries()
         self.countParams()
@@ -62,7 +67,9 @@ class Model(object):
         with tf.variable_scope("model", reuse=True):
             self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
 
-    def build_losses(self, selected_loss, valid_pixels):
+    def build_losses(self, selected_loss, selected_px):
+        valid_pixels = True if selected_px == 'valid' else False
+
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selected_loss == 'mse':
