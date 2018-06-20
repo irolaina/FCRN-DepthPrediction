@@ -39,12 +39,12 @@ class Validation:
         self.tf_depth = self.tf_depth_meters
 
         # Crops Input and Depth Images (Removes Sky)
-        # self.tf_image, self.tf_depth = Dataloader.removeSky(self.tf_image_raw_float32, self.tf_depth_raw_float32, dataset_name) # FIXME: Why doesn't it work?
+        # self.tf_image, self.tf_depth = Dataloader.removeSky(self.tf_image_raw_float32, self.tf_depth_meters, dataset_name) # FIXME: Why doesn't it work?
 
         # Workaround
         if dataset_name[0:5] == 'kitti':
-            tf_image_shape = tf.shape(self.tf_image)
-            tf_depth_shape = tf.shape(self.tf_depth)
+            tf_image_shape = tf.shape(self.tf_image_raw_float32)
+            tf_depth_shape = tf.shape(self.tf_depth_meters)
 
             crop_height_perc = tf.constant(0.3, tf.float32)
             tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[1], tf.float32)
