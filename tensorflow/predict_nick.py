@@ -542,8 +542,8 @@ def test(args):
 
         timer = -time.time()
         pred_list, gt_list = [], []
-        for i in range(numSamples):
-        # for i in range(5): # Only for testing!
+        # for i in range(numSamples):
+        for i in range(5): # Only for testing!
         # for i in range(50):  # Only for testing!
         # for i in range(200):  # Only for testing!
 
@@ -625,11 +625,13 @@ def test(args):
 
         # Calculate Metrics
         if data.test_depth_filenames:
+            print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
+
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
 
-            # LainaMetrics.evaluate(pred_array, gt_array)
-            # myMetrics.evaluate(pred_array, gt_array)
+            LainaMetrics.evaluate(pred_array, gt_array)
+            myMetrics.evaluate(pred_array, gt_array)
             MonodepthMetrics.evaluate(pred_array, gt_array)
 
         else:

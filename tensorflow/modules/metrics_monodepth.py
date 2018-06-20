@@ -1,21 +1,10 @@
 import numpy as np
-import cv2
-import argparse
-
-parser = argparse.ArgumentParser(description='Evaluation on the KITTI dataset')
-parser.add_argument('--split', type=str, help='data split, kitti or eigen', required=True)
-parser.add_argument('--predicted_disp_path', type=str, help='path to estimated disparities', required=True)
-parser.add_argument('--gt_path', type=str, help='path to ground truth disparities', required=True)
-parser.add_argument('--min_depth', type=float, help='minimum depth for evaluation', default=1e-3)
-parser.add_argument('--max_depth', type=float, help='maximum depth for evaluation', default=80)
-parser.add_argument('--eigen_crop', help='if set, crops according to Eigen NIPS14', action='store_true')
-parser.add_argument('--garg_crop', help='if set, crops according to Garg  ECCV16', action='store_true')
 
 def compute_errors(pred, gt):
-    thresh = np.maximum((gt / pred), (pred / gt))
-    a1 = (thresh < 1.25).mean()
-    a2 = (thresh < 1.25 ** 2).mean()
-    a3 = (thresh < 1.25 ** 3).mean()
+    thr = np.maximum((gt / pred), (pred / gt))
+    d1 = (thr < 1.25).mean()
+    d2 = (thr < 1.25 ** 2).mean()
+    d3 = (thr < 1.25 ** 3).mean()
 
     rmse = (gt - pred) ** 2
     rmse = np.sqrt(rmse.mean())
@@ -27,7 +16,7 @@ def compute_errors(pred, gt):
 
     sq_rel = np.mean(((gt - pred) ** 2) / gt)
 
-    return abs_rel, sq_rel, rmse, rmse_log, a1, a2, a3
+    return abs_rel, sq_rel, rmse, rmse_log, d1, d2, d3
 
 def evaluate(pred_array, gt_array):
     num_samples = len(pred_array)
@@ -83,8 +72,12 @@ def evaluate(pred_array, gt_array):
 
         abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(pred_depth[mask], gt_depth[mask])
 
+    print()
+    print("# ----------------- #")
+    print("#  Metrics Results  #")
+    print("# ----------------- #")
     print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('abs_rel', 'sq_rel', 'rms', 'log_rms',
-                                                                                  'd1_all', 'a1', 'a2', 'a3'))
+                                                                                  'd1_all', 'd1', 'd2', 'd3'))
     print("{:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}".format(abs_rel.mean(),
                                                                                                   sq_rel.mean(),
                                                                                                   rms.mean(),
