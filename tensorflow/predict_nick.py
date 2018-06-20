@@ -273,7 +273,7 @@ def train(args):
         threads = tf.train.start_queue_runners(coord=coord)
 
         timer = -time.time()
-        for step in range(args.max_steps + 1):
+        for step in range(1, args.max_steps + 1):
             if running:
                 # --------------------- #
                 # [Train] Session Run!  #
