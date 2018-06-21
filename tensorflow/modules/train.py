@@ -31,7 +31,7 @@ class Train:
             self.tf_depth = tf_depth
 
             if enableDataAug:
-                self.tf_image, self.tf_depth = self.augment_image_pair(self.tf_image, self.tf_depth)
+                tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
             # Crops Input and Depth Images (Removes Sky)
             self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
@@ -122,25 +122,29 @@ class Train:
         image_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)
         depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
 
-        # TODO: Habilitar Transformação
-        # # randomly shift gamma
-        # random_gamma = tf.random_uniform([], 0.8, 1.2)
-        # image_aug = tf.cast(image_aug, tf.float32) ** random_gamma
+        # randomly distort the colors.
+        # https://github.com/tensorflow/models/blob/master/research/inception/inception/image_processing.py
+        def color_ordering0(image_aug):
+            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
+            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
+            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
+            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
 
-        # TODO: Habilitar Transformação
-        # # randomly shift brightness
-        # random_brightness = tf.random_uniform([], 0.5, 2.0)
-        # image_aug = image_aug * random_brightness
+            return image_aug
 
-        # TODO: Habilitar Transformação
-        # # randomly shift color
-        # random_colors = tf.random_uniform([3], 0.8, 1.2)
-        # white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])
-        # color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
-        # image_aug *= color_image
-        #
-        # # saturate
-        # image_aug = tf.clip_by_value(image_aug, 0, 1)
+        def color_ordering1(image_aug):
+            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
+            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
+            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
+            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
+
+            return image_aug
+
+        color_ordering = tf.random_uniform(dtype=tf.int32, minval=0, maxval=2, shape=[])
+        image_aug = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image_aug), lambda: color_ordering1(image_aug))
+
+        # The random_* ops do not necessarily clamp.
+        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.int32), 0, 255) # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
 
         return image_aug, depth_aug
 
