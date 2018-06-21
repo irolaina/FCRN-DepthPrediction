@@ -209,15 +209,6 @@ class Dataloader:
         tf_image_shape = tf.shape(tf_image)
         tf_depth_shape = tf.shape(tf_depth)
 
-        # print(tf_image)   # Must be uint8!
-        # print(tf_depth)   # Must be uint16/uin8!
-
-        # True Depth Value Calculation. May vary from dataset to dataset.
-        tf_depth = self.rawdepth2meters(tf_depth, self.dataset_name)
-
-        # print(tf_image) # Must be uint8!
-        # print(tf_depth) # Must be float32!
-
         # Print Tensors
         print("tf_image_key: \t", tf_image_key)
         print("tf_depth_key: \t", tf_depth_key)

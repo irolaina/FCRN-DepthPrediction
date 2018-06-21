@@ -33,6 +33,15 @@ class Train:
             if enableDataAug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
+            # print(tf_image)   # Must be uint8!
+            # print(tf_depth)   # Must be uint16/uin8!
+
+            # True Depth Value Calculation. May vary from dataset to dataset.
+            tf_depth = Dataloader.rawdepth2meters(tf_depth, dataset_name)
+
+            # print(tf_image) # Must be uint8!
+            # print(tf_depth) # Must be float32!
+
             # Crops Input and Depth Images (Removes Sky)
             self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
 
@@ -124,6 +133,9 @@ class Train:
 
         # randomly distort the colors.
         # https://github.com/tensorflow/models/blob/master/research/inception/inception/image_processing.py
+        # TODO: Atualizar dataaugmentation usando a implementação abaixo.
+        # TODO: Checar se a função apply_with_random_selector() pode auxiliar a escolher os multiplos modes de color_ordering
+        # https: // github.com / tensorflow / models / blob / master / research / slim / preprocessing / inception_preprocessing.py
         def color_ordering0(image_aug):
             image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
             image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
@@ -140,11 +152,11 @@ class Train:
 
             return image_aug
 
-        color_ordering = tf.random_uniform(dtype=tf.int32, minval=0, maxval=2, shape=[])
+        color_ordering = tf.random_uniform([], minval=0, maxval=2, dtype=tf.int32)
         image_aug = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image_aug), lambda: color_ordering1(image_aug))
 
         # The random_* ops do not necessarily clamp.
-        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.int32), 0, 255) # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
+        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0, 255.0) # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
 
         return image_aug, depth_aug
 
