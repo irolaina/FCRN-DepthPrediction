@@ -30,7 +30,6 @@ class Train:
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
-            # FIXME: Not working properly yet
             if enableDataAug:
                 self.tf_image, self.tf_depth = self.augment_image_pair(self.tf_image, self.tf_depth)
 
@@ -123,15 +122,17 @@ class Train:
         image_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)
         depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
 
-        # randomly shift gamma
-        random_gamma = tf.random_uniform([], 0.8, 1.2)
-        image_aug = tf.cast(image_aug, tf.float32) ** random_gamma
+        # TODO: Habilitar Transformação
+        # # randomly shift gamma
+        # random_gamma = tf.random_uniform([], 0.8, 1.2)
+        # image_aug = tf.cast(image_aug, tf.float32) ** random_gamma
 
-        # randomly shift brightness
-        random_brightness = tf.random_uniform([], 0.5, 2.0)
-        image_aug = image_aug * random_brightness
+        # TODO: Habilitar Transformação
+        # # randomly shift brightness
+        # random_brightness = tf.random_uniform([], 0.5, 2.0)
+        # image_aug = image_aug * random_brightness
 
-        # TODO: Validar transformações abaixo
+        # TODO: Habilitar Transformação
         # # randomly shift color
         # random_colors = tf.random_uniform([3], 0.8, 1.2)
         # white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])

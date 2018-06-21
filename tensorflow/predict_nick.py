@@ -23,6 +23,7 @@
 
 # Known Bugs
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
+# [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
