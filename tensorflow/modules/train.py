@@ -24,7 +24,7 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
+    def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
             self.tf_image = tf_image
@@ -62,17 +62,18 @@ class Train:
             #  Prepare Batch
             # ===============
             # Select:
+            self.tf_batch_image_key, self.tf_batch_depth_key = tf.train.batch([tf_image_key, tf_depth_key], batch_size, num_threads,capacity)
             tf_batch_image_resized, tf_batch_image_resized_uint8, tf_batch_depth_resized = tf.train.batch([self.tf_image_resized, self.tf_image_resized_uint8, self.tf_depth_resized], batch_size, num_threads, capacity, shapes=[input_size.getSize(), input_size.getSize(), output_size.getSize()])
             # tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_image, tf_depth], batch_size, capacity, min_after_dequeue, num_threads, shapes=[image_size, depth_size])
 
             # Network Input/Output
-            self.tf_batch_data = tf_batch_image_resized
-            self.tf_batch_data_uint8 = tf_batch_image_resized_uint8
-            self.tf_batch_labels = tf_batch_depth_resized
-            self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                                              name='log_batch_labels')
+            self.tf_batch_image = tf_batch_image_resized
+            self.tf_batch_image_uint8 = tf_batch_image_resized_uint8
+            self.tf_batch_depth = tf_batch_depth_resized
+            self.tf_log_batch_depth = tf.log(self.tf_batch_depth + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
+                                              name='log_batch_depth')
 
-        self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
+        self.fcrn = ResNet50UpProj({'data': self.tf_batch_image}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
@@ -106,19 +107,19 @@ class Train:
         # print(tf_batch_image_resized)
         # print(tf_batch_image_resized_uint8)
         # print(tf_batch_depth_resized)
-        print(self.tf_batch_data)
-        print(self.tf_batch_data_uint8)
-        print(self.tf_batch_labels)
-        print(self.tf_log_batch_labels)
+        print(self.tf_batch_image)
+        print(self.tf_batch_image_uint8)
+        print(self.tf_batch_depth)
+        print(self.tf_log_batch_depth)
         print(self.tf_global_step)
         print(self.tf_learning_rate)
         print()
         # input("train")
 
     def trainCollection(self):
-        tf.add_to_collection('batch_data', self.tf_batch_data)
-        tf.add_to_collection('batch_labels', self.tf_batch_labels)
-        tf.add_to_collection('log_batch_labels', self.tf_log_batch_labels)
+        tf.add_to_collection('batch_image', self.tf_batch_image)
+        tf.add_to_collection('batch_depth', self.tf_batch_depth)
+        tf.add_to_collection('log_batch_depth', self.tf_log_batch_depth)
         tf.add_to_collection('pred', self.tf_pred)
 
         tf.add_to_collection('global_step', self.tf_global_step)

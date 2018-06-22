@@ -7,7 +7,7 @@ import numpy as np
 data = np.genfromtxt("../data/nyudepth_train.txt", dtype='str', delimiter='\t')
 data = np.genfromtxt("../data/nyudepth_test.txt", dtype='str', delimiter='\t')
 
-root_path = "/media/nicolas/Nícolas/datasets/nyu-depth-v2/data/images/"
+root_path = "/media/nicolas/nicolas_seagate/datasets/nyu-depth-v2/data/images/"
 images_filename = data[:, 0]
 depths_filename = data[:, 1]
 

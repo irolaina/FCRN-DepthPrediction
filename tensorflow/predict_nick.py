@@ -22,6 +22,9 @@
 # [Test] TODO: Validar Métricas
 
 # Known Bugs
+# [Train][Major Bug!!!] FIXME: Os pares de treinamento ficam desalinhados. Já havia detectado este problema. O problema abaixo pode estar relacionado
+# TODO: Por que string_input_producer sempre começa do segundo sample?
+# As vezes a leitura das strings ficam desalinhas, já havia detectado este problema anteriormente
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
 # [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
 
@@ -244,7 +247,7 @@ def train(args):
             data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
 
-        data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
+        data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
         model = Model(args, data)
@@ -282,20 +285,30 @@ def train(args):
                 timer2 = -time.time()
 
                 _, \
-                batch_data, \
-                batch_data_uint8, \
-                batch_labels, \
-                log_batch_labels, \
+                batch_image, \
+                batch_image_key, \
+                batch_image_uint8, \
+                batch_depth, \
+                batch_depth_key, \
+                log_batch_depth, \
                 batch_pred, \
                 model.train.loss, \
                 summary_train_loss = sess.run([model.train_step,
-                                               model.train.tf_batch_data,
-                                               model.train.tf_batch_data_uint8,
-                                               model.train.tf_batch_labels,
-                                               model.train.tf_log_batch_labels,
+                                               model.train.tf_batch_image,
+                                               model.train.tf_batch_image_key,
+                                               model.train.tf_batch_image_uint8,
+                                               model.train.tf_batch_depth,
+                                               model.train.tf_batch_depth_key,
+                                               model.train.tf_log_batch_depth,
                                                model.train.fcrn.get_output(),
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
+
+                # Show Pairs Filenames currently in the training batch
+                batch_pair_key = list(zip(batch_image_key, batch_depth_key))
+                for i, pair in enumerate(batch_pair_key):
+                    print(i, pair)
+                print()
 
                 model.summary_writer.add_summary(summary_train_loss, step)
 
@@ -323,9 +336,9 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
-                        model.train.plot.showResults(raw=batch_data_uint8[0],
-                                                     label=batch_labels[0, :, :, 0],
-                                                     log_label=log_batch_labels[0, :, :, 0],
+                        model.train.plot.showResults(raw=batch_image_uint8[0],
+                                                     label=batch_depth[0, :, :, 0],
+                                                     log_label=log_batch_depth[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
                     timer2 += time.time()
@@ -365,8 +378,8 @@ def train(args):
                         valid_image, \
                         valid_image_uint8, \
                         valid_pred, \
-                        valid_labels, \
-                        valid_log_labels, \
+                        valid_depth, \
+                        valid_log_depth, \
                         model.valid.loss = sess.run([model.valid.tf_image_resized,
                                                      model.valid.tf_image_resized_uint8,
                                                      model.valid.tf_pred,
@@ -377,8 +390,8 @@ def train(args):
 
                         if args.show_valid_progress:
                             model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
-                                                         label=valid_labels[0, :, :, 0],
-                                                         log_label=valid_log_labels[0, :, :, 0],
+                                                         label=valid_depth[0, :, :, 0],
+                                                         log_label=valid_log_depth[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss

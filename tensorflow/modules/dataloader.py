@@ -39,7 +39,7 @@ class Dataloader:
         dataset_root = None
 
         if args.machine == 'xps':
-            dataset_root = "/media/nicolas/Nícolas/datasets/"
+            dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
 
@@ -94,12 +94,19 @@ class Dataloader:
             _ = self.getTrainData()
             _ = self.getTestData()
 
+            self.tf_train_image_key = None
             self.tf_train_image = None
+
+            self.tf_train_depth_key = None
             self.tf_train_depth = None
-        elif args.mode == 'test':  # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+
+        # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+        elif args.mode == 'test':
+            self.tf_test_image_key = None
             self.tf_test_image = None
+
+            self.tf_test_depth_key = None
             self.tf_test_depth = None
-            pass
 
         print("\n[Dataloader] dataloader object created.")
 
@@ -219,7 +226,7 @@ class Dataloader:
         print("tf_image_shape: ", tf_image_shape)
         print("tf_depth_shape: ", tf_depth_shape)
 
-        return tf_image, tf_depth
+        return tf_image_key, tf_image, tf_depth_key, tf_depth
 
     @staticmethod
     def np_resizeImage(img, size):
