@@ -190,13 +190,24 @@ class Dataloader:
     def readData(self, image_filenames, depth_filenames):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
-        tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames, shuffle=False)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames, shuffle=False)
+
+        # filenames = list(zip(image_filenames, depth_filenames))
+        # for filename in filenames:
+        #     print(filename)
+        # print(len(filenames))
+        # input("readData")
+
+        tf_image_filenames = tf.constant(image_filenames)
+        tf_depth_filenames = tf.constant(depth_filenames)
+
+        tf_train_input_queue = tf.train.slice_input_producer([tf_image_filenames, tf_depth_filenames], shuffle=False)
 
         # Reads images
-        image_reader = tf.WholeFileReader()
-        tf_image_key, tf_image_file = image_reader.read(tf_train_image_filename_queue)
-        tf_depth_key, tf_depth_file = image_reader.read(tf_train_depth_filename_queue)
+        tf_image_key = tf_train_input_queue[0]
+        tf_depth_key = tf_train_input_queue[1]
+
+        tf_image_file = tf.read_file(tf_train_input_queue[0])
+        tf_depth_file = tf.read_file(tf_train_input_queue[1])
 
         if self.dataset_name == 'apolloscape':
             tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
@@ -217,8 +228,6 @@ class Dataloader:
         tf_depth_shape = tf.shape(tf_depth)
 
         # Print Tensors
-        print("tf_image_key: \t", tf_image_key)
-        print("tf_depth_key: \t", tf_depth_key)
         print("tf_image_file: \t", tf_image_file)
         print("tf_depth_file: \t", tf_depth_file)
         print("tf_image: \t", tf_image)
