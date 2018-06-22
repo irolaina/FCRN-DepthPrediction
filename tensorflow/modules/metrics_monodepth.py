@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def compute_errors(pred, gt):
     thr = np.maximum((gt / pred), (pred / gt))
     d1 = (thr < 1.25).mean()
@@ -17,6 +18,7 @@ def compute_errors(pred, gt):
     sq_rel = np.mean(((gt - pred) ** 2) / gt)
 
     return abs_rel, sq_rel, rmse, rmse_log, d1, d2, d3
+
 
 def evaluate(pred_array, gt_array):
     num_samples = len(pred_array)

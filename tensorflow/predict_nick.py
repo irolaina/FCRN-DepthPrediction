@@ -472,7 +472,8 @@ def test(args):
             # Evalute the network for the given image
             # data.test_depth_filenames = [] # Only for testing the following condition!!!
             if data.test_depth_filenames:  # It's not empty
-                feed_test = {model.tf_image_path: data.test_image_filenames[i], model.tf_depth_path: data.test_depth_filenames[i]}
+                feed_test = {model.tf_image_path: data.test_image_filenames[i],
+                             model.tf_depth_path: data.test_depth_filenames[i]}
 
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 _, depth, depth_resized = sess.run(model.depth_op, feed_test)

@@ -70,8 +70,7 @@ class Train:
             self.tf_batch_image = tf_batch_image_resized
             self.tf_batch_image_uint8 = tf_batch_image_resized_uint8
             self.tf_batch_depth = tf_batch_depth_resized
-            self.tf_log_batch_depth = tf.log(self.tf_batch_depth + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                                              name='log_batch_depth')
+            self.tf_log_batch_depth = tf.log(self.tf_batch_depth + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32), name='log_batch_depth')
 
         self.fcrn = ResNet50UpProj({'data': self.tf_batch_image}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
         self.tf_pred = self.fcrn.get_output()
@@ -154,10 +153,12 @@ class Train:
             return image_aug
 
         color_ordering = tf.random_uniform([], minval=0, maxval=2, dtype=tf.int32)
-        image_aug = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image_aug), lambda: color_ordering1(image_aug))
+        image_aug = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image_aug),
+                            lambda: color_ordering1(image_aug))
 
         # The random_* ops do not necessarily clamp.
-        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0, 255.0) # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
+        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0,
+                                     255.0)  # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
 
         return image_aug, depth_aug
 

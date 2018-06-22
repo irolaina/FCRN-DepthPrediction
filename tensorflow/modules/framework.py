@@ -30,8 +30,6 @@ class Model(object):
         selected_loss = args.loss
         selected_px = args.px
 
-        args.loss, args.px
-
         self.input_size = Size(228, 304, 3)
         self.output_size = Size(128, 160, 1)
 

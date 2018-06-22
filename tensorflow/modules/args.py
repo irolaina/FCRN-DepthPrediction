@@ -30,15 +30,16 @@ def argumentHandler():
                         default='/media/olorin/Documentos/datasets/')
 
     parser.add_argument('-s', '--dataset', action='store',
-                        help="Selects the dataset ['apolloscape', 'kittidepth', 'kittidiscrete', 'kitticontinuous', 'kitticontinuous_residential', 'nyudepth']", default='')
+                        help="Selects the dataset ['apolloscape', 'kittidepth', 'kittidiscrete', 'kitticontinuous', 'kitticontinuous_residential', 'nyudepth']",
+                        default='')
 
     parser.add_argument('--px', action='store',
                         help="Selects which pixels to minimize ['all' or 'valid']", default='all')
 
-
     parser.add_argument('--data_aug', action='store_true', help="Enable Data Augmentation", default=False)
 
-    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'eigen', 'berhu', etc", default='berhu')
+    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'eigen', 'berhu', etc",
+                        default='berhu')
 
     parser.add_argument('--batch_size', type=int, help="Define the Training batch size", default=4)
     parser.add_argument('--max_steps', type=int, help="Define the number of max Steps", default=1000)
@@ -76,4 +77,3 @@ def argumentHandler():
     parser.add_argument('-i', '--image_path', help='Set path to the image to be predicted', default='')
 
     return parser.parse_args()
-
