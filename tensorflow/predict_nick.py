@@ -304,11 +304,11 @@ def train(args):
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
 
-                # Show Pairs Filenames currently in the training batch
-                batch_pair_key = list(zip(batch_image_key, batch_depth_key))
-                for i, pair in enumerate(batch_pair_key):
-                    print(i, pair)
-                print()
+                # # Show Pairs Filenames currently in the training batch
+                # batch_pair_key = list(zip(batch_image_key, batch_depth_key))
+                # for i, pair in enumerate(batch_pair_key):
+                #     print(i, pair)
+                # print()
 
                 model.summary_writer.add_summary(summary_train_loss, step)
 
