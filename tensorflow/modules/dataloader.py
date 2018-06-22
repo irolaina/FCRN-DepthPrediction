@@ -39,7 +39,7 @@ class Dataloader:
         dataset_root = None
 
         if args.machine == 'xps':
-            dataset_root = "/media/nicolas/Nícolas/datasets/"
+            dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
 
@@ -94,12 +94,19 @@ class Dataloader:
             _ = self.getTrainData()
             _ = self.getTestData()
 
+            self.tf_train_image_key = None
             self.tf_train_image = None
+
+            self.tf_train_depth_key = None
             self.tf_train_depth = None
-        elif args.mode == 'test':  # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+
+        # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+        elif args.mode == 'test':
+            self.tf_test_image_key = None
             self.tf_test_image = None
+
+            self.tf_test_depth_key = None
             self.tf_test_depth = None
-            pass
 
         print("\n[Dataloader] dataloader object created.")
 
@@ -209,15 +216,6 @@ class Dataloader:
         tf_image_shape = tf.shape(tf_image)
         tf_depth_shape = tf.shape(tf_depth)
 
-        # print(tf_image)   # Must be uint8!
-        # print(tf_depth)   # Must be uint16/uin8!
-
-        # True Depth Value Calculation. May vary from dataset to dataset.
-        tf_depth = self.rawdepth2meters(tf_depth, self.dataset_name)
-
-        # print(tf_image) # Must be uint8!
-        # print(tf_depth) # Must be float32!
-
         # Print Tensors
         print("tf_image_key: \t", tf_image_key)
         print("tf_depth_key: \t", tf_depth_key)
@@ -228,7 +226,7 @@ class Dataloader:
         print("tf_image_shape: ", tf_image_shape)
         print("tf_depth_shape: ", tf_depth_shape)
 
-        return tf_image, tf_depth
+        return tf_image_key, tf_image, tf_depth_key, tf_depth
 
     @staticmethod
     def np_resizeImage(img, size):

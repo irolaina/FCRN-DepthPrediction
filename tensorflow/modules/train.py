@@ -24,15 +24,23 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
+    def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
-            # FIXME: Not working properly yet
             if enableDataAug:
-                self.tf_image, self.tf_depth = self.augment_image_pair(self.tf_image, self.tf_depth)
+                tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
+
+            # print(tf_image)   # Must be uint8!
+            # print(tf_depth)   # Must be uint16/uin8!
+
+            # True Depth Value Calculation. May vary from dataset to dataset.
+            tf_depth = Dataloader.rawdepth2meters(tf_depth, dataset_name)
+
+            # print(tf_image) # Must be uint8!
+            # print(tf_depth) # Must be float32!
 
             # Crops Input and Depth Images (Removes Sky)
             self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
@@ -54,17 +62,18 @@ class Train:
             #  Prepare Batch
             # ===============
             # Select:
+            self.tf_batch_image_key, self.tf_batch_depth_key = tf.train.batch([tf_image_key, tf_depth_key], batch_size, num_threads,capacity)
             tf_batch_image_resized, tf_batch_image_resized_uint8, tf_batch_depth_resized = tf.train.batch([self.tf_image_resized, self.tf_image_resized_uint8, self.tf_depth_resized], batch_size, num_threads, capacity, shapes=[input_size.getSize(), input_size.getSize(), output_size.getSize()])
             # tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_image, tf_depth], batch_size, capacity, min_after_dequeue, num_threads, shapes=[image_size, depth_size])
 
             # Network Input/Output
-            self.tf_batch_data = tf_batch_image_resized
-            self.tf_batch_data_uint8 = tf_batch_image_resized_uint8
-            self.tf_batch_labels = tf_batch_depth_resized
-            self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                                              name='log_batch_labels')
+            self.tf_batch_image = tf_batch_image_resized
+            self.tf_batch_image_uint8 = tf_batch_image_resized_uint8
+            self.tf_batch_depth = tf_batch_depth_resized
+            self.tf_log_batch_depth = tf.log(self.tf_batch_depth + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
+                                              name='log_batch_depth')
 
-        self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
+        self.fcrn = ResNet50UpProj({'data': self.tf_batch_image}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
@@ -98,19 +107,19 @@ class Train:
         # print(tf_batch_image_resized)
         # print(tf_batch_image_resized_uint8)
         # print(tf_batch_depth_resized)
-        print(self.tf_batch_data)
-        print(self.tf_batch_data_uint8)
-        print(self.tf_batch_labels)
-        print(self.tf_log_batch_labels)
+        print(self.tf_batch_image)
+        print(self.tf_batch_image_uint8)
+        print(self.tf_batch_depth)
+        print(self.tf_log_batch_depth)
         print(self.tf_global_step)
         print(self.tf_learning_rate)
         print()
         # input("train")
 
     def trainCollection(self):
-        tf.add_to_collection('batch_data', self.tf_batch_data)
-        tf.add_to_collection('batch_labels', self.tf_batch_labels)
-        tf.add_to_collection('log_batch_labels', self.tf_log_batch_labels)
+        tf.add_to_collection('batch_image', self.tf_batch_image)
+        tf.add_to_collection('batch_depth', self.tf_batch_depth)
+        tf.add_to_collection('log_batch_depth', self.tf_log_batch_depth)
         tf.add_to_collection('pred', self.tf_pred)
 
         tf.add_to_collection('global_step', self.tf_global_step)
@@ -123,23 +132,32 @@ class Train:
         image_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)
         depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
 
-        # randomly shift gamma
-        random_gamma = tf.random_uniform([], 0.8, 1.2)
-        image_aug = tf.cast(image_aug, tf.float32) ** random_gamma
+        # randomly distort the colors.
+        # https://github.com/tensorflow/models/blob/master/research/inception/inception/image_processing.py
+        # TODO: Atualizar dataaugmentation usando a implementação abaixo.
+        # TODO: Checar se a função apply_with_random_selector() pode auxiliar a escolher os multiplos modes de color_ordering
+        # https: // github.com / tensorflow / models / blob / master / research / slim / preprocessing / inception_preprocessing.py
+        def color_ordering0(image_aug):
+            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
+            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
+            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
+            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
 
-        # randomly shift brightness
-        random_brightness = tf.random_uniform([], 0.5, 2.0)
-        image_aug = image_aug * random_brightness
+            return image_aug
 
-        # TODO: Validar transformações abaixo
-        # # randomly shift color
-        # random_colors = tf.random_uniform([3], 0.8, 1.2)
-        # white = tf.ones([tf.shape(image)[0], tf.shape(image)[1]])
-        # color_image = tf.stack([white * random_colors[i] for i in range(3)], axis=2)
-        # image_aug *= color_image
-        #
-        # # saturate
-        # image_aug = tf.clip_by_value(image_aug, 0, 1)
+        def color_ordering1(image_aug):
+            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
+            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
+            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
+            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
+
+            return image_aug
+
+        color_ordering = tf.random_uniform([], minval=0, maxval=2, dtype=tf.int32)
+        image_aug = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image_aug), lambda: color_ordering1(image_aug))
+
+        # The random_* ops do not necessarily clamp.
+        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0, 255.0) # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
 
         return image_aug, depth_aug
 
