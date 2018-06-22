@@ -312,27 +312,6 @@ def train(args):
 
                 model.summary_writer.add_summary(summary_train_loss, step)
 
-                def debug_data_augmentation():
-                    fig, axes = plt.subplots(nrows=2, ncols=2)
-
-                    axes[0, 0].set_title('images_resized')
-                    axes[0, 0].imshow(images_resized)
-
-                    axes[0, 1].set_title('depths_resized[:, :, 0]')
-                    axes[0, 1].imshow(depths_resized[:, :, 0])
-
-                    axes[1, 0].set_title('images_proc')
-                    axes[1, 0].imshow(images_proc)
-
-                    axes[1, 1].set_title('depths_proc[:,:,0]')
-                    axes[1, 1].imshow(depths_proc[:, :, 0])
-                    fig.tight_layout()
-
-                    plt.pause(0.001)
-                    input("proc")
-
-                # debug_data_augmentation() # TODO: Terminar
-
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
