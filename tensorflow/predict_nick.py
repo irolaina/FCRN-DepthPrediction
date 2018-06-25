@@ -304,34 +304,18 @@ def train(args):
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
 
-                # Show Pairs Filenames currently in the training batch
-                batch_pair_key = list(zip(batch_image_key, batch_depth_key))
-                for i, pair in enumerate(batch_pair_key):
-                    print(i, pair)
-                print()
+                # # Detect Invalid Pairs
+                # for i in range(args.batch_size):
+                #     print(i, batch_image_key[i], batch_depth_key[i])
+                #     image_head, image_tail = os.path.split(batch_image_key[i].decode("utf-8"))
+                #     depth_head, depth_tail = os.path.split(batch_depth_key[i].decode("utf-8"))
+                #
+                #     if image_tail.split('_')[0] != depth_tail.split('_')[0]:
+                #         input("Invalid Pair Detected!")
+                # print()
+
 
                 model.summary_writer.add_summary(summary_train_loss, step)
-
-                def debug_data_augmentation():
-                    fig, axes = plt.subplots(nrows=2, ncols=2)
-
-                    axes[0, 0].set_title('images_resized')
-                    axes[0, 0].imshow(images_resized)
-
-                    axes[0, 1].set_title('depths_resized[:, :, 0]')
-                    axes[0, 1].imshow(depths_resized[:, :, 0])
-
-                    axes[1, 0].set_title('images_proc')
-                    axes[1, 0].imshow(images_proc)
-
-                    axes[1, 1].set_title('depths_proc[:,:,0]')
-                    axes[1, 1].imshow(depths_proc[:, :, 0])
-                    fig.tight_layout()
-
-                    plt.pause(0.001)
-                    input("proc")
-
-                # debug_data_augmentation() # TODO: Terminar
 
                 # Prints Training Progress
                 if step % 10 == 0:
@@ -493,7 +477,8 @@ def test(args):
             # Evalute the network for the given image
             # data.test_depth_filenames = [] # Only for testing the following condition!!!
             if data.test_depth_filenames:  # It's not empty
-                feed_test = {model.tf_image_path: data.test_image_filenames[i], model.tf_depth_path: data.test_depth_filenames[i]}
+                feed_test = {model.tf_image_path: data.test_image_filenames[i],
+                             model.tf_depth_path: data.test_depth_filenames[i]}
 
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 _, depth, depth_resized = sess.run(model.depth_op, feed_test)

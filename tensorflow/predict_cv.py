@@ -9,14 +9,11 @@
 # ===========
 import argparse
 import os
+import sys
+
 import cv2
 import numpy as np
 import tensorflow as tf
-import subprocess
-import time
-
-from matplotlib import pyplot as plt
-from PIL import Image
 
 from modules.model.fcrn import ResNet50UpProj
 
@@ -24,6 +21,7 @@ from modules.model.fcrn import ResNet50UpProj
 #  Global Variables
 # ==================
 SAVE_IMAGES = False
+
 
 # ===========
 #  Functions
@@ -36,6 +34,7 @@ def argumentHandler():
     parser.add_argument('video_path', help='Directory of images to predict')
     return parser.parse_args()
 
+
 def circular_counter(max):
     """helper function that creates an eternal counter till a max value"""
     x = 0
@@ -44,31 +43,34 @@ def circular_counter(max):
             x = 0
         x += 1
         yield x
- 
+
+
 class CvTimer(object):
     def __init__(self):
         self.tick_frequency = cv2.getTickFrequency()
         self.tick_at_init = cv2.getTickCount()
         self.last_tick = self.tick_at_init
         self.fps_len = 100
-        self.l_fps_history = [ 10 for x in range(self.fps_len)]
+        self.l_fps_history = [10 for x in range(self.fps_len)]
         self.fps_counter = circular_counter(self.fps_len)
-    
+
     def reset(self):
         self.last_tick = cv2.getTickCount()
-    
-    def get_tick_now(self):
+
+    @staticmethod
+    def get_tick_now():
         return cv2.getTickCount()
-    
+
     @property
     def fps(self):
         fps = self.tick_frequency / (self.get_tick_now() - self.last_tick)
         self.l_fps_history[next(self.fps_counter) - 1] = fps
         return fps
-    
+
     @property
     def avg_fps(self):
         return sum(self.l_fps_history) / float(self.fps_len)
+
 
 # ======
 #  Main
@@ -86,10 +88,10 @@ def main():
     # Load from Camera or Video
     # cap = cv2.VideoCapture(0)
     cap = cv2.VideoCapture(args.video_path)
-    
+
     if not cap.isOpened():  # Check if it succeeded
         print("It wasn't possible to open the camera.")
-        return -1;
+        return -1
 
     # ----------------
     #  Building Graph
@@ -100,10 +102,11 @@ def main():
 
     # Create a placeholder for the input image
     input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
-    
-    # Construct the network
-    net = ResNet50UpProj({'data': input_node}, batch=batch_size, keep_prob=1, is_training=False)
-    tf_pred = tf.exp(net.get_output(), 'pred')
+
+    with tf.variable_scope('model'): # Disable for running original models!!!
+        # Construct the network
+        net = ResNet50UpProj({'data': input_node}, batch=batch_size, keep_prob=1, is_training=False)
+        tf_pred = tf.exp(net.get_output(), 'pred')
 
     # ---------------
     #  Running Graph
@@ -122,10 +125,10 @@ def main():
         isFirstTime = True
         success = True
         count = 0
-        while(True):
+        while True:
             # Capture frame-by-frame
             success, frame = cap.read()
-            frame = cv2.resize(frame,(width, height), interpolation = cv2.INTER_CUBIC)
+            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
 
             # Evalute the network for the given image
             img = np.array(frame).astype('float32')
@@ -146,10 +149,19 @@ def main():
 
             # Image Processing
             pred_uint8 = cv2.convertScaleAbs(pred[0])
-            pred_uint8_inv = 255-pred_uint8
-            pred_jet = cv2.applyColorMap(pred_uint8_inv, cv2.COLORMAP_JET);            
-            pred_resized = cv2.resize(pred_jet,(304, 228), interpolation = cv2.INTER_CUBIC)
-            cv2.putText(pred_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps),(1, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
+            pred_uint8_inv = 255 - pred_uint8
+            pred_jet = cv2.applyColorMap(pred_uint8_inv, cv2.COLORMAP_JET)
+            pred_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
+            cv2.putText(pred_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
+
+            pred2 = cv2.convertScaleAbs(pred[0])
+            pred2_jet = cv2.applyColorMap(pred2*5, cv2.COLORMAP_JET)
+            pred2_resized = cv2.resize(pred2_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
+
+            # print(pred2)
+            # print("min:", np.min(pred2))
+            # print("max:", np.max(pred2))
 
             # print(pred_uint8.shape)
             # print(pred_resized.shape)
@@ -168,19 +180,21 @@ def main():
             # plt.pause(0.001)
 
             # Display the resulting frame - OpenCV
-            cv2.imshow('frame',frame)
-            cv2.imshow('pred', pred_uint8)          # Network Output            
-            cv2.imshow('pred_proc', pred_resized)   # Processed Prediction
+            cv2.imshow('frame', frame)
+            cv2.imshow('pred', pred_uint8)
+            cv2.imshow('pred_proc', pred_resized)
 
+            cv2.imshow('pred2', pred2)
+            cv2.imshow('pred2_proc', pred2_resized)
 
             # Save Images
             if SAVE_IMAGES:
-                cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame);
+                cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame)
                 cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8_inv)
                 cv2.imwrite("output/fcrn_cv/jet%06d.png" % count, pred_resized)
                 count += 1
 
-            if cv2.waitKey(1) & 0xFF == ord('q'): # without waitKey() the images are not shown.
+            if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
                 break
 
             timer.reset()
@@ -189,9 +203,9 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
 
-    os._exit(0)
-
     print("Done.")
+    sys.exit()
+
 
 if __name__ == '__main__':
     main()
