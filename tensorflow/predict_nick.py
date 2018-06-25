@@ -70,7 +70,7 @@ from modules.utils import total_size
 # ==========================
 #  [Train] Framework Config
 # ==========================
-TRAIN_ON_SINGLE_IMAGE = True   # Default: False
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
