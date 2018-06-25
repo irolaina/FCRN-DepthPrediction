@@ -304,15 +304,15 @@ def train(args):
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
 
-                # Detect Invalid Pairs
-                for i in range(args.batch_size):
-                    print(i, batch_image_key[i], batch_depth_key[i])
-                    image_head, image_tail = os.path.split(batch_image_key[i].decode("utf-8"))
-                    depth_head, depth_tail = os.path.split(batch_depth_key[i].decode("utf-8"))
-
-                    if image_tail.split('_')[0] != depth_tail.split('_')[0]:
-                        input("Invalid Pair Detected!")
-                print()
+                # # Detect Invalid Pairs
+                # for i in range(args.batch_size):
+                #     print(i, batch_image_key[i], batch_depth_key[i])
+                #     image_head, image_tail = os.path.split(batch_image_key[i].decode("utf-8"))
+                #     depth_head, depth_tail = os.path.split(batch_depth_key[i].decode("utf-8"))
+                #
+                #     if image_tail.split('_')[0] != depth_tail.split('_')[0]:
+                #         input("Invalid Pair Detected!")
+                # print()
 
 
                 model.summary_writer.add_summary(summary_train_loss, step)

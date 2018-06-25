@@ -155,8 +155,13 @@ def main():
             cv2.putText(pred_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
 
-            pred_meters = cv2.convertScaleAbs(np.exp(pred[0]))
-            pred_meters_jet = cv2.applyColorMap(pred_meters, cv2.COLORMAP_JET)
+            pred2 = cv2.convertScaleAbs(pred[0])
+            pred2_jet = cv2.applyColorMap(pred2*5, cv2.COLORMAP_JET)
+            pred2_resized = cv2.resize(pred2_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
+
+            # print(pred2)
+            # print("min:", np.min(pred2))
+            # print("max:", np.max(pred2))
 
             # print(pred_uint8.shape)
             # print(pred_resized.shape)
@@ -176,11 +181,11 @@ def main():
 
             # Display the resulting frame - OpenCV
             cv2.imshow('frame', frame)
-            cv2.imshow('pred', pred_uint8)  # Network Output
-            cv2.imshow('pred_proc', pred_resized)  # Processed Prediction
+            cv2.imshow('pred', pred_uint8)
+            cv2.imshow('pred_proc', pred_resized)
 
-            cv2.imshow('pred_meters', pred_meters)  # Network Output
-            cv2.imshow('pred_meters_jet', pred_jet)  # Network Output
+            cv2.imshow('pred2', pred2)
+            cv2.imshow('pred2_proc', pred2_resized)
 
             # Save Images
             if SAVE_IMAGES:
