@@ -19,13 +19,13 @@
 # ===========
 import glob
 import os
-import numpy as np
-import tensorflow as tf
-import sys
 import time
 
-from ..size import Size
+import numpy as np
+
 from ..filenames import FilenamesHandler
+from ..size import Size
+
 
 # ==================
 #  Global Variables
@@ -82,9 +82,6 @@ class KittiDepth(FilenamesHandler):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside list of folders.
-            image_filenames_tmp = []
-            depth_filenames_tmp = []
-
             image_filenames_tmp = glob.glob(self.dataset_path + 'raw_data/2011_*/*/image_02/data/*.png') + glob.glob(self.dataset_path + 'raw_data/2011_*/*/image_03/data/*.png')
             depth_filenames_tmp = glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_02/*.png') + glob.glob(self.dataset_path + 'depth/depth_prediction/data/' + mode + '/*/proj_depth/groundtruth/image_03/*.png')
 

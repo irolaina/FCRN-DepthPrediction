@@ -9,6 +9,7 @@ import tensorflow as tf
 # ==================
 TRAINING_L2NORM_BETA = 1e-3
 
+
 # ===========
 #  Functions
 # ===========

@@ -1,12 +1,11 @@
 # ===========
 #  Libraries
 # ===========
-import glob
 import os
-import numpy as np
-import tensorflow as tf
 import sys
-import time
+
+import numpy as np
+
 
 # ==================
 #  Global Variables

@@ -13,10 +13,20 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 
 # [Train] FIXME: Early Stopping
-# [Train] FIXME: -v option só funciona se a opção -t também estiver ativada
 
-# [Test] TODO: Validar Métricas
+# [Test] TODO: Procurar métricas mais recentes de outros trabalhos
+# [Test] TODO: Ver métricas do trabalho DORN. Dep: Instalar Caffe
+# [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
+# [Test] TODO: Implementar Métricas em Batches
+# [Test] TODO: Validar Métricas
+
+# Known Bugs
+# [Train][Major Bug!!!] FIXME: Os pares de treinamento ficam desalinhados. Já havia detectado este problema. O problema abaixo pode estar relacionado
+# TODO: Por que string_input_producer sempre começa do segundo sample?
+# As vezes a leitura das strings ficam desalinhas, já havia detectado este problema anteriormente
+# [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
+# [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -33,36 +43,34 @@
 #  Libraries
 # ===========
 import os
-import warnings
+import sys
 import time
+import warnings
+
+import imageio
+import matplotlib.pyplot as plt
+import numpy as np
 import pyxhook
 import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-import imageio
-import sys
-
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from PIL import Image
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Custom Libraries
 import modules.args as argsLib
-import modules.metrics as metricsLib
-
+import modules.metrics as myMetrics
+import modules.metrics_laina as LainaMetrics
+import modules.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.model.fcrn import ResNet50UpProj
-from modules.size import Size
 from modules.plot import Plot
+from modules.test import Test
 from modules.utils import total_size
 
 # ==========================
 #  [Train] Framework Config
 # ==========================
-# Select to consider only the valid Pixels (True) OR ALL Pixels (False)
-VALID_PIXELS = False             # Default: True
-
-TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+TRAIN_ON_SINGLE_IMAGE = True   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
@@ -85,6 +93,7 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
+LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -92,8 +101,8 @@ datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 # ===========
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
-    valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + args.loss + '/' + datetime + '/'
+    px_str = args.px + '_px'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -120,7 +129,6 @@ hookman.KeyDown = kbevent
 hookman.HookKeyboard()
 # Start our listener
 hookman.start()
-
 
 
 # ========= #
@@ -236,13 +244,13 @@ def train(args):
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
-            data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
-            data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
+            data.train_image_filenames = np.expand_dims(data.train_image_filenames[0], axis=0)
+            data.train_depth_filenames = np.expand_dims(data.train_depth_filenames[0], axis=0)
 
-        data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
+        data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
-        model = Model(args, data, args.loss, VALID_PIXELS)
+        model = Model(args, data)
         model.collectSummaries(save_path, graph)
         model.createTrainSaver()
 
@@ -269,7 +277,7 @@ def train(args):
         threads = tf.train.start_queue_runners(coord=coord)
 
         timer = -time.time()
-        for step in range(args.max_steps + 1):
+        for step in range(1, args.max_steps + 1):
             if running:
                 # --------------------- #
                 # [Train] Session Run!  #
@@ -277,50 +285,44 @@ def train(args):
                 timer2 = -time.time()
 
                 _, \
-                batch_data, \
-                batch_data_uint8, \
-                batch_labels, \
+                batch_image, \
+                batch_image_key, \
+                batch_image_uint8, \
+                batch_depth, \
+                batch_depth_key, \
+                log_batch_depth, \
                 batch_pred, \
                 model.train.loss, \
                 summary_train_loss = sess.run([model.train_step,
-                                               model.train.tf_batch_data,
-                                               model.train.tf_batch_data_uint8,
-                                               model.train.tf_batch_labels,
+                                               model.train.tf_batch_image,
+                                               model.train.tf_batch_image_key,
+                                               model.train.tf_batch_image_uint8,
+                                               model.train.tf_batch_depth,
+                                               model.train.tf_batch_depth_key,
+                                               model.train.tf_log_batch_depth,
                                                model.train.fcrn.get_output(),
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
 
+                # # Detect Invalid Pairs
+                # for i in range(args.batch_size):
+                #     print(i, batch_image_key[i], batch_depth_key[i])
+                #     image_head, image_tail = os.path.split(batch_image_key[i].decode("utf-8"))
+                #     depth_head, depth_tail = os.path.split(batch_depth_key[i].decode("utf-8"))
+                #
+                #     if image_tail.split('_')[0] != depth_tail.split('_')[0]:
+                #         input("Invalid Pair Detected!")
+                # print()
+
+
                 model.summary_writer.add_summary(summary_train_loss, step)
-
-                def debug_data_augmentation():
-                    fig, axes = plt.subplots(nrows=2, ncols=2)
-
-                    axes[0, 0].set_title('images_resized')
-                    axes[0, 0].imshow(images_resized)
-
-                    axes[0, 1].set_title('depths_resized[:, :, 0]')
-                    axes[0, 1].imshow(depths_resized[:, :, 0])
-
-                    axes[1, 0].set_title('images_proc')
-                    axes[1, 0].imshow(images_proc)
-
-                    axes[1, 1].set_title('depths_proc[:,:,0]')
-                    axes[1, 1].imshow(depths_proc[:, :, 0])
-                    fig.tight_layout()
-
-                    plt.pause(0.001)
-                    input("proc")
-
-                # debug_data_augmentation() # TODO: Terminar
 
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
-                        # plt.figure(100)
-                        # plt.imshow(pred2[0, :, :, 0])
-
-                        model.train.plot.showResults(raw=batch_data_uint8[0],
-                                                     label=batch_labels[0, :, :, 0],
+                        model.train.plot.showResults(raw=batch_image_uint8[0],
+                                                     label=batch_depth[0, :, :, 0],
+                                                     log_label=log_batch_depth[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
                     timer2 += time.time()
@@ -345,7 +347,8 @@ def train(args):
 
                 # Detects the end of a epoch
                 # if True: # Only for testing the following condition!!!
-                if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
+                # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
+                if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
@@ -359,17 +362,20 @@ def train(args):
                         valid_image, \
                         valid_image_uint8, \
                         valid_pred, \
-                        valid_labels, \
+                        valid_depth, \
+                        valid_log_depth, \
                         model.valid.loss = sess.run([model.valid.tf_image_resized,
                                                      model.valid.tf_image_resized_uint8,
                                                      model.valid.tf_pred,
                                                      model.valid.tf_depth_resized,
+                                                     model.valid.tf_log_depth_resized,
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
                             model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
-                                                         label=valid_labels[0, :, :, 0],
+                                                         label=valid_depth[0, :, :, 0],
+                                                         log_label=valid_log_depth[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
@@ -388,8 +394,8 @@ def train(args):
 
                     # Write information to TensorBoard
                     if ENABLE_TENSORBOARD:
-                        summary = sess.run(model.summary_op, feed_valid)
-                        model.summary_writer.add_summary(summary, step)
+                        summary_str = sess.run(model.summary_op, feed_valid)
+                        model.summary_writer.add_summary(summary_str, step)
                         model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
@@ -443,74 +449,7 @@ def test(args):
         data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
         numSamples = data.numTrainSamples
 
-    # Construct the network
-    with tf.variable_scope('model'):
-        input_size = Size(228, 304, 3)
-        output_size = Size(128, 160, 1)
-        batch_size = 1
-
-        tf_image_path = tf.placeholder(tf.string)
-        tf_depth_path = tf.placeholder(tf.string)
-
-        if data.dataset_name == 'apolloscape':
-            tf_image = tf.image.decode_jpeg(tf.read_file(tf_image_path), channels=3)
-        else:
-            tf_image = tf.image.decode_png(tf.read_file(tf_image_path), channels=3, dtype=tf.uint8)
-
-        if data.dataset_name.split('_')[0] == 'kittidiscrete' or \
-           data.dataset_name.split('_')[0] == 'kitticontinuous':
-            tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint8)
-        else:
-            tf_depth = tf.image.decode_png(tf.read_file(tf_depth_path), channels=1, dtype=tf.uint16)
-
-        # TODO: Remover? Segundo o vitor não faz sentido remover o céu no test
-        removeSky = True
-        if removeSky:
-            # Crops Input and Depth Images (Removes Sky)
-            if data.dataset_name[0:5] == 'kitti':
-                tf_image_shape = tf.shape(tf_image)
-                tf_depth_shape = tf.shape(tf_depth)
-
-                crop_height_perc = tf.constant(0.3, tf.float32)
-                tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-                tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
-
-                tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-                tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
-
-        # True Depth Value Calculation. May vary from dataset to dataset.
-        tf_depth = data.rawdepth2meters(tf_depth)
-
-        # tf_image.set_shape(input_size.getSize())
-        # tf_depth.set_shape(output_size.getSize())
-
-        # Downsizes Input and Depth Images
-        tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
-        tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
-        tf_image_resized = tf.expand_dims(tf_image_resized, axis=0)  # Model's Input size requirement
-
-        tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
-
-        net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
-        tf_pred = net.get_output()
-
-        tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, False)
-
-        # Group Tensors
-        image_op = [tf_image_path, tf_image, tf_image_resized_uint8]
-        depth_op = [tf_depth_path, tf_depth, tf_depth_resized]
-        pred_op = [tf_pred, tf_pred_up]
-
-        # Print Tensors
-        print("\nTensors:")
-        print(tf_image_path)
-        print(tf_depth_path)
-        print(tf_image)
-        print(tf_depth)
-        print(tf_image_resized)
-        print(tf_image_resized_uint8)
-        print(tf_pred)
-        print(tf_pred_up)
+    model = Test(data)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
@@ -538,25 +477,23 @@ def test(args):
             # Evalute the network for the given image
             # data.test_depth_filenames = [] # Only for testing the following condition!!!
             if data.test_depth_filenames:  # It's not empty
-                feed_test = {tf_image_path: data.test_image_filenames[i], tf_depth_path: data.test_depth_filenames[i]}
+                feed_test = {model.tf_image_path: data.test_image_filenames[i],
+                             model.tf_depth_path: data.test_depth_filenames[i]}
 
-                _, image, image_resized = sess.run(image_op, feed_test)
-                _, depth, depth_resized = sess.run(depth_op, feed_test)
-                pred, pred_up = sess.run(pred_op, feed_test)
+                _, image, image_resized = sess.run(model.image_op, feed_test)
+                _, depth, depth_resized = sess.run(model.depth_op, feed_test)
+                pred, pred_up = sess.run(model.pred_op, feed_test)
             else:
-                feed_test = {tf_image_path: data.test_image_filenames[i]}
-                _, image, image_resized = sess.run(image_op, feed_test)
-                pred, pred_up = sess.run(pred_op, feed_test)
+                feed_test = {model.tf_image_path: data.test_image_filenames[i]}
+                _, image, image_resized = sess.run(model.image_op, feed_test)
+                pred, pred_up = sess.run(model.pred_op, feed_test)
 
-            pred_list.append(pred_up[0])
-            gt_list.append(depth)
+            # TODO: Remover, não faz sentido nesta branch (pred depth in meters)
+            log_depth = np.log(depth[:, :, 0] + LOG_INITIAL_VALUE)
 
-            # print(image.shape)
-            # print(image_resized.shape)
-            # print(depth.shape)
-            # print(depth_resized.shape)
-            # print(pred.shape)
-            # input("test")
+            # Fill arrays for later on metrics evaluation
+            pred_list.append(pred_up[0, :, :, 0])
+            gt_list.append(log_depth)
 
             # Prints Testing Progress
             timer2 += time.time()
@@ -569,8 +506,10 @@ def test(args):
                                              depth=depth[:, :, 0],
                                              image_resized=image_resized,
                                              depth_resized=depth_resized[:, :, 0],
+                                             log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
+                                             log_depth=log_depth,
                                              i=i + 1)
 
         # Testing Finished.
@@ -595,77 +534,15 @@ def test(args):
             np.save(save_path_pred, pred)
 
         # Calculate Metrics
-        # if data.test_depth_filenames:
-        #     pred_array = np.array(pred_list)
-        #     gt_array = np.array(gt_list)
-        #
-        #     def evaluateTestSet(pred, gt, mask):
-        #         # Compute error metrics on benchmark datasets
-        #         # -------------------------------------------------------------------------
-        #
-        #         # make sure predictions and ground truth have same dimensions
-        #         if pred.shape != gt_array.shape:
-        #             # pred = imresize(pred, [size(gt, 1), size(gt, 2)], 'bilinear') # TODO: Terminar
-        #             input("terminar!")
-        #             pass
-        #
-        #         if mask is None:
-        #             n_pxls = gt.size
-        #         else:
-        #             n_pxls = len(gt[mask])  # average over valid pixels only # TODO: Terminar
-        #
-        #         print('\n Errors computed over the entire test set \n')
-        #         print('------------------------------------------\n')
-        #
-        #         # Mean Absolute Relative Error
-        #         rel = np.abs(gt - pred)/ gt  # compute errors
-        #
-        #         print(pred.shape, pred.size)
-        #         print(gt.shape, gt.size)
-        #         print(n_pxls)
-        #         print(rel)
-        #         print(rel[mask])
-        #
-        #         print(rel)
-        #         input("antes")
-        #         rel[mask] = 0
-        #         print(rel)
-        #         input("depois")
-        #
-        #         # rel(~mask) = 0                      # mask out invalid ground truth pixels
-        #         # rel = sum(rel) / n_pxls             # average over all pixels
-        #         # print('Mean Absolute Relative Error: %4f\n', rel)
-        #         #
-        #         # # Root Mean Squared Error
-        #         # rms = (gt - pred)**2
-        #         # rms(~mask) = 0
-        #         # rms = sqrt(sum(rms) / n_pxls)
-        #         # print('Root Mean Squared Error: %4f\n', rms)
-        #         #
-        #         # # LOG10 Error
-        #         # lg10 = abs(log10(gt) - log10(pred))
-        #         # lg10(~mask) = 0
-        #         # lg10 = sum(lg10) / n_pxls
-        #         # print('Mean Log10 Error: %4f\n', lg10)
-        #         #
-        #         # results.rel = rel
-        #         # results.rms = rms
-        #         # results.log10 = lg10
-        #
-        #         return results
-        #
-        #     if VALID_PIXELS:
-        #         mask = np.where(gt_array > 0) # TODO: Adicionar ranges para cada um dos datasets
-        #         # print(len(mask))
-        #
-        #         imask = tf.where(gt_array > 0, tf.ones_like(gt_array), tf.zeros_like(depth))
-        #         depth2 = tf_depth * tf_imask
-        #
-        #     else:
-        #         mask = None
-        #
-        #     evaluateTestSet(pred_array, gt_array, mask)
-        #     # metricsLib.evaluateTesting(pred, test_labels_o)
+        if data.test_depth_filenames:
+            print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
+
+            pred_array = np.array(pred_list)
+            gt_array = np.array(gt_list)
+
+            LainaMetrics.evaluate(pred_array, gt_array)
+            myMetrics.evaluate(pred_array, gt_array)
+            MonodepthMetrics.evaluate(pred_array, gt_array)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
