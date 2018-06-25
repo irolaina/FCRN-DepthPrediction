@@ -70,7 +70,7 @@ from modules.utils import total_size
 # ==========================
 #  [Train] Framework Config
 # ==========================
-TRAIN_ON_SINGLE_IMAGE = False   # Default: False
+TRAIN_ON_SINGLE_IMAGE = True   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
@@ -244,8 +244,8 @@ def train(args):
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
-            data.train_image_filenames = tf.expand_dims(data.train_image_filenames[0], axis=0)
-            data.train_depth_filenames = tf.expand_dims(data.train_depth_filenames[0], axis=0)
+            data.train_image_filenames = np.expand_dims(data.train_image_filenames[0], axis=0)
+            data.train_depth_filenames = np.expand_dims(data.train_depth_filenames[0], axis=0)
 
         data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
