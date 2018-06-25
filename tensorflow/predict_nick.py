@@ -290,7 +290,6 @@ def train(args):
                 batch_image_uint8, \
                 batch_depth, \
                 batch_depth_key, \
-                log_batch_depth, \
                 batch_pred, \
                 model.train.loss, \
                 summary_train_loss = sess.run([model.train_step,
@@ -299,7 +298,6 @@ def train(args):
                                                model.train.tf_batch_image_uint8,
                                                model.train.tf_batch_depth,
                                                model.train.tf_batch_depth_key,
-                                               model.train.tf_log_batch_depth,
                                                model.train.fcrn.get_output(),
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
@@ -322,7 +320,6 @@ def train(args):
                     if args.show_train_progress:
                         model.train.plot.showResults(raw=batch_image_uint8[0],
                                                      label=batch_depth[0, :, :, 0],
-                                                     log_label=log_batch_depth[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
                     timer2 += time.time()
@@ -363,19 +360,16 @@ def train(args):
                         valid_image_uint8, \
                         valid_pred, \
                         valid_depth, \
-                        valid_log_depth, \
                         model.valid.loss = sess.run([model.valid.tf_image_resized,
                                                      model.valid.tf_image_resized_uint8,
                                                      model.valid.tf_pred,
                                                      model.valid.tf_depth_resized,
-                                                     model.valid.tf_log_depth_resized,
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
                             model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
                                                          label=valid_depth[0, :, :, 0],
-                                                         log_label=valid_log_depth[0, :, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
