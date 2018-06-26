@@ -49,6 +49,7 @@ import pyxhook
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from skimage import io, exposure, img_as_uint, img_as_float
 
 # Custom Libraries
 import modules.args as argsLib
@@ -85,10 +86,10 @@ SAVE_TEST_DISPARITIES = True    # Default: True
 # ==================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
+io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -307,7 +308,6 @@ def train(args):
                 #         input("Invalid Pair Detected!")
                 # print()
 
-
                 model.summary_writer.add_summary(summary_train_loss, step)
 
                 # Prints Training Progress
@@ -477,12 +477,22 @@ def test(args):
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
 
-            # TODO: Remover, não faz sentido nesta branch (pred depth in meters)
-            log_depth = np.log(depth[:, :, 0] + LOG_INITIAL_VALUE)
-
             # Fill arrays for later on metrics evaluation
             pred_list.append(pred_up[0, :, :, 0])
-            gt_list.append(log_depth)
+            gt_list.append(depth)
+
+            # Saves the Test Predictions as uint16 PNG Images
+            if SAVE_TEST_DISPARITIES:
+                # Convert the Predictions Images from float32 to uint16
+                pred_up_uint16 = exposure.rescale_intensity(pred_up[0], out_range='float')
+                pred_up_uint16 = img_as_uint(pred_up_uint16)
+
+                depth_uint16 = exposure.rescale_intensity(depth, out_range='float')
+                depth_uint16 = img_as_uint(depth_uint16)
+
+                # Save PNG Images
+                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16)
+                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16)
 
             # Prints Testing Progress
             timer2 += time.time()
@@ -503,23 +513,9 @@ def test(args):
         timer += time.time()
         print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % timer)
 
-        # ==============
-        #  Save Results
-        # ==============
-        # Saves the Test Predictions
-        if SAVE_TEST_DISPARITIES:
-            print("[Network/Testing] Saving testing predictions...")
-            output_directory = os.path.dirname(args.model_path) if args.output_directory == '' else args.output_directory
-
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
-
-            save_path_pred = os.path.abspath(os.path.join(output_directory, '../')) + '/' + args.dataset + '_pred.npy'
-
-            # TODO: Quais mais variaveis preciso salvar? Não seria melhor salvar a pred_up? Seria legal usar um dictionary?
-            # data = {'pred': bla, 'pred_up': bla}
-            np.save(save_path_pred, pred)
-
+        # =========
+        #  Results
+        # =========
         # Calculate Metrics
         if data.test_depth_filenames:
             print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
