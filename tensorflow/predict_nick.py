@@ -70,7 +70,7 @@ from modules.utils import total_size
 # ==========================
 #  [Train] Framework Config
 # ==========================
-TRAIN_ON_SINGLE_IMAGE = True   # Default: False
+TRAIN_ON_SINGLE_IMAGE = False   # Default: False
 ENABLE_EARLY_STOP = True        # Default: True
 ENABLE_TENSORBOARD = True       # Default: True
 SAVE_TRAINED_MODEL = True       # Default: True
@@ -500,10 +500,8 @@ def test(args):
                                              depth=depth[:, :, 0],
                                              image_resized=image_resized,
                                              depth_resized=depth_resized[:, :, 0],
-                                             log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
-                                             log_depth=log_depth,
                                              i=i + 1)
 
         # Testing Finished.
