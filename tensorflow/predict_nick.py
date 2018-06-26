@@ -19,14 +19,9 @@
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
-# [Test] TODO: Validar Métricas
 
 # Known Bugs
-# [Train][Major Bug!!!] FIXME: Os pares de treinamento ficam desalinhados. Já havia detectado este problema. O problema abaixo pode estar relacionado
-# TODO: Por que string_input_producer sempre começa do segundo sample?
-# As vezes a leitura das strings ficam desalinhas, já havia detectado este problema anteriormente
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
-# [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
