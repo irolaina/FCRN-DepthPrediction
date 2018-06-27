@@ -24,7 +24,7 @@ def updateColorBar(cbar, img):
     cbar.draw_all()
 
     # Debug
-    print("vmin:", vmin, "\tvmax:", vmax)
+    # print("vmin:", vmin, "\tvmax:", vmax)
 
 
 # ===================
