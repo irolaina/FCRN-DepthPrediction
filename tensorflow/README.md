@@ -5,15 +5,15 @@ Run Single Prediction:
 
 Train on XPS:
     
-    python3 predict_nick.py -m train --machine xps --gpu 0 -s kitticontinuous_residential --max_steps 1000 -d 0.5 --ldecay --l2norm -t -v
-    
+    python3 predict_nick.py -m train --machine xps --gpu 0 -s kitticontinuous --px all --loss berhu --max_steps 75000 --ldecay --l2norm --remove_sky -t -v
+
 Train on Olorin:
     
-    python3 predict_nick.py -m train --machine olorin --gpu 0 -s kittidiscrete --max_steps 10 --ldecay --l2norm
+    python3 predict_nick.py -m train --machine olorin --gpu 0 -s kittidiscrete --px all --loss berhu --max_steps 10 --ldecay --l2norm --remove_sky 
     
 Test:
 
-    python3 predict_nick.py -m test -s kitticontinuous_residential -r output/fcrn/2018-02-26_17-08-45/restore/model.fcrn --gpu 1 -u
+    python3 predict_nick.py -m test -s kitticontinuous_residential -r output/fcrn/2018-02-26_17-08-45/restore/model.fcrn --gpu 1 --remove_sky -u
 
 Predict:
 

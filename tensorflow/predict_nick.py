@@ -438,7 +438,7 @@ def test(args):
         data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
         numSamples = data.numTrainSamples
 
-    model = Test(data)
+    model = Test(args, data)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')

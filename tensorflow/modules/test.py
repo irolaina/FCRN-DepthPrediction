@@ -15,7 +15,7 @@ from .size import Size
 #  Class Declaration
 # ===================
 class Test:
-    def __init__(self, data):
+    def __init__(self, args, data):
         # Construct the network
         with tf.variable_scope('model'):
             input_size = Size(228, 304, 3)
@@ -36,9 +36,7 @@ class Test:
             else:
                 tf_depth = tf.image.decode_png(tf.read_file(self.tf_depth_path), channels=1, dtype=tf.uint16)
 
-            # TODO: Remover? Segundo o vitor não faz sentido remover o céu no test
-            removeSky = True
-            if removeSky:
+            if args.remove_sky:
                 # Crops Input and Depth Images (Removes Sky)
                 if data.dataset_name[0:5] == 'kitti':
                     tf_image_shape = tf.shape(tf_image)
