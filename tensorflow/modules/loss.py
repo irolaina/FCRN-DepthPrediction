@@ -8,7 +8,7 @@ import tensorflow as tf
 #  Global Variables
 # ==================
 TRAINING_L2NORM_BETA = 1e-3
-
+LOG_INITIAL_VALUE = 1
 
 # ===========
 #  Functions
@@ -131,9 +131,11 @@ def gradient_y(img):
 
     return gy
 
-# TODO: Revisar o uso do log nesta function loss
-def tf_L(tf_log_y, tf_log_y_, valid_pixels=True, gamma=0.5):
-    loss_name = "Eigen's Log Depth"
+def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+    loss_name = "Scale Invariant Logarithmic Error"
+
+    tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
+    tf_log_y_ = tf.log(tf_y_ + LOG_INITIAL_VALUE)
 
     # Calculate Difference and Gradients. Compute over all pixels!
     tf_d = tf_log_y - tf_log_y_
@@ -143,7 +145,7 @@ def tf_L(tf_log_y, tf_log_y_, valid_pixels=True, gamma=0.5):
     # Mask Out
     if valid_pixels:
         # Identify Pixels to be masked out.
-        tf_idx = tf.where(tf_log_y_ > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
+        tf_idx = tf.where(tf_y_ > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
 
         # Overwrites the 'd', 'gx_d', 'gy_d' tensors, so now considers only the Valid Pixels!
         tf_d = tf.gather_nd(tf_d, tf_idx)

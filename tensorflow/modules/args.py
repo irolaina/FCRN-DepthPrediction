@@ -38,7 +38,7 @@ def argumentHandler():
 
     parser.add_argument('--data_aug', action='store_true', help="Enable Data Augmentation", default=False)
 
-    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'eigen', 'berhu', etc",
+    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'silog', 'berhu', etc",
                         default='berhu')
 
     parser.add_argument('--batch_size', type=int, help="Define the Training batch size", default=4)

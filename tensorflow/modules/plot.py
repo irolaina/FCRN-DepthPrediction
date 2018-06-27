@@ -18,8 +18,13 @@ def updateColorBar(cbar, img):
     vmin, vmax = np.min(img), np.max(img)
     cbar.set_clim(vmin, vmax)
 
+    cbar_ticks = np.linspace(vmin, vmax, num=7, endpoint=True)
+    cbar.set_ticks(cbar_ticks)
+
+    cbar.draw_all()
+
     # Debug
-    # print(vmin, vmax)
+    print("vmin:", vmin, "\tvmax:", vmax)
 
 
 # ===================

@@ -79,7 +79,7 @@ class Model(object):
                                                     self.valid.tf_depth_resized,
                                                     valid_pixels)
 
-            elif selected_loss == 'eigen':
+            elif selected_loss == 'silog':
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
                                                                self.train.tf_batch_depth,
                                                                valid_pixels,
