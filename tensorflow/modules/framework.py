@@ -154,7 +154,7 @@ class Model(object):
             self.summary_op = tf.summary.merge_all('model_0')
 
     def createTrainSaver(self):
-        """ Creates Saver Object """
+        """Creates Saver Object."""
         self.train_saver = tf.train.Saver()
 
     @staticmethod

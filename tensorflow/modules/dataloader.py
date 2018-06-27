@@ -100,7 +100,6 @@ class Dataloader:
             self.tf_train_depth_key = None
             self.tf_train_depth = None
 
-        # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
         elif args.mode == 'test':
             self.tf_test_image_key = None
             self.tf_test_image = None
@@ -129,7 +128,7 @@ class Dataloader:
         self.tf_train_image_filenames = tf_image_filenames
         self.tf_train_depth_filenames = tf_depth_filenames
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTrainSamples
 
     def getTestData(self, mode='test'):
         image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
@@ -150,7 +149,7 @@ class Dataloader:
         self.tf_test_image_filenames = tf_image_filenames
         self.tf_test_depth_filenames = tf_depth_filenames
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTestSamples
 
     @staticmethod
     def rawdepth2meters(tf_depth, dataset_name):
