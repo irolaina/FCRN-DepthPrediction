@@ -18,13 +18,22 @@ from .dataloader import Dataloader
 class Validation:
     def __init__(self, args, input_size, output_size, max_depth, dataset_name):
         # Raw Input/Output
-        self.tf_image_raw = tf.placeholder(tf.uint8, shape=(None, None, None, 3))
+        self.tf_image_key = tf.placeholder(tf.string)
+        self.tf_depth_key = tf.placeholder(tf.string)
+
+        tf_image_file = tf.read_file(self.tf_image_key)
+        tf_depth_file = tf.read_file(self.tf_depth_key)
+
+        if dataset_name == 'apolloscape':
+            self.tf_image_raw = tf.image.decode_jpeg(tf_image_file, channels=3)
+        else:
+            self.tf_image_raw = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
         if dataset_name.split('_')[0] == 'kittidiscrete' or \
            dataset_name.split('_')[0] == 'kitticontinuous':
-            self.tf_depth_raw = tf.placeholder(tf.uint8, shape=(None, None, None, 1))
+            self.tf_depth_raw = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
         else:
-            self.tf_depth_raw = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
+            self.tf_depth_raw = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         self.tf_depth_meters = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
@@ -59,7 +68,7 @@ class Validation:
 
         self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
 
-        self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, batch=args.batch_size, keep_prob=1, is_training=False)
+        self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1, is_training=False)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.

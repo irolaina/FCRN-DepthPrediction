@@ -15,13 +15,13 @@
 # [Train] FIXME: Early Stopping
 
 # [Test] TODO: Procurar métricas mais recentes de outros trabalhos
-# [Test] TODO: Ver métricas do trabalho DORN. Dep: Instalar Caffe
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
 
 # Known Bugs
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
+# [All] TODO: Vitor me falou que o resize_images do tensorflow é meio bugado
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -105,10 +105,10 @@ def getSaveFolderPaths():
     return save_path, save_restore_path
 
 
-# TODO: Move
-# This function is called every time a key is presssed
 def kbevent(event):
-    # print key info
+    """This function is called every time a key is presssed."""
+
+    # Print key info
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
@@ -345,11 +345,8 @@ def train(args):
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
                         timer3 = -time.time()
-                        # TODO: Otimizar
-                        valid_image = imageio.imread(data.test_image_filenames[i])
-                        valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image_raw: np.expand_dims(valid_image, axis=0),
-                                      model.valid.tf_depth_raw: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+                        feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
+                                      model.valid.tf_depth_key: data.test_depth_filenames[i]}
 
                         valid_image, \
                         valid_image_uint8, \
@@ -363,8 +360,8 @@ def train(args):
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
-                                                         label=valid_depth[0, :, :, 0],
+                            model.valid.plot.showResults(raw=valid_image_uint8,
+                                                         label=valid_depth[:, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
@@ -429,14 +426,10 @@ def test(args):
     data = Dataloader(args)
 
     # Searches dataset images filenames
-    # data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
-
     if TEST_EVALUATE_SUBSET == 0:
-        _ = data.getTestData()
-        numSamples = data.numTestSamples
+        _, _, _, _, numSamples = data.getTestData()
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
-        numSamples = data.numTrainSamples
+        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames, numSamples = data.getTrainData()
 
     model = Test(args, data)
 
