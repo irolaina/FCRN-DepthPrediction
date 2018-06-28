@@ -72,29 +72,29 @@ class Model(object):
             # Select Loss Function:
             if selected_loss == 'mse':
                 self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.tf_pred,
-                                                                 self.train.tf_batch_depth,
+                                                                 self.train.tf_log_batch_depth,
                                                                  valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_MSE(self.valid.tf_pred,
-                                                    self.valid.tf_depth_resized,
+                                                    self.valid.tf_log_depth_resized,
                                                     valid_pixels)
 
             elif selected_loss == 'silog':
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
-                                                               self.train.tf_batch_depth,
+                                                               self.train.tf_log_batch_depth,
                                                                valid_pixels,
                                                                gamma=0.5)
 
                 _, self.valid.tf_loss = loss.tf_L(self.valid.tf_pred,
-                                                  self.valid.tf_depth_resized,
+                                                  self.valid.tf_log_depth_resized,
                                                   valid_pixels)
             elif selected_loss == 'berhu':
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.tf_pred,
-                                                                   self.train.tf_batch_depth,
+                                                                   self.train.tf_log_batch_depth,
                                                                    valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_BerHu(self.valid.tf_pred,
-                                                      self.valid.tf_depth_resized,
+                                                      self.valid.tf_log_depth_resized,
                                                       valid_pixels)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
@@ -126,6 +126,7 @@ class Model(object):
             tf.summary.image('input/batch_image', self.train.tf_batch_image, max_outputs=1, collections=self.model_collection)
             # tf.summary.image('input/batch_image_uint8', self.train.tf_batch_image_uint8, max_outputs=1, collections=self.model_collection)
             tf.summary.image('input/batch_depth', self.train.tf_batch_depth, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/log_batch_depth', self.train.tf_log_batch_depth, max_outputs=1, collections=self.model_collection)
 
             tf.summary.image('output/batch_pred', self.train.tf_pred, max_outputs=1, collections=self.model_collection)
 
@@ -136,6 +137,7 @@ class Model(object):
             tf.summary.image('input/depth', self.valid.tf_depth, max_outputs=1, collections=self.model_collection)
             tf.summary.image('input/image_resized', self.valid.tf_image_resized, max_outputs=1, collections=self.model_collection)
             tf.summary.image('input/depth_resized', self.valid.tf_depth_resized, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/log_depth_resized', self.valid.tf_log_depth_resized, max_outputs=1, collections=self.model_collection)
 
             tf.summary.image('output/pred', self.valid.fcrn.get_output(), max_outputs=1, collections=self.model_collection)
 

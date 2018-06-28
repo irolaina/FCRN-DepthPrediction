@@ -12,6 +12,7 @@ from .dataloader import Dataloader
 # ==================
 #  Global Variables
 # ==================
+LOG_INITIAL_VALUE = 1
 
 # Early Stop Configuration
 AVG_SIZE = 20
@@ -70,13 +71,14 @@ class Train:
             self.tf_batch_image = tf_batch_image_resized
             self.tf_batch_image_uint8 = tf_batch_image_resized_uint8
             self.tf_batch_depth = tf_batch_depth_resized
+            self.tf_log_batch_depth = tf.log(self.tf_batch_depth + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32), name='log_batch_depth')
 
         self.fcrn = ResNet50UpProj({'data': self.tf_batch_image}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
         # if max_depth is not None:
-        #     self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.constant(max_depth))
+        #     self.tf_pred = tf.clip_by_value(self.tf_pred, 0, tf.log(tf.constant(max_depth)))
 
         with tf.name_scope('Train'):
             # Count the number of steps taken.
@@ -108,6 +110,7 @@ class Train:
         print(self.tf_batch_image)
         print(self.tf_batch_image_uint8)
         print(self.tf_batch_depth)
+        print(self.tf_log_batch_depth)
         print(self.tf_global_step)
         print(self.tf_learning_rate)
         print()
@@ -116,6 +119,7 @@ class Train:
     def trainCollection(self):
         tf.add_to_collection('batch_image', self.tf_batch_image)
         tf.add_to_collection('batch_depth', self.tf_batch_depth)
+        tf.add_to_collection('log_batch_depth', self.tf_log_batch_depth)
         tf.add_to_collection('pred', self.tf_pred)
 
         tf.add_to_collection('global_step', self.tf_global_step)

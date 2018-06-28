@@ -92,6 +92,7 @@ io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
+LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -288,6 +289,7 @@ def train(args):
                 batch_image_uint8, \
                 batch_depth, \
                 batch_depth_key, \
+                log_batch_depth, \
                 batch_pred, \
                 model.train.loss, \
                 summary_train_loss = sess.run([model.train_step,
@@ -296,6 +298,7 @@ def train(args):
                                                model.train.tf_batch_image_uint8,
                                                model.train.tf_batch_depth,
                                                model.train.tf_batch_depth_key,
+                                               model.train.tf_log_batch_depth,
                                                model.train.fcrn.get_output(),
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
@@ -317,6 +320,7 @@ def train(args):
                     if args.show_train_progress:
                         model.train.plot.showResults(raw=batch_image_uint8[0],
                                                      label=batch_depth[0, :, :, 0],
+                                                     log_label=log_batch_depth[0, :, :, 0],
                                                      pred=batch_pred[0, :, :, 0])
 
                     timer2 += time.time()
@@ -357,10 +361,12 @@ def train(args):
                         valid_image_uint8, \
                         valid_pred, \
                         valid_depth, \
+                        valid_log_depth, \
                         model.valid.loss = sess.run([model.valid.tf_image_resized,
                                                      model.valid.tf_image_resized_uint8,
                                                      model.valid.tf_pred,
                                                      model.valid.tf_depth_resized,
+                                                     model.valid.tf_log_depth_resized,
                                                      model.valid.tf_loss],
                                                     feed_dict=feed_valid)
 
@@ -475,9 +481,11 @@ def test(args):
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
 
+            log_depth = np.log(depth[:, :, 0] + LOG_INITIAL_VALUE)
+
             # Fill arrays for later on metrics evaluation
             pred_list.append(pred_up[0, :, :, 0])
-            gt_list.append(depth)
+            gt_list.append(log_depth)
 
             # Saves the Test Predictions as uint16 PNG Images
             if SAVE_TEST_DISPARITIES:
@@ -485,12 +493,12 @@ def test(args):
                 pred_up_uint16 = exposure.rescale_intensity(pred_up[0], out_range='float')
                 pred_up_uint16 = img_as_uint(pred_up_uint16)
 
-                depth_uint16 = exposure.rescale_intensity(depth, out_range='float')
-                depth_uint16 = img_as_uint(depth_uint16)
+                log_depth_uint16 = exposure.rescale_intensity(log_depth, out_range='float')
+                log_depth_uint16 = img_as_uint(log_depth_uint16)
 
                 # Save PNG Images
                 imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16)
-                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16)
+                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", log_depth_uint16)
 
             # Prints Testing Progress
             timer2 += time.time()
@@ -503,8 +511,10 @@ def test(args):
                                              depth=depth[:, :, 0],
                                              image_resized=image_resized,
                                              depth_resized=depth_resized[:, :, 0],
+                                             log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
+                                             log_depth=log_depth,
                                              i=i + 1)
 
         # Testing Finished.
