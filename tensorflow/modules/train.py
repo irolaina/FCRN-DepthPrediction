@@ -26,21 +26,17 @@ class Train:
     def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
+            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32) # uint8 -> float32
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
             if enableDataAug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
-            # print(tf_image)   # Must be uint8!
-            # print(tf_depth)   # Must be uint16/uin8!
-
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = Dataloader.rawdepth2meters(tf_depth, dataset_name)
 
-            # print(tf_image) # Must be uint8!
-            # print(tf_depth) # Must be float32!
-
+            # FIXME: PAROU DE FUNCIONAR!!!
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
                 tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
@@ -50,11 +46,10 @@ class Train:
             self.tf_depth = tf_depth
 
             # Downsizes Input and Depth Images
-            self.tf_image_resized = tf.image.resize_images(tf.cast(self.tf_image, tf.float32), [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar tf.convert_image_dtype() ao inves de tf.cast
+            self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
             self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
-            self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
-            # self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose # TODO: Realizar correções para utilizar esta função ao inves do tf.cast()
+            self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
 
             # ==============
             #  Batch Config
@@ -160,8 +155,7 @@ class Train:
                             lambda: color_ordering1(image_aug))
 
         # The random_* ops do not necessarily clamp.
-        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0,
-                                     255.0)  # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
+        image_aug = tf.clip_by_value(image_aug, 0.0, 1.0)
 
         return image_aug, depth_aug
 
