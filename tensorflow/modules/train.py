@@ -36,12 +36,11 @@ class Train:
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = Dataloader.rawdepth2meters(tf_depth, dataset_name)
 
-            # FIXME: PAROU DE FUNCIONAR!!!
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
                 tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
 
-            # Overwrite Tensors
+            # Network Input/Output. Overwrite Tensors!
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 

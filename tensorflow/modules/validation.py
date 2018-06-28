@@ -3,9 +3,9 @@
 # ===========
 import tensorflow as tf
 
+from .dataloader import Dataloader
 from .model.fcrn import ResNet50UpProj
 from .plot import Plot
-from .dataloader import Dataloader
 
 # ==================
 #  Global Variables
@@ -38,7 +38,7 @@ class Validation:
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
 
-        # Workaround for assigning bug
+        # Network Input/Output. Overwrite Tensors!
         tf_image = tf.image.convert_image_dtype(self.tf_image_raw, tf.float32)
         self.tf_image = tf_image
         self.tf_depth = tf_depth

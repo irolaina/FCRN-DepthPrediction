@@ -3,6 +3,7 @@
 # ===========
 import tensorflow as tf
 
+from .dataloader import Dataloader
 from .model.fcrn import ResNet50UpProj
 from .size import Size
 
@@ -42,8 +43,15 @@ class Test:
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
 
+            # Network Input/Output. Overwrite Tensors!
+            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32) # uint8 -> float32
+            self.tf_image = tf_image
+            self.tf_depth = tf_depth
+
             if args.remove_sky:
                 # Crops Input and Depth Images (Removes Sky)
+                # self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, args.dataset)
+
                 if data.dataset_name[0:5] == 'kitti':
                     tf_image_shape = tf.shape(tf_image)
                     tf_depth_shape = tf.shape(tf_depth)
@@ -59,10 +67,10 @@ class Test:
             # tf_depth.set_shape(output_size.getSize())
 
             # Downsizes Input and Depth Images
-            tf_image_resized = tf.image.resize_images(tf.cast(tf_image, tf.float32), [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar tf.convert_image_dtype() ao inves de tf.cast
+            tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
             tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
-            tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
+            tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
             net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
             tf_pred = net.get_output()
@@ -78,8 +86,8 @@ class Test:
             print("\nTensors:")
             print(self.tf_image_key)
             print(self.tf_depth_key)
-            print(tf_image)
-            print(tf_depth)
+            print(self.tf_image)
+            print(self.tf_depth)
             print(tf_image_resized)
             print(tf_image_resized_uint8)
             print(tf_pred)
