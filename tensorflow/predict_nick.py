@@ -11,7 +11,7 @@
 # Must do
 # [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
-
+# [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 # [Train] FIXME: Early Stopping
 
 # [Test] TODO: Procurar métricas mais recentes de outros trabalhos
@@ -20,6 +20,7 @@
 # [Test] TODO: Implementar Métricas em Batches
 
 # Known Bugs
+# [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
 # [All] TODO: Vitor me falou que o resize_images do tensorflow é meio bugado
 
@@ -32,6 +33,7 @@
 # TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
 # TODO: Como Monocular Depth pode auxiliar em Visual Odometry?
 # TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
+# TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
 
 # ===========
@@ -347,6 +349,9 @@ def train(args):
                         timer3 = -time.time()
                         feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
                                       model.valid.tf_depth_key: data.test_depth_filenames[i]}
+
+                        # valid_image_key, valid_depth_key = sess.run([model.valid.tf_image_key, model.valid.tf_depth_key], feed_valid)
+                        # print(valid_image_key, valid_depth_key)
 
                         valid_image, \
                         valid_image_uint8, \
