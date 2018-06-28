@@ -19,14 +19,9 @@
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
-# [Test] TODO: Validar Métricas
 
 # Known Bugs
-# [Train][Major Bug!!!] FIXME: Os pares de treinamento ficam desalinhados. Já havia detectado este problema. O problema abaixo pode estar relacionado
-# TODO: Por que string_input_producer sempre começa do segundo sample?
-# As vezes a leitura das strings ficam desalinhas, já havia detectado este problema anteriormente
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
-# [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -54,6 +49,7 @@ import pyxhook
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from skimage import io, exposure, img_as_uint, img_as_float
 
 # Custom Libraries
 import modules.args as argsLib
@@ -90,6 +86,7 @@ SAVE_TEST_DISPARITIES = True    # Default: True
 # ==================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
+io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
@@ -314,7 +311,6 @@ def train(args):
                 #         input("Invalid Pair Detected!")
                 # print()
 
-
                 model.summary_writer.add_summary(summary_train_loss, step)
 
                 # Prints Training Progress
@@ -494,6 +490,19 @@ def test(args):
             pred_list.append(pred_up[0, :, :, 0])
             gt_list.append(log_depth)
 
+            # Saves the Test Predictions as uint16 PNG Images
+            if SAVE_TEST_DISPARITIES:
+                # Convert the Predictions Images from float32 to uint16
+                pred_up_uint16 = exposure.rescale_intensity(pred_up[0], out_range='float')
+                pred_up_uint16 = img_as_uint(pred_up_uint16)
+
+                log_depth_uint16 = exposure.rescale_intensity(log_depth, out_range='float')
+                log_depth_uint16 = img_as_uint(log_depth_uint16)
+
+                # Save PNG Images
+                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16)
+                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", log_depth_uint16)
+
             # Prints Testing Progress
             timer2 += time.time()
             print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
@@ -515,23 +524,9 @@ def test(args):
         timer += time.time()
         print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % timer)
 
-        # ==============
-        #  Save Results
-        # ==============
-        # Saves the Test Predictions
-        if SAVE_TEST_DISPARITIES:
-            print("[Network/Testing] Saving testing predictions...")
-            output_directory = os.path.dirname(args.model_path) if args.output_directory == '' else args.output_directory
-
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
-
-            save_path_pred = os.path.abspath(os.path.join(output_directory, '../')) + '/' + args.dataset + '_pred.npy'
-
-            # TODO: Quais mais variaveis preciso salvar? Não seria melhor salvar a pred_up? Seria legal usar um dictionary?
-            # data = {'pred': bla, 'pred_up': bla}
-            np.save(save_path_pred, pred)
-
+        # =========
+        #  Results
+        # =========
         # Calculate Metrics
         if data.test_depth_filenames:
             print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
