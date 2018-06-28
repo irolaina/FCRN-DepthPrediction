@@ -43,7 +43,11 @@ class Train:
 
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
-                self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+
+            # Overwrite Tensors
+            self.tf_image = tf_image
+            self.tf_depth = tf_depth
 
             # Downsizes Input and Depth Images
             self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])

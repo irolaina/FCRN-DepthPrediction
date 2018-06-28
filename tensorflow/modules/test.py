@@ -39,6 +39,9 @@ class Test:
             else:
                 tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
+            # True Depth Value Calculation. May vary from dataset to dataset.
+            tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
+
             if args.remove_sky:
                 # Crops Input and Depth Images (Removes Sky)
                 if data.dataset_name[0:5] == 'kitti':
@@ -51,9 +54,6 @@ class Test:
 
                     tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
                     tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
-
-            # True Depth Value Calculation. May vary from dataset to dataset.
-            tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
 
             # tf_image.set_shape(input_size.getSize())
             # tf_depth.set_shape(output_size.getSize())
