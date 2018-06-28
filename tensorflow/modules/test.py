@@ -59,16 +59,15 @@ class Test:
             # tf_depth.set_shape(output_size.getSize())
 
             # Downsizes Input and Depth Images
-            tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width])
+            tf_image_resized = tf.image.resize_images(tf.cast(tf_image, tf.float32), [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar tf.convert_image_dtype() ao inves de tf.cast
+            tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+
             tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
-            tf_image_resized = tf.expand_dims(tf_image_resized, axis=0)  # Model's Input size requirement
 
-            tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width])
-
-            net = ResNet50UpProj({'data': tf_image_resized}, batch=batch_size, keep_prob=1, is_training=False)
+            net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
             tf_pred = net.get_output()
 
-            tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, False)
+            tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)
 
             # Group Tensors
             self.image_op = [self.tf_image_key, tf_image, tf_image_resized_uint8]

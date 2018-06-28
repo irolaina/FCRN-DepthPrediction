@@ -246,7 +246,7 @@ class Dataloader:
         except ValueError:
             print("[ValueError] Oops! Empty resizeSize list. Please sets the desired resizeSize.\n")
 
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=0)  # 0: Nearest - neighbor
+        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=0)  # 0: Nearest-neighbor
         resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=1)  # 1: Bi - linear(default)
         # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=2)  # 2: Bi - quadratic
         # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=3)  # 3: Bi - cubic

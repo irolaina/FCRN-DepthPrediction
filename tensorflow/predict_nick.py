@@ -13,16 +13,19 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 # [Train] FIXME: Early Stopping
+# [Train] FIXME: Trocar tf.cast para tf.convert_image_dtype()
 
 # [Test] TODO: Procurar métricas mais recentes de outros trabalhos
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
+# [Test] TODO: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
+
 
 # Known Bugs
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
-# [All] TODO: Vitor me falou que o resize_images do tensorflow é meio bugado
+# [All] TODO: Vitor me falou que o tf.image.resize_images() do tensorflow é meio bugado
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -148,6 +151,9 @@ def predict(model_data_path, image_path):
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     tf_image_resized = tf.image.resize_images(tf_image, [height, width])
+    # tf_image_resized = tf.image.resize_images(tf.cast(tf_image, tf.float32), [height, width],
+    #                                           method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar esta linha, tf.cast() -> tf.image.convert_image_dtype(), Validar
+
     tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_input = tf.expand_dims(tf_image_resized, axis=0)
 

@@ -63,10 +63,11 @@ class Validation:
                 self.tf_depth = self.tf_depth_meters[:, tf.cast(tf_depth_new_height, tf.int32):, :]
 
         # Downsizes Input and Depth Images
-        self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
-        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
+        self.tf_image_resized = tf.image.resize_images(tf.cast(self.tf_image, tf.float32), [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar tf.convert_image_dtype() ao inves de tf.cast
+        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
         self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
+        # self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose # TODO: Realizar correções para utilizar esta função ao inves do tf.cast()
 
         self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1, is_training=False)
         self.tf_pred = self.fcrn.get_output()

@@ -50,9 +50,11 @@ class Train:
             self.tf_depth = tf_depth
 
             # Downsizes Input and Depth Images
-            self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
-            self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
+            self.tf_image_resized = tf.image.resize_images(tf.cast(self.tf_image, tf.float32), [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar tf.convert_image_dtype() ao inves de tf.cast
+            self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+
             self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
+            # self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose # TODO: Realizar correções para utilizar esta função ao inves do tf.cast()
 
             # ==============
             #  Batch Config
