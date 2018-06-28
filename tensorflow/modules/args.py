@@ -38,7 +38,7 @@ def argumentHandler():
 
     parser.add_argument('--data_aug', action='store_true', help="Enable Data Augmentation", default=False)
 
-    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'eigen', 'berhu', etc",
+    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'silog', 'berhu', etc",
                         default='berhu')
 
     parser.add_argument('--batch_size', type=int, help="Define the Training batch size", default=4)
@@ -47,6 +47,7 @@ def argumentHandler():
     parser.add_argument('-d', '--dropout', type=float, help="Enable dropout in the model during training", default=0.5)
     parser.add_argument('--ldecay', action='store_true', help="Enable learning decay", default=False)
     parser.add_argument('-n', '--l2norm', action='store_true', help="Enable L2 Normalization", default=False)
+    parser.add_argument('--remove_sky', action='store_true', help="Removes Sky for Kitti Datasets", default=False)
 
     parser.add_argument('--full_summary', action='store_true',
                         help="If set, will keep more data for each summary. Warning: the file can become very large")

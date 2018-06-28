@@ -56,7 +56,6 @@ def evaluate(pred_array, gt_array):
 # ------------------- #
 #  Mask Valid Pixels  #
 # ------------------- #
-# TODO: Métrica é aplicada em todos ou apenas nos pixeis válidos? TODOS
 def np_maskOutInvalidPixels(y, y_):
     # Index Vectors for Valid Pixels
     nvalids_idx = np.where(y_ > 0)

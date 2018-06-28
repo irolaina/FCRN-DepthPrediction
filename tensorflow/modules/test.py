@@ -15,30 +15,31 @@ from .size import Size
 #  Class Declaration
 # ===================
 class Test:
-    def __init__(self, data):
+    def __init__(self, args, data):
         # Construct the network
         with tf.variable_scope('model'):
             input_size = Size(228, 304, 3)
             output_size = Size(128, 160, 1)
             batch_size = 1
 
-            self.tf_image_path = tf.placeholder(tf.string)
-            self.tf_depth_path = tf.placeholder(tf.string)
+            self.tf_image_key = tf.placeholder(tf.string)
+            self.tf_depth_key = tf.placeholder(tf.string)
+
+            tf_image_file = tf.read_file(self.tf_image_key)
+            tf_depth_file = tf.read_file(self.tf_depth_key)
 
             if data.dataset_name == 'apolloscape':
-                tf_image = tf.image.decode_jpeg(tf.read_file(self.tf_image_path), channels=3)
+                tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
             else:
-                tf_image = tf.image.decode_png(tf.read_file(self.tf_image_path), channels=3, dtype=tf.uint8)
+                tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
             if data.dataset_name.split('_')[0] == 'kittidiscrete' or \
                     data.dataset_name.split('_')[0] == 'kitticontinuous':
-                tf_depth = tf.image.decode_png(tf.read_file(self.tf_depth_path), channels=1, dtype=tf.uint8)
+                tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
             else:
-                tf_depth = tf.image.decode_png(tf.read_file(self.tf_depth_path), channels=1, dtype=tf.uint16)
+                tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
-            # TODO: Remover? Segundo o vitor não faz sentido remover o céu no test
-            removeSky = True
-            if removeSky:
+            if args.remove_sky:
                 # Crops Input and Depth Images (Removes Sky)
                 if data.dataset_name[0:5] == 'kitti':
                     tf_image_shape = tf.shape(tf_image)
@@ -70,14 +71,14 @@ class Test:
             tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, False)
 
             # Group Tensors
-            self.image_op = [self.tf_image_path, tf_image, tf_image_resized_uint8]
-            self.depth_op = [self.tf_depth_path, tf_depth, tf_depth_resized]
+            self.image_op = [self.tf_image_key, tf_image, tf_image_resized_uint8]
+            self.depth_op = [self.tf_depth_key, tf_depth, tf_depth_resized]
             self.pred_op = [tf_pred, tf_pred_up]
 
             print("\n[Network/Test] Testing Tensors created.")
             print("\nTensors:")
-            print(self.tf_image_path)
-            print(self.tf_depth_path)
+            print(self.tf_image_key)
+            print(self.tf_depth_key)
             print(tf_image)
             print(tf_depth)
             print(tf_image_resized)

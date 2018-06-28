@@ -11,17 +11,18 @@
 # Must do
 # [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
-
+# [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 # [Train] FIXME: Early Stopping
 
 # [Test] TODO: Procurar métricas mais recentes de outros trabalhos
-# [Test] TODO: Ver métricas do trabalho DORN. Dep: Instalar Caffe
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
 
 # Known Bugs
+# [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
+# [All] TODO: Vitor me falou que o resize_images do tensorflow é meio bugado
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -32,6 +33,7 @@
 # TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
 # TODO: Como Monocular Depth pode auxiliar em Visual Odometry?
 # TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
+# TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
 
 # ===========
@@ -106,10 +108,10 @@ def getSaveFolderPaths():
     return save_path, save_restore_path
 
 
-# TODO: Move
-# This function is called every time a key is presssed
 def kbevent(event):
-    # print key info
+    """This function is called every time a key is presssed."""
+
+    # Print key info
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
@@ -349,11 +351,11 @@ def train(args):
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
                         timer3 = -time.time()
-                        # TODO: Otimizar
-                        valid_image = imageio.imread(data.test_image_filenames[i])
-                        valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image_raw: np.expand_dims(valid_image, axis=0),
-                                      model.valid.tf_depth_raw: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+                        feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
+                                      model.valid.tf_depth_key: data.test_depth_filenames[i]}
+
+                        # valid_image_key, valid_depth_key = sess.run([model.valid.tf_image_key, model.valid.tf_depth_key], feed_valid)
+                        # print(valid_image_key, valid_depth_key)
 
                         valid_image, \
                         valid_image_uint8, \
@@ -369,9 +371,8 @@ def train(args):
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
-                                                         label=valid_depth[0, :, :, 0],
-                                                         log_label=valid_log_depth[0, :, :, 0],
+                            model.valid.plot.showResults(raw=valid_image_uint8,
+                                                         label=valid_depth[:, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
@@ -436,16 +437,12 @@ def test(args):
     data = Dataloader(args)
 
     # Searches dataset images filenames
-    # data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
-
     if TEST_EVALUATE_SUBSET == 0:
-        _ = data.getTestData()
-        numSamples = data.numTestSamples
+        _, _, _, _, numSamples = data.getTestData()
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
-        numSamples = data.numTrainSamples
+        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames, numSamples = data.getTrainData()
 
-    model = Test(data)
+    model = Test(args, data)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
@@ -473,14 +470,14 @@ def test(args):
             # Evalute the network for the given image
             # data.test_depth_filenames = [] # Only for testing the following condition!!!
             if data.test_depth_filenames:  # It's not empty
-                feed_test = {model.tf_image_path: data.test_image_filenames[i],
-                             model.tf_depth_path: data.test_depth_filenames[i]}
+                feed_test = {model.tf_image_key: data.test_image_filenames[i],
+                             model.tf_depth_key: data.test_depth_filenames[i]}
 
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 _, depth, depth_resized = sess.run(model.depth_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
             else:
-                feed_test = {model.tf_image_path: data.test_image_filenames[i]}
+                feed_test = {model.tf_image_key: data.test_image_filenames[i]}
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
 
