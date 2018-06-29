@@ -54,7 +54,7 @@ import pyxhook
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from skimage import io, exposure, img_as_uint, img_as_float
+from skimage import io, exposure, img_as_uint
 
 # Custom Libraries
 import modules.args as argsLib

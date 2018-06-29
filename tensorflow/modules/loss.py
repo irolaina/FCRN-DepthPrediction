@@ -10,6 +10,7 @@ import tensorflow as tf
 TRAINING_L2NORM_BETA = 1e-3
 LOG_INITIAL_VALUE = 1
 
+
 # ===========
 #  Functions
 # ===========
@@ -72,7 +73,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 
     # C Constant Calculation
     tf_abs_error = tf.abs(tf.subtract(tf_y, tf_y_), name='abs_error')
-    tf_c = tf.multiply(0.2, tf.reduce_max(tf_abs_error)) # Consider All Pixels!
+    tf_c = tf.multiply(0.2, tf.reduce_max(tf_abs_error))  # Consider All Pixels!
 
     # Mask Out
     if valid_pixels:
@@ -130,6 +131,7 @@ def gradient_y(img):
 
     return gy
 
+
 def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Scale Invariant Logarithmic Error"
 
@@ -154,7 +156,7 @@ def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     # Loss
     tf_npixels = tf.cast(tf.size(tf_d), tf.float32)
     mean_term = tf.div(tf.reduce_sum(tf.square(tf_d)), tf_npixels)
-    variance_term = tf.multiply(tf.div(gamma , tf.square(tf_npixels)), tf.square(tf.reduce_sum(tf_d)))
+    variance_term = tf.multiply(tf.div(gamma, tf.square(tf_npixels)), tf.square(tf.reduce_sum(tf_d)))
     grads_term = tf.div(tf.reduce_sum(tf.square(tf_gx_d)) + tf.reduce_sum(tf.square(tf_gy_d)), tf_npixels)
 
     tf_loss_d = mean_term - variance_term + grads_term

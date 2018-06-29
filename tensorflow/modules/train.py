@@ -26,7 +26,7 @@ class Train:
     def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
-            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32) # uint8 -> float32
+            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 

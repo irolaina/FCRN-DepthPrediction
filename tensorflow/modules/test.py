@@ -3,9 +3,9 @@
 # ===========
 import tensorflow as tf
 
-from .dataloader import Dataloader
 from .model.fcrn import ResNet50UpProj
 from .size import Size
+
 
 # ==================
 #  Global Variables
@@ -44,7 +44,7 @@ class Test:
             tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
 
             # Network Input/Output. Overwrite Tensors!
-            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32) # uint8 -> float32
+            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
