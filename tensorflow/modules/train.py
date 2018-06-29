@@ -9,6 +9,8 @@ from .model.fcrn import ResNet50UpProj
 from .plot import Plot
 from .dataloader import Dataloader
 
+from tensorflow.python.ops import control_flow_ops
+
 # ==================
 #  Global Variables
 # ==================
@@ -129,38 +131,70 @@ class Train:
         depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
 
         # randomly distort the colors.
-        image_aug = distort_image(image_aug)
+        image_aug = apply_with_random_selector(image_aug, lambda image, ordering: distort_color(image, ordering), num_distort_cases=4)
 
         return image_aug, depth_aug
 
-def distort_image(image):
-    # https://github.com/tensorflow/models/blob/master/research/inception/inception/image_processing.py
-    # TODO: Atualizar dataaugmentation usando a implementação abaixo.
-    # TODO: Checar se a função apply_with_random_selector() pode auxiliar a escolher os multiplos modes de color_ordering
-    # https: // github.com / tensorflow / models / blob / master / research / slim / preprocessing / inception_preprocessing.py
-    def color_ordering0(image):
-        image = tf.image.random_brightness(image, max_delta=32. / 255.)
-        image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
-        image = tf.image.random_hue(image, max_delta=0.2)
-        image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
 
-        return image
+def apply_with_random_selector(x, func, num_distort_cases):
+    """Computes func(x, sel), with sel sampled from [0...num_cases-1].
+    Args:
+      x: input Tensor.
+      func: Python function to apply.
+      num_distort_cases: Python int32, number of cases to sample sel from.
+    Returns:
+      The result of func(x, sel), where func receives the value of the
+      selector as a python integer, but sel is sampled dynamically.
+    """
+    sel = tf.random_uniform([], maxval=num_distort_cases, dtype=tf.int32)
+    # Pass the real x only to one of the func calls.
+    return control_flow_ops.merge([
+        func(control_flow_ops.switch(x, tf.equal(sel, case))[1], case)
+        for case in range(num_distort_cases)])[0]
 
-    def color_ordering1(image):
-        image = tf.image.random_brightness(image, max_delta=32. / 255.)
-        image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
-        image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
-        image = tf.image.random_hue(image, max_delta=0.2)
 
-        return image
+def distort_color(image, color_ordering, scope=None):
+    # https://github.com/tensorflow/models/blob/master/research/slim/preprocessing/inception_preprocessing.py
+    """Distort the color of a Tensor image.
+    Each color distortion is non-commutative and thus ordering of the color ops
+    matters. Ideally we would randomly permute the ordering of the color ops.
+    Rather then adding that level of complication, we select a distinct ordering
+    of color ops for each preprocessing thread.
+    Args:
+      image: 3-D Tensor containing single image in [0, 1].
+      color_ordering: Python int, a type of distortion (valid values: 0-3).
+      scope: Optional scope for name_scope.
+    Returns:
+      3-D Tensor color-distorted image on range [0, 1]
+    Raises:
+      ValueError: if color_ordering not in [0, 3]
+    """
+    with tf.name_scope(scope, 'distort_color', [image]):
+        if color_ordering == 0:
+            image = tf.image.random_brightness(image, max_delta=32. / 255.)
+            image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+            image = tf.image.random_hue(image, max_delta=0.2)
+            image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+        elif color_ordering == 1:
+            image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+            image = tf.image.random_brightness(image, max_delta=32. / 255.)
+            image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+            image = tf.image.random_hue(image, max_delta=0.2)
+        elif color_ordering == 2:
+            image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+            image = tf.image.random_hue(image, max_delta=0.2)
+            image = tf.image.random_brightness(image, max_delta=32. / 255.)
+            image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+        elif color_ordering == 3:
+            image = tf.image.random_hue(image, max_delta=0.2)
+            image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+            image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+            image = tf.image.random_brightness(image, max_delta=32. / 255.)
+        else:
+            raise ValueError('color_ordering must be in [0, 3]')
 
-    color_ordering = tf.random_uniform([], minval=0, maxval=2, dtype=tf.int32)
-    image = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image), lambda: color_ordering1(image))
-
-    # The random_* ops do not necessarily clamp.
-    image = tf.clip_by_value(image, 0.0, 1.0)
-
-    return image
+        # The random_* ops do not necessarily clamp.
+        return tf.clip_by_value(image, 0.0, 1.0)
 
 
 # TODO: Validar
