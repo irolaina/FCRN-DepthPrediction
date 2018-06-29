@@ -158,16 +158,16 @@ class Dataloader:
             # Changes the invalid pixel value (65353) to 0.
             tf_depth = tf.cast(tf_depth, tf.float32)
             tf_imask = tf.where(tf_depth < 65535, tf.ones_like(tf_depth), tf.zeros_like(tf_depth))
-            tf_depth = tf_depth * tf_imask
+            tf_depth = tf.multiply(tf_depth, tf_imask)
 
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
+            tf_depth = tf.div(tf_depth, 200.0)
         elif dataset_name == 'kittidepth':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
+            tf_depth = tf.div(tf.cast(tf_depth, tf.float32), 256.0)
         elif dataset_name.split('_')[0] == 'kittidiscrete' or \
              dataset_name.split('_')[0] == 'kitticontinuous':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
+            tf_depth = tf.div(tf.cast(tf_depth, tf.float32), 3.0)
         elif dataset_name == 'nyudepth':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
+            tf_depth = tf.div(tf.cast(tf_depth, tf.float32), 1000.0)
         return tf_depth
 
     @staticmethod
@@ -178,8 +178,8 @@ class Dataloader:
             tf_depth_shape = tf.shape(tf_depth)
 
             crop_height_perc = tf.constant(0.3, tf.float32)
-            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+            tf_image_new_height = tf.multiply(crop_height_perc, tf.cast(tf_image_shape[0], tf.float32))
+            tf_depth_new_height = tf.multiply(crop_height_perc, tf.cast(tf_depth_shape[0], tf.float32))
 
             tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
             tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
@@ -237,45 +237,3 @@ class Dataloader:
         print("tf_depth_shape: ", tf_depth_shape)
 
         return tf_image_key, tf_image, tf_depth_key, tf_depth
-
-    @staticmethod
-    def np_resizeImage(img, size):
-        try:
-            if size is None:
-                raise ValueError
-        except ValueError:
-            print("[ValueError] Oops! Empty resizeSize list. Please sets the desired resizeSize.\n")
-
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=0)  # 0: Nearest - neighbor
-        resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=1)  # 1: Bi - linear(default)
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=2)  # 2: Bi - quadratic
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=3)  # 3: Bi - cubic
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=4)  # 4: Bi - quartic
-        # resized = transform.resize(image=img, output_shape=size, preserve_range=True, order=5)  # 5: Bi - quintic
-
-        # Debug
-        def debug():
-            print(img)
-            print(resized)
-            plt.figure()
-            plt.imshow(img)
-            plt.title("img")
-            plt.figure()
-            plt.imshow(resized)
-            plt.title("resized")
-            plt.show()
-
-        # debug()
-
-        return resized
-
-    @staticmethod
-    def normalizeImage(image):
-        mean = np.mean(image)
-        normed = image / mean
-
-        # Debug
-        # print("img[0,0,0]:", img[0, 0, 0], "img[0,0,1]:", img[0, 0, 1], "img[0,0,2]:", img[0, 0, 2])
-        # print("normed[0,0,0]:", normed[0, 0, 0], "normed[0,0,1]:", normed[0, 0, 1], "normed[0,0,2]:", normed[0, 0, 2])
-
-        return normed
