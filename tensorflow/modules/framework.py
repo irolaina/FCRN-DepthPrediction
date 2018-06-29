@@ -43,6 +43,7 @@ class Model(object):
         self.train_step = None
         self.summary_writer = None
         self.summary_op = None
+        self.tf_summary_train_loss = None
         self.train_saver = None
 
         # Invoke Methods
