@@ -14,7 +14,6 @@
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
 # [Train] FIXME: Early Stopping
-# [Train] TODO: Implementar Weight Decay
 
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
@@ -38,6 +37,7 @@
 # TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
 # TODO: De acordo com DORN, abordar o problema de estimação como um problema multi-class classification é mais indicado do que tratá0lo como um problema de regressão
+# [Train] TODO: A Rede da Laina possui Weight Decay?
 
 # ===========
 #  Libraries
@@ -63,7 +63,7 @@ import modules.metrics_laina as LainaMetrics
 import modules.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
-from modules.model.fcrn import ResNet50UpProj
+from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.test import Test
 from modules.utils import total_size

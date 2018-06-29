@@ -15,7 +15,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from modules.model.fcrn import ResNet50UpProj
+from modules.third_party.laina import ResNet50UpProj
 
 # ==================
 #  Global Variables
