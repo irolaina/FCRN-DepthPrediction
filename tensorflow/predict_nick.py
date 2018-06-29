@@ -397,7 +397,7 @@ def train(args):
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:
-                print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
+                print("[KeyEvent] 'F8' Pressed! Training process aborted!")
                 break
 
         coord.request_stop()

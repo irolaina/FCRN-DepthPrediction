@@ -132,10 +132,10 @@ class Model(object):
         with tf.name_scope("Valid"):
             tf.summary.scalar('loss', self.valid.tf_loss, collections=self.model_collection)
 
-            tf.summary.image('input/image', self.valid.tf_image, max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/depth', self.valid.tf_depth, max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/image_resized', self.valid.tf_image_resized, max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/depth_resized', self.valid.tf_depth_resized, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/image', tf.expand_dims(self.valid.tf_image, axis=0), max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/depth', tf.expand_dims(self.valid.tf_depth, axis=0), max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/image_resized', tf.expand_dims(self.valid.tf_image_resized, axis=0), max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/depth_resized', tf.expand_dims(self.valid.tf_depth_resized, axis=0), max_outputs=1, collections=self.model_collection)
 
             tf.summary.image('output/pred', self.valid.fcrn.get_output(), max_outputs=1, collections=self.model_collection)
 
