@@ -129,34 +129,38 @@ class Train:
         depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
 
         # randomly distort the colors.
-        # https://github.com/tensorflow/models/blob/master/research/inception/inception/image_processing.py
-        # TODO: Atualizar dataaugmentation usando a implementação abaixo.
-        # TODO: Checar se a função apply_with_random_selector() pode auxiliar a escolher os multiplos modes de color_ordering
-        # https: // github.com / tensorflow / models / blob / master / research / slim / preprocessing / inception_preprocessing.py
-        def color_ordering0(image_aug):
-            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
-            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
-            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
-            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
-
-            return image_aug
-
-        def color_ordering1(image_aug):
-            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
-            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
-            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
-            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
-
-            return image_aug
-
-        color_ordering = tf.random_uniform([], minval=0, maxval=2, dtype=tf.int32)
-        image_aug = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image_aug),
-                            lambda: color_ordering1(image_aug))
-
-        # The random_* ops do not necessarily clamp.
-        image_aug = tf.clip_by_value(image_aug, 0.0, 1.0)
+        image_aug = distort_image(image_aug)
 
         return image_aug, depth_aug
+
+def distort_image(image):
+    # https://github.com/tensorflow/models/blob/master/research/inception/inception/image_processing.py
+    # TODO: Atualizar dataaugmentation usando a implementação abaixo.
+    # TODO: Checar se a função apply_with_random_selector() pode auxiliar a escolher os multiplos modes de color_ordering
+    # https: // github.com / tensorflow / models / blob / master / research / slim / preprocessing / inception_preprocessing.py
+    def color_ordering0(image):
+        image = tf.image.random_brightness(image, max_delta=32. / 255.)
+        image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+        image = tf.image.random_hue(image, max_delta=0.2)
+        image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+
+        return image
+
+    def color_ordering1(image):
+        image = tf.image.random_brightness(image, max_delta=32. / 255.)
+        image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+        image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+        image = tf.image.random_hue(image, max_delta=0.2)
+
+        return image
+
+    color_ordering = tf.random_uniform([], minval=0, maxval=2, dtype=tf.int32)
+    image = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image), lambda: color_ordering1(image))
+
+    # The random_* ops do not necessarily clamp.
+    image = tf.clip_by_value(image, 0.0, 1.0)
+
+    return image
 
 
 # TODO: Validar
