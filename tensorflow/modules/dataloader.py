@@ -158,16 +158,16 @@ class Dataloader:
             # Changes the invalid pixel value (65353) to 0.
             tf_depth = tf.cast(tf_depth, tf.float32)
             tf_imask = tf.where(tf_depth < 65535, tf.ones_like(tf_depth), tf.zeros_like(tf_depth))
-            tf_depth = tf_depth * tf_imask
+            tf_depth = tf.multiply(tf_depth, tf_imask)
 
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
+            tf_depth = tf.div(tf_depth, 200.0)
         elif dataset_name == 'kittidepth':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
+            tf_depth = tf.div(tf.cast(tf_depth, tf.float32), 256.0)
         elif dataset_name.split('_')[0] == 'kittidiscrete' or \
              dataset_name.split('_')[0] == 'kitticontinuous':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
+            tf_depth = tf.div(tf.cast(tf_depth, tf.float32), 3.0)
         elif dataset_name == 'nyudepth':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
+            tf_depth = tf.div(tf.cast(tf_depth, tf.float32), 1000.0)
         return tf_depth
 
     @staticmethod
@@ -178,8 +178,8 @@ class Dataloader:
             tf_depth_shape = tf.shape(tf_depth)
 
             crop_height_perc = tf.constant(0.3, tf.float32)
-            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+            tf_image_new_height = tf.multiply(crop_height_perc, tf.cast(tf_image_shape[0], tf.float32))
+            tf_depth_new_height = tf.multiply(crop_height_perc, tf.cast(tf_depth_shape[0], tf.float32))
 
             tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
             tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
