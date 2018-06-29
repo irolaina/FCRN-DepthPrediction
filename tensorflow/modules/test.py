@@ -77,6 +77,13 @@ class Test:
 
             tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)
 
+            if data.dataset_name[0:5] == 'kitti':
+                tf_imask_50 = tf.where(tf_pred < 50.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
+                tf_imask_80 = tf.where(tf_pred < 80.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
+
+                self.tf_pred_50 = tf.multiply(tf_pred, tf_imask_50)
+                self.tf_pred_80 = tf.multiply(tf_pred, tf_imask_80)
+
             # Group Tensors
             self.image_op = [self.tf_image_key, tf_image, tf_image_resized_uint8]
             self.depth_op = [self.tf_depth_key, tf_depth, tf_depth_resized]
