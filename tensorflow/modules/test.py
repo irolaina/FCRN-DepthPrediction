@@ -44,7 +44,8 @@ class Test:
             tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
 
             # Network Input/Output. Overwrite Tensors!
-            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32
+            # tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
+            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
@@ -70,6 +71,7 @@ class Test:
             tf_image_resized = tf.image.resize_images(tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
             tf_depth_resized = tf.image.resize_images(tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
+            # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
             tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
             net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)

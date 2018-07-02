@@ -85,3 +85,4 @@ def distort_color(image, color_ordering, scope=None):
 
         # The random_* ops do not necessarily clamp.
         return tf.clip_by_value(image, 0.0, 1.0)
+        # return tf.clip_by_value(image, 0.0, 255.0)

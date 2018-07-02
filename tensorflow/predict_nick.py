@@ -13,6 +13,7 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
+# [Train] FIXME: O Modelo Colapsa quando treina-se o KittiDepth, KittiDiscrete com a opção --px all!
 # [Train] FIXME: Early Stopping
 
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
@@ -150,9 +151,11 @@ def predict(model_data_path, image_path):
     # ------- #
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
-    tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32
+    # tf_image_float32 = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
+    tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
     tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
+    # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
     with tf.variable_scope('model'):
