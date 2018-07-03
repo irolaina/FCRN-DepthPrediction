@@ -15,7 +15,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from modules.third_party.laina import ResNet50UpProj
+from modules.third_party.laina.fcrn import ResNet50UpProj
 
 # ==================
 #  Global Variables
@@ -101,12 +101,13 @@ def main():
     batch_size = 1
 
     # Create a placeholder for the input image
-    input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
+    input_node = tf.placeholder(tf.uint8, shape=(height, width, channels))
+    tf_image_float32 = tf.image.convert_image_dtype(input_node, tf.float32)
 
     with tf.variable_scope('model'): # Disable for running original models!!!
         # Construct the network
-        net = ResNet50UpProj({'data': input_node}, batch=batch_size, keep_prob=1, is_training=False)
-        tf_pred = tf.exp(net.get_output(), 'pred')
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
+
 
     # ---------------
     #  Running Graph
@@ -128,35 +129,29 @@ def main():
         while True:
             # Capture frame-by-frame
             success, frame = cap.read()
-            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
+            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)
 
             # Evalute the network for the given image
-            img = np.array(frame).astype('float32')
-            img = np.expand_dims(np.asarray(img), axis=0)
-            pred_log, pred = sess.run([net.get_output(), tf_pred], feed_dict={input_node: img})
+            pred = sess.run(net.get_output(), feed_dict={input_node: frame})
 
+            # Debug
+            # print(frame)
             # print(frame.shape, frame.dtype)
             # print()
-            # print(pred_log)
-            # print(type(pred_log))
-            # print(pred_log.shape, pred_log.dtype)
-            # input("enter")
-            # print()
-            # print(pred)      
-            # print(type(pred))
+            # print(pred)
             # print(pred.shape, pred.dtype)
-            # input("enter2")
+            # input("Continue...")
 
             # Image Processing
             pred_uint8 = cv2.convertScaleAbs(pred[0])
-            pred_uint8_inv = 255 - pred_uint8
-            pred_jet = cv2.applyColorMap(pred_uint8_inv, cv2.COLORMAP_JET)
+
+            pred_jet = cv2.applyColorMap(pred_uint8, cv2.COLORMAP_JET)
+            pred2_jet = cv2.applyColorMap(pred_uint8*5, cv2.COLORMAP_JET)
+
             pred_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
             cv2.putText(pred_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
 
-            pred2 = cv2.convertScaleAbs(pred[0])
-            pred2_jet = cv2.applyColorMap(pred2*5, cv2.COLORMAP_JET)
             pred2_resized = cv2.resize(pred2_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
 
             # print(pred2)
@@ -183,8 +178,6 @@ def main():
             cv2.imshow('frame', frame)
             cv2.imshow('pred', pred_uint8)
             cv2.imshow('pred_proc', pred_resized)
-
-            cv2.imshow('pred2', pred2)
             cv2.imshow('pred2_proc', pred2_resized)
 
             # Save Images

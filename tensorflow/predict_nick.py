@@ -518,6 +518,8 @@ def test(args):
                                              pred_80=pred_80[0, :, :, 0],
                                              i=i + 1)
 
+            # input("Continue...")
+
         # Testing Finished.
         timer += time.time()
         print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % timer)
