@@ -16,7 +16,6 @@
 # [Train] FIXME: O Modelo Colapsa quando treina-se o KittiDepth, KittiDiscrete com a opção --px all!
 # [Train] FIXME: Early Stopping
 
-# [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
 # [Test] TODO: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
@@ -467,22 +466,25 @@ def test(args):
             timer2 = -time.time()
 
             # Evalute the network for the given image
-            # data.test_depth_filenames = [] # Only for testing the following condition!!!
+            # data.test_depth_filenames = [] # Only for testing the following condition!!! # FIXME: Atualmente, o código não dá suporte para esta situação
             if data.test_depth_filenames:  # It's not empty
                 feed_test = {model.tf_image_key: data.test_image_filenames[i],
                              model.tf_depth_key: data.test_depth_filenames[i]}
 
-                _, image, image_resized = sess.run(model.image_op, feed_test)
                 _, depth, depth_resized = sess.run(model.depth_op, feed_test)
-                pred, pred_up = sess.run(model.pred_op, feed_test)
-
-                # Clips Predictions Range at 50, 80 meters
-                pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test) # TODO: Reativar
 
             else:
                 feed_test = {model.tf_image_key: data.test_image_filenames[i]}
-                _, image, image_resized = sess.run(model.image_op, feed_test)
-                pred, pred_up = sess.run(model.pred_op, feed_test)
+
+            _, image, image_resized = sess.run(model.image_op, feed_test)
+            pred, pred_up = sess.run(model.pred_op, feed_test)
+
+            # Clips Predictions at 50, 80 meters
+            try:
+                pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test)
+            except AttributeError:
+                pred_50 = np.zeros((model.batch_size,) + model.output_size.getSize())
+                pred_80 = np.zeros((model.batch_size,) + model.output_size.getSize())
 
             # Fill arrays for later on metrics evaluation
             pred_list.append(pred_up[0, :, :, 0])

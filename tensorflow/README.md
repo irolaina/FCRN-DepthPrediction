@@ -40,6 +40,7 @@ Kitti Depth Prediction:
     python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor2.mp4
 
     python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4 --gpu 1 2> tmp/error.txt
+    python3 predict_cv.py output/fcrn/kitticontinuous/all_px/berhu/2018-06-29_17-59-58/restore/model.fcrn ../misc/outdoor_dubai_city.mp4
 
 Encode Video:
 
