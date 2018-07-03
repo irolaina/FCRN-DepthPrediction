@@ -488,7 +488,7 @@ def test(args):
 
             # Fill arrays for later on metrics evaluation
             pred_list.append(pred_up[0, :, :, 0])
-            gt_list.append(depth)
+            gt_list.append(depth[:, :, 0])
 
             # Saves the Test Predictions as uint16 PNG Images
             if SAVE_TEST_DISPARITIES:
@@ -536,8 +536,8 @@ def test(args):
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
 
-            LainaMetrics.evaluate(pred_array, gt_array)
-            myMetrics.evaluate(pred_array, gt_array)
+            # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
+            # myMetrics.evaluate(pred_array, gt_array) # FIXME:
             MonodepthMetrics.evaluate(pred_array, gt_array)
 
         else:
