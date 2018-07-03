@@ -146,26 +146,27 @@ def main():
             pred_uint8 = cv2.convertScaleAbs(pred[0])
 
             pred_jet = cv2.applyColorMap(pred_uint8, cv2.COLORMAP_JET)
-            pred2_jet = cv2.applyColorMap(pred_uint8*5, cv2.COLORMAP_JET)
+            pred_hsv = cv2.applyColorMap(pred_uint8*5, cv2.COLORMAP_HSV)
 
-            pred_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
-            cv2.putText(pred_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
+            pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
+            cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
 
-            pred2_resized = cv2.resize(pred2_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
+            pred_hsv_resized = cv2.resize(pred_hsv, (304, 228), interpolation=cv2.INTER_CUBIC)
 
-            # print(pred2)
-            # print("min:", np.min(pred2))
-            # print("max:", np.max(pred2))
-
-            # print(pred_uint8.shape)
-            # print(pred_resized.shape)
+            # print(pred)
+            # print("min:", np.min(pred))
+            # print("max:", np.max(pred))
 
             # print(pred_uint8[0,:,:,0])
             # print(np.min(pred_uint8))
             # print(np.max(pred_uint8))
             # print(pred_uint8.shape, pred_uint8.dtype)
             # input("pred_uint8")
+
+            # print(pred_uint8.shape, pred_uint8.dtype)
+            # print(pred_jet_resized.shape, pred_jet_resized.dtype)
+            # print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
 
             # Display the resulting frame - Matplotlib
             # plt.figure(1)
@@ -177,14 +178,14 @@ def main():
             # Display the resulting frame - OpenCV
             cv2.imshow('frame', frame)
             cv2.imshow('pred', pred_uint8)
-            cv2.imshow('pred_proc', pred_resized)
-            cv2.imshow('pred2_proc', pred2_resized)
+            cv2.imshow('pred_jet', pred_jet_resized)
+            cv2.imshow('pred_hsv (scaled)', pred_hsv_resized)
 
             # Save Images
             if SAVE_IMAGES:
                 cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame)
-                cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8_inv)
-                cv2.imwrite("output/fcrn_cv/jet%06d.png" % count, pred_resized)
+                cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8)
+                cv2.imwrite("output/fcrn_cv/jet%06d.png" % count, pred_jet_resized)
                 count += 1
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
