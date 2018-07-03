@@ -477,14 +477,7 @@ def test(args):
                 pred, pred_up = sess.run(model.pred_op, feed_test)
 
                 # Clips Predictions Range at 50, 80 meters
-                # pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test) # TODO: Reativar
-
-                # plt.figure(100)
-                # plt.imshow(pred_50[0, :, :, 0])
-                # plt.figure(101)
-                # plt.imshow(pred_80[0, :, :, 0])
-                # plt.draw()
-                # plt.pause(0.001)
+                pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test) # TODO: Reativar
 
             else:
                 feed_test = {model.tf_image_key: data.test_image_filenames[i]}
@@ -521,6 +514,8 @@ def test(args):
                                              depth_resized=depth_resized[:, :, 0],
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
+                                             pred_50=pred_50[0, :, :, 0],
+                                             pred_80=pred_80[0, :, :, 0],
                                              i=i + 1)
 
         # Testing Finished.
