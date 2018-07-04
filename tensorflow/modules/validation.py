@@ -18,13 +18,22 @@ from .dataloader import Dataloader
 class Validation:
     def __init__(self, args, input_size, output_size, max_depth, dataset_name):
         # Raw Input/Output
-        self.tf_image_raw = tf.placeholder(tf.uint8, shape=(None, None, None, 3))
+        self.tf_image_key = tf.placeholder(tf.string)
+        self.tf_depth_key = tf.placeholder(tf.string)
+
+        tf_image_file = tf.read_file(self.tf_image_key)
+        tf_depth_file = tf.read_file(self.tf_depth_key)
+
+        if dataset_name == 'apolloscape':
+            self.tf_image_raw = tf.image.decode_jpeg(tf_image_file, channels=3)
+        else:
+            self.tf_image_raw = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
         if dataset_name.split('_')[0] == 'kittidiscrete' or \
            dataset_name.split('_')[0] == 'kitticontinuous':
-            self.tf_depth_raw = tf.placeholder(tf.uint8, shape=(None, None, None, 1))
+            self.tf_depth_raw = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
         else:
-            self.tf_depth_raw = tf.placeholder(tf.uint16, shape=(None, None, None, 1))
+            self.tf_depth_raw = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         self.tf_depth_meters = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
@@ -38,19 +47,20 @@ class Validation:
         self.tf_depth = self.tf_depth_meters
 
         # Crops Input and Depth Images (Removes Sky)
-        # self.tf_image, self.tf_depth = Dataloader.removeSky(self.tf_image_raw_float32, self.tf_depth_meters, dataset_name) # FIXME: Why doesn't it work?
+        if args.remove_sky:
+            # self.tf_image, self.tf_depth = Dataloader.removeSky(self.tf_image_raw_float32, self.tf_depth_meters, dataset_name) # FIXME: Why doesn't it work?
 
-        # Workaround
-        if dataset_name[0:5] == 'kitti':
-            tf_image_shape = tf.shape(self.tf_image_raw_float32)
-            tf_depth_shape = tf.shape(self.tf_depth_meters)
+            # Workaround
+            if dataset_name[0:5] == 'kitti':
+                tf_image_shape = tf.shape(self.tf_image_raw_float32)
+                tf_depth_shape = tf.shape(self.tf_depth_meters)
 
-            crop_height_perc = tf.constant(0.3, tf.float32)
-            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[1], tf.float32)
-            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[1], tf.float32)
+                crop_height_perc = tf.constant(0.3, tf.float32)
+                tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[1], tf.float32)
+                tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[1], tf.float32)
 
-            self.tf_image = self.tf_image_raw_float32[:, tf.cast(tf_image_new_height, tf.int32):, :]
-            self.tf_depth = self.tf_depth_meters[:, tf.cast(tf_depth_new_height, tf.int32):, :]
+                self.tf_image = self.tf_image_raw_float32[:, tf.cast(tf_image_new_height, tf.int32):, :]
+                self.tf_depth = self.tf_depth_meters[:, tf.cast(tf_depth_new_height, tf.int32):, :]
 
         # Downsizes Input and Depth Images
         self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
@@ -58,7 +68,7 @@ class Validation:
 
         self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
 
-        self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, batch=args.batch_size, keep_prob=1, is_training=False)
+        self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1, is_training=False)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.
