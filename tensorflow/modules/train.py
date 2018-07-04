@@ -42,7 +42,12 @@ class Train:
             # print(tf_depth) # Must be float32!
 
             # Crops Input and Depth Images (Removes Sky)
-            self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+            if args.remove_sky:
+                self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+
+            # Overwrites Tensors!
+            self.tf_image = tf_image
+            self.tf_depth = tf_depth
 
             # Downsizes Input and Depth Images
             self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
@@ -139,7 +144,7 @@ class Train:
             image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
 
             return image_aug
-    
+
         def color_ordering1(image_aug):
             image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
             image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)

@@ -49,14 +49,12 @@ class Plot(object):
 
         elif mode == 'test':
             self.fig, self.axes = plt.subplots(8, 1)
-            self.axes[0] = plt.subplot(421)
-            self.axes[1] = plt.subplot(423)
-            self.axes[2] = plt.subplot(422)
-            self.axes[3] = plt.subplot(424)
-            self.axes[4] = plt.subplot(426)
-            self.axes[5] = plt.subplot(428)
-            self.axes[6] = plt.subplot(427)
-            self.axes[7] = plt.subplot(425)
+            self.axes[0] = plt.subplot(321)
+            self.axes[1] = plt.subplot(323)
+            self.axes[2] = plt.subplot(322)
+            self.axes[3] = plt.subplot(324)
+            self.axes[5] = plt.subplot(326)
+            self.axes[6] = plt.subplot(325)
 
             # Sets Titles
             self.axes[0].set_title("Image")
@@ -120,10 +118,8 @@ class Plot(object):
             self.cbar1 = self.fig.colorbar(self.cax1, ax=self.axes[1])
             # self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[2])
             self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[3])
-            self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[4])
             self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[5])
             self.cbar6 = self.fig.colorbar(self.cax6, ax=self.axes[6])
-            self.cbar7 = self.fig.colorbar(self.cax7, ax=self.axes[7])
 
             self.isFirstTime = False
         else:
