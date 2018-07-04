@@ -74,6 +74,7 @@ class Model(object):
                                                     self.valid.tf_depth_resized,
                                                     valid_pixels)
 
+            # TODO: Essa loss usa log, revisar implementacao
             elif selected_loss == 'eigen':
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
                                                                self.train.tf_batch_labels,
