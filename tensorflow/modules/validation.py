@@ -9,7 +9,6 @@ from .plot import Plot
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 
 # ===================
@@ -52,7 +51,6 @@ class Validation:
         self.tf_depth_resized = tf.image.resize_images(self.tf_depth2, [output_size.height, output_size.width])
 
         self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
-        self.tf_log_depth_resized = tf.log(self.tf_depth_resized + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32), name='log_depth')
 
         self.fcrn = ResNet50UpProj({'data': self.tf_image_resized}, batch=args.batch_size, keep_prob=1, is_training=False)
         self.tf_pred = self.fcrn.get_output()
@@ -75,6 +73,5 @@ class Validation:
         print(self.tf_image_resized)
         print(self.tf_image_resized_uint8)
         print(self.tf_depth_resized)
-        print(self.tf_log_depth_resized)
         print()
         # input("valid")

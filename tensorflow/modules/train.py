@@ -11,7 +11,6 @@ from .plot import Plot
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 # Early Stop Configuration
 AVG_SIZE = 20
@@ -68,8 +67,6 @@ class Train:
             self.tf_batch_data = tf_batch_image_resized
             self.tf_batch_data_uint8 = tf_batch_image_resized_uint8
             self.tf_batch_labels = tf_batch_depth_resized
-            self.tf_log_batch_labels = tf.log(self.tf_batch_labels + tf.constant(LOG_INITIAL_VALUE, dtype=tf.float32),
-                                              name='log_batch_labels')
 
         self.fcrn = ResNet50UpProj({'data': self.tf_batch_data}, batch=args.batch_size, keep_prob=args.dropout, is_training=True)
         self.tf_pred = self.fcrn.get_output()
@@ -108,7 +105,6 @@ class Train:
         print(self.tf_batch_data)
         print(self.tf_batch_data_uint8)
         print(self.tf_batch_labels)
-        print(self.tf_log_batch_labels)
         print(self.tf_global_step)
         print(self.tf_learning_rate)
         print()
@@ -117,7 +113,6 @@ class Train:
     def trainCollection(self):
         tf.add_to_collection('batch_data', self.tf_batch_data)
         tf.add_to_collection('batch_labels', self.tf_batch_labels)
-        tf.add_to_collection('log_batch_labels', self.tf_log_batch_labels)
         tf.add_to_collection('pred', self.tf_pred)
 
         tf.add_to_collection('global_step', self.tf_global_step)
