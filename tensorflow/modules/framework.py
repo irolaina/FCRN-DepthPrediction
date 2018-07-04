@@ -14,7 +14,6 @@ from modules.validation import Validation
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -102,7 +101,7 @@ class Model(object):
             if valid_pixels:
                 print("[Network/Loss] Compute: Ignore invalid pixels")
             else:
-                print("\n[Network/Loss] Loss: All Pixels")
+                print("[Network/Loss] Loss: All Pixels")
             print("[Network/Loss] Loss Function: %s" % self.loss_name)
 
     def build_optimizer(self):
@@ -129,8 +128,8 @@ class Model(object):
         with tf.name_scope("Valid"):
             tf.summary.scalar('loss', self.valid.tf_loss, collections=self.model_collection)
 
-            tf.summary.image('input/image', self.valid.tf_image, max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/depth', self.valid.tf_depth, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/image', tf.cast(self.valid.tf_image, tf.float32), max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/depth', tf.cast(self.valid.tf_depth, tf.float32), max_outputs=1, collections=self.model_collection)
             tf.summary.image('input/image_resized', self.valid.tf_image_resized, max_outputs=1, collections=self.model_collection)
             tf.summary.image('input/depth_resized', self.valid.tf_depth_resized, max_outputs=1, collections=self.model_collection)
             tf.summary.image('input/log_depth_resized', self.valid.tf_log_depth_resized, max_outputs=1, collections=self.model_collection)

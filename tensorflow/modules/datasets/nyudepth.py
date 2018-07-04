@@ -42,18 +42,17 @@
 # ===========
 import glob
 import os
-import numpy as np
-import tensorflow as tf
-import sys
 import time
 
-from ..size import Size
+import numpy as np
+
 from ..filenames import FilenamesHandler
+from ..size import Size
+
 
 # ==================
 #  Global Variables
 # ==================
-LOG_INITIAL_VALUE = 1
 
 
 # ===========

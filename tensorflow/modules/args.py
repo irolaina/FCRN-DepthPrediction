@@ -34,6 +34,8 @@ def argumentHandler():
 
     parser.add_argument('--data_aug', action='store_true', help="Enable Data Augmentation", default=False)
 
+    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'eigen', 'berhu', etc", default='berhu')
+
     parser.add_argument('--batch_size', type=int, help="Define the Training batch size", default=4)
     parser.add_argument('--max_steps', type=int, help="Define the number of max Steps", default=1000)
     parser.add_argument('-l', '--learning_rate', type=float, help="Define the initial learning rate", default=1e-4)
