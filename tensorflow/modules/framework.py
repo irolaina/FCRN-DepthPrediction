@@ -27,6 +27,9 @@ class Model(object):
     def __init__(self, args, data):
         self.args = args
 
+        selected_loss = args.loss
+        selected_px = args.px
+
         self.input_size = Size(228, 304, 3)
         self.output_size = Size(128, 160, 1)
 
@@ -76,7 +79,7 @@ class Model(object):
                                                     self.valid.tf_depth_resized,
                                                     valid_pixels)
 
-            elif selected_loss == 'eigen':
+            elif selected_loss == 'silog':
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
                                                                self.train.tf_batch_depth,
                                                                valid_pixels,
@@ -151,7 +154,7 @@ class Model(object):
             self.summary_op = tf.summary.merge_all('model_0')
 
     def createTrainSaver(self):
-        """ Creates Saver Object """
+        """Creates Saver Object."""
         self.train_saver = tf.train.Saver()
 
     @staticmethod
