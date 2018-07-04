@@ -59,11 +59,6 @@ from modules.utils import total_size
 # ==========================
 #  [Train] Framework Config
 # ==========================
-# Select the Loss Function:
-# LOSS_FUNCTION = 'mse'     # MSE
-# LOSS_FUNCTION = 'eigen'   # Eigen's Scale-invariant Mean Squared Error
-LOSS_FUNCTION = 'berhu'     # BerHu
-
 # Select to consider only the valid Pixels (True) OR ALL Pixels (False)
 VALID_PIXELS = False             # Default: True
 
@@ -99,7 +94,7 @@ LOG_INITIAL_VALUE = 1
 def getSaveFolderPaths():
     """Defines folders paths for saving the model variables to disk."""
     valid_px_str = 'valid_px' if VALID_PIXELS else 'all_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + LOSS_FUNCTION + '/' + datetime + '/'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + valid_px_str + '/' + args.loss + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -248,7 +243,7 @@ def train(args):
         data.tf_train_image, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
-        model = Model(args, data, LOSS_FUNCTION, VALID_PIXELS)
+        model = Model(args, data, args.loss, VALID_PIXELS)
         model.collectSummaries(save_path, graph)
         model.createTrainSaver()
 
