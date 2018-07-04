@@ -42,6 +42,7 @@ class Train:
             # print(tf_depth) # Must be float32!
 
             # Crops Input and Depth Images (Removes Sky)
+            # TODO: Não está funcionando
             if args.remove_sky:
                 self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
 

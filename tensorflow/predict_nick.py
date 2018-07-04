@@ -11,17 +11,21 @@
 # Must do
 # [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
-
+# [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 # [Train] FIXME: Early Stopping
+# [Train] FIXME: Trocar tf.cast para tf.convert_image_dtype()
 
 # [Test] TODO: Procurar métricas mais recentes de outros trabalhos
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
+# [Test] TODO: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
+
 
 # Known Bugs
+# [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
-# [All] TODO: Vitor me falou que o resize_images do tensorflow é meio bugado
+# [All] TODO: Vitor me falou que o tf.image.resize_images() do tensorflow é meio bugado
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -32,6 +36,7 @@
 # TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
 # TODO: Como Monocular Depth pode auxiliar em Visual Odometry?
 # TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
+# TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
 
 # ===========
@@ -146,6 +151,9 @@ def predict(model_data_path, image_path):
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     tf_image_resized = tf.image.resize_images(tf_image, [height, width])
+    # tf_image_resized = tf.image.resize_images(tf.cast(tf_image, tf.float32), [height, width],
+    #                                           method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar esta linha, tf.cast() -> tf.image.convert_image_dtype(), Validar
+
     tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_input = tf.expand_dims(tf_image_resized, axis=0)
 
@@ -347,6 +355,9 @@ def train(args):
                         timer3 = -time.time()
                         feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
                                       model.valid.tf_depth_key: data.test_depth_filenames[i]}
+
+                        # valid_image_key, valid_depth_key = sess.run([model.valid.tf_image_key, model.valid.tf_depth_key], feed_valid)
+                        # print(valid_image_key, valid_depth_key)
 
                         valid_image, \
                         valid_image_uint8, \
