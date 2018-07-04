@@ -28,8 +28,7 @@ class Train:
     def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
-            # tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
-            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
+            tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
@@ -51,8 +50,7 @@ class Train:
             self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
             self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
-            # self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual Purpose
-            self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
+            self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual Purpose
 
             # ==============
             #  Batch Config
