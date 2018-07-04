@@ -94,12 +94,19 @@ class Dataloader:
             _ = self.getTrainData()
             _ = self.getTestData()
 
+            self.tf_train_image_key = None
             self.tf_train_image = None
+
+            self.tf_train_depth_key = None
             self.tf_train_depth = None
-        elif args.mode == 'test':  # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+
+        # TODO: Deixar como está, ou passar aquelas flags para dentro da class.
+        elif args.mode == 'test':
+            self.tf_test_image_key = None
             self.tf_test_image = None
+
+            self.tf_test_depth_key = None
             self.tf_test_depth = None
-            pass
 
         print("\n[Dataloader] dataloader object created.")
 
@@ -146,7 +153,7 @@ class Dataloader:
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames
 
     @staticmethod
-    def rawdepth2meters(dataset_name, tf_depth):
+    def rawdepth2meters(tf_depth, dataset_name):
         """True Depth Value Calculation. May vary from dataset to dataset."""
         if dataset_name == 'apolloscape':
             # Changes the invalid pixel value (65353) to 0.
@@ -164,16 +171,43 @@ class Dataloader:
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
         return tf_depth
 
+    @staticmethod
+    def removeSky(tf_image, tf_depth, dataset_name):
+        """Crops Input and Depth Images (Removes Sky)"""
+        if dataset_name[0:5] == 'kitti':
+            tf_image_shape = tf.shape(tf_image)
+            tf_depth_shape = tf.shape(tf_depth)
+
+            crop_height_perc = tf.constant(0.3, tf.float32)
+            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
+            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+
+            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
+            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+
+        return tf_image, tf_depth
+
     def readData(self, image_filenames, depth_filenames):
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may misalign the pair (image, depth)!!!
-        tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames, shuffle=False)
-        tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames, shuffle=False)
+
+        # filenames = list(zip(image_filenames, depth_filenames))
+        # for filename in filenames:
+        #     print(filename)
+        # print(len(filenames))
+        # input("readData")
+
+        tf_image_filenames = tf.constant(image_filenames)
+        tf_depth_filenames = tf.constant(depth_filenames)
+
+        tf_train_input_queue = tf.train.slice_input_producer([tf_image_filenames, tf_depth_filenames], shuffle=False)
 
         # Reads images
-        image_reader = tf.WholeFileReader()
-        tf_image_key, tf_image_file = image_reader.read(tf_train_image_filename_queue)
-        tf_depth_key, tf_depth_file = image_reader.read(tf_train_depth_filename_queue)
+        tf_image_key = tf_train_input_queue[0]
+        tf_depth_key = tf_train_input_queue[1]
+
+        tf_image_file = tf.read_file(tf_train_input_queue[0])
+        tf_depth_file = tf.read_file(tf_train_input_queue[1])
 
         if self.dataset_name == 'apolloscape':
             tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
@@ -193,15 +227,6 @@ class Dataloader:
         tf_image_shape = tf.shape(tf_image)
         tf_depth_shape = tf.shape(tf_depth)
 
-        # print(tf_image)   # Must be uint8!
-        # print(tf_depth)   # Must be uint16/uin8!
-
-        # True Depth Value Calculation. May vary from dataset to dataset.
-        tf_depth = self.rawdepth2meters(self.dataset_name, tf_depth)
-
-        # print(tf_image) # Must be uint8!
-        # print(tf_depth) # Must be float32!
-
         # Print Tensors
         print("tf_image_key: \t", tf_image_key)
         print("tf_depth_key: \t", tf_depth_key)
@@ -212,7 +237,7 @@ class Dataloader:
         print("tf_image_shape: ", tf_image_shape)
         print("tf_depth_shape: ", tf_depth_shape)
 
-        return tf_image, tf_depth
+        return tf_image_key, tf_image, tf_depth_key, tf_depth
 
     @staticmethod
     def np_resizeImage(img, size):

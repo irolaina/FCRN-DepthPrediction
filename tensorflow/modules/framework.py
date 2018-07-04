@@ -24,7 +24,7 @@ from modules.validation import Validation
 #  Class Declaration
 # ===================
 class Model(object):
-    def __init__(self, args, data, selected_loss, valid_pixels):
+    def __init__(self, args, data):
         self.args = args
 
         self.input_size = Size(228, 304, 3)
@@ -44,7 +44,7 @@ class Model(object):
 
         # Invoke Methods
         self.build_model(data)
-        self.build_losses(selected_loss, valid_pixels)
+        self.build_losses(selected_loss, selected_px)
         self.build_optimizer()
         self.build_summaries()
         self.countParams()
@@ -57,27 +57,28 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data.tf_train_image, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name, self.args.data_aug)
+            self.train = Train(self.args, data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name, self.args.data_aug)
 
         with tf.variable_scope("model", reuse=True):
             self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
 
-    def build_losses(self, selected_loss, valid_pixels):
+    def build_losses(self, selected_loss, selected_px):
+        valid_pixels = True if selected_px == 'valid' else False
+
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selected_loss == 'mse':
                 self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.tf_pred,
-                                                                 self.train.tf_batch_labels,
+                                                                 self.train.tf_batch_depth,
                                                                  valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_MSE(self.valid.tf_pred,
                                                     self.valid.tf_depth_resized,
                                                     valid_pixels)
 
-            # TODO: Essa loss usa log, revisar implementacao
             elif selected_loss == 'eigen':
                 self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
-                                                               self.train.tf_batch_labels,
+                                                               self.train.tf_batch_depth,
                                                                valid_pixels,
                                                                gamma=0.5)
 
@@ -86,7 +87,7 @@ class Model(object):
                                                   valid_pixels)
             elif selected_loss == 'berhu':
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.tf_pred,
-                                                                   self.train.tf_batch_labels,
+                                                                   self.train.tf_batch_depth,
                                                                    valid_pixels)
 
                 _, self.valid.tf_loss = loss.tf_BerHu(self.valid.tf_pred,
@@ -119,9 +120,9 @@ class Model(object):
             tf.summary.scalar('learning_rate', self.train.tf_learning_rate, collections=self.model_collection)
             self.tf_summary_train_loss = tf.summary.scalar('loss', self.train.tf_loss, collections=self.model_collection)
 
-            tf.summary.image('input/batch_data', self.train.tf_batch_data, max_outputs=1, collections=self.model_collection)
-            # tf.summary.image('input/batch_data_uint8', self.train.tf_batch_data_uint8, max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/batch_labels', self.train.tf_batch_labels, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/batch_image', self.train.tf_batch_image, max_outputs=1, collections=self.model_collection)
+            # tf.summary.image('input/batch_image_uint8', self.train.tf_batch_image_uint8, max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/batch_depth', self.train.tf_batch_depth, max_outputs=1, collections=self.model_collection)
 
             tf.summary.image('output/batch_pred', self.train.tf_pred, max_outputs=1, collections=self.model_collection)
 
