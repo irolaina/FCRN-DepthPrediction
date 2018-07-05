@@ -24,6 +24,7 @@
 
 # Known Bugs
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
+# [Train] FIXME: python3 predict_nick.py -m train --machine xps -s kittidiscrete --px all --loss berhu --max_steps 150000 --ldecay --l2norm --remove_sky -t
 # [All] TODO: Devo continuar usando tf.image.resize_images(), há relatos desta função ser bugada
 
 # Optional
