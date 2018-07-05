@@ -32,21 +32,15 @@ class Train:
             if enableDataAug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
-            # print(tf_image)   # Must be uint8!
-            # print(tf_depth)   # Must be uint16/uin8!
-
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = Dataloader.rawdepth2meters(tf_depth, dataset_name)
-
-            # print(tf_image) # Must be uint8!
-            # print(tf_depth) # Must be float32!
 
             # Crops Input and Depth Images (Removes Sky)
             # TODO: Não está funcionando
             if args.remove_sky:
                 self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
 
-            # Overwrites Tensors!
+            # Network Input/Output. Overwrite Tensors!
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
@@ -159,8 +153,9 @@ class Train:
                             lambda: color_ordering1(image_aug))
 
         # The random_* ops do not necessarily clamp.
-        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0,
-                                     255.0)  # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
+        # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
+        # image_aug = tf.clip_by_value(image_aug, 0.0, 1.0)
+        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0, 255.0)
 
         return image_aug, depth_aug
 
