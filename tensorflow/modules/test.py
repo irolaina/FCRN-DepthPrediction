@@ -3,7 +3,7 @@
 # ===========
 import tensorflow as tf
 
-from .model.fcrn import ResNet50UpProj
+from .third_party.laina.fcrn import ResNet50UpProj
 from .size import Size
 
 # ==================
