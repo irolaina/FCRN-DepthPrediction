@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from collections import deque
-from .model.fcrn import ResNet50UpProj
+from modules.third_party.laina.fcrn import ResNet50UpProj
 from .plot import Plot
 from .dataloader import Dataloader
 
