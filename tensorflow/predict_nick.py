@@ -12,20 +12,19 @@
 # [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
-# [Train] FIXME: Early Stopping
-# [Train] FIXME: Trocar tf.cast para tf.convert_image_dtype()
 
-# [Test] TODO: Procurar métricas mais recentes de outros trabalhos
+# [Train] FIXME: Early Stopping
+
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
 # [Test] TODO: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
-
+# [Test] TODO: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
-# [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
-# [All] TODO: Vitor me falou que o tf.image.resize_images() do tensorflow é meio bugado
+# [Train] FIXME: KittiDiscrete tem problemas de convergência quando utiliza-se a flag --px all
+# [All] TODO: Devo continuar usando tf.image.resize_images(), há relatos desta função ser bugada
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -38,6 +37,8 @@
 # TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
 # TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
+# TODO: De acordo com DORN, abordar o problema de estimação como um problema multi-class classification é mais indicado do que tratá0lo como um problema de regressão
+# [Train] TODO: A Rede da Laina possui Weight Decay?
 
 # ===========
 #  Libraries
@@ -397,9 +398,10 @@ def train(args):
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:
-                print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
+                print("[KeyEvent] 'F8' Pressed! Training process aborted!")
                 break
 
+        # End of Training!
         coord.request_stop()
         coord.join(threads)
 
@@ -476,6 +478,17 @@ def test(args):
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 _, depth, depth_resized = sess.run(model.depth_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
+
+                # Clips Predictions Range at 50, 80 meters
+                # pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test) # TODO: Reativar
+
+                # plt.figure(100)
+                # plt.imshow(pred_50[0, :, :, 0])
+                # plt.figure(101)
+                # plt.imshow(pred_80[0, :, :, 0])
+                # plt.draw()
+                # plt.pause(0.001)
+
             else:
                 feed_test = {model.tf_image_key: data.test_image_filenames[i]}
                 _, image, image_resized = sess.run(model.image_op, feed_test)
