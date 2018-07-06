@@ -27,6 +27,7 @@
 # As vezes a leitura das strings ficam desalinhas, já havia detectado este problema anteriormente
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
 # [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
+# [Train] FIXME: python3 predict_nick.py -m train --machine xps -s kittidiscrete --px all --loss berhu --max_steps 150000 --ldecay --l2norm --remove_sky -t
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -343,9 +344,9 @@ def train(args):
                 # [Valid] TODO: Implementar Leitura por Batches
 
                 # Detects the end of a epoch
-                # if True: # Only for testing the following condition!!!
+                if False: # Only for testing the following condition!!!
                 # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
-                if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
+                # if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
