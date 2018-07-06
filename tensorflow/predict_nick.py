@@ -27,7 +27,8 @@
 # As vezes a leitura das strings ficam desalinhas, já havia detectado este problema anteriormente
 # [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
 # [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
-# [Train] FIXME: python3 predict_nick.py -m train --machine xps -s kittidiscrete --px all --loss berhu --max_steps 150000 --ldecay --l2norm --remove_sky -t
+# [Train] FIXME: python3 predict_nick.py -m train --machine nicolas -s kittidepth --px all --loss silog --max_steps 150000 --ldecay --l2norm --remove_sky -t
+# [Train] FIXME: python3 predict_nick.py -m train --machine nicolas -s kittidiscrete --px all --loss berhu --max_steps 150000 --ldecay --l2norm --remove_sky -t
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
