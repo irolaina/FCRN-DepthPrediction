@@ -38,7 +38,7 @@ class Dataloader:
         # Defines dataset_root path depending on which machine is used.
         dataset_root = None
 
-        if args.machine == 'xps':
+        if args.machine == 'nicolas':
             dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
