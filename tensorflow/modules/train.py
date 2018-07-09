@@ -8,6 +8,8 @@ from collections import deque
 from .model.fcrn import ResNet50UpProj
 from .plot import Plot
 from .dataloader import Dataloader
+from .third_party.inception_preprocessing import apply_with_random_selector
+from .third_party.inception_preprocessing import distort_color
 
 # ==================
 #  Global Variables
@@ -26,28 +28,32 @@ class Train:
     def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
+            # tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
             if enableDataAug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
-            # print(tf_image)   # Must be uint8!
-            # print(tf_depth)   # Must be uint16/uin8!
-
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = Dataloader.rawdepth2meters(tf_depth, dataset_name)
 
-            # print(tf_image) # Must be uint8!
-            # print(tf_depth) # Must be float32!
-
             # Crops Input and Depth Images (Removes Sky)
-            self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+            if args.remove_sky:
+                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+
+            # Network Input/Output. Overwrite Tensors!
+            self.tf_image = tf_image
+            self.tf_depth = tf_depth
 
             # Downsizes Input and Depth Images
             self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
             self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
+            # self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+            # self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+
             self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
+            # self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
 
             # ==============
             #  Batch Config
@@ -61,7 +67,7 @@ class Train:
             #  Prepare Batch
             # ===============
             # Select:
-            self.tf_batch_image_key, self.tf_batch_depth_key = tf.train.batch([tf_image_key, tf_depth_key], batch_size, num_threads,capacity)
+            self.tf_batch_image_key, self.tf_batch_depth_key = tf.train.batch([tf_image_key, tf_depth_key], batch_size, num_threads, capacity)
             tf_batch_image_resized, tf_batch_image_resized_uint8, tf_batch_depth_resized = tf.train.batch([self.tf_image_resized, self.tf_image_resized_uint8, self.tf_depth_resized], batch_size, num_threads, capacity, shapes=[input_size.getSize(), input_size.getSize(), output_size.getSize()])
             # tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_image, tf_depth], batch_size, capacity, min_after_dequeue, num_threads, shapes=[image_size, depth_size])
 
@@ -128,33 +134,7 @@ class Train:
         depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
 
         # randomly distort the colors.
-        # https://github.com/tensorflow/models/blob/master/research/inception/inception/image_processing.py
-        # TODO: Atualizar dataaugmentation usando a implementação abaixo.
-        # TODO: Checar se a função apply_with_random_selector() pode auxiliar a escolher os multiplos modes de color_ordering
-        # https: // github.com / tensorflow / models / blob / master / research / slim / preprocessing / inception_preprocessing.py
-        def color_ordering0(image_aug):
-            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
-            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
-            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
-            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
-
-            return image_aug
-    
-        def color_ordering1(image_aug):
-            image_aug = tf.image.random_brightness(image_aug, max_delta=32. / 255.)
-            image_aug = tf.image.random_contrast(image_aug, lower=0.5, upper=1.5)
-            image_aug = tf.image.random_saturation(image_aug, lower=0.5, upper=1.5)
-            image_aug = tf.image.random_hue(image_aug, max_delta=0.2)
-
-            return image_aug
-
-        color_ordering = tf.random_uniform([], minval=0, maxval=2, dtype=tf.int32)
-        image_aug = tf.cond(tf.equal(color_ordering, 0), lambda: color_ordering0(image_aug),
-                            lambda: color_ordering1(image_aug))
-
-        # The random_* ops do not necessarily clamp.
-        image_aug = tf.clip_by_value(tf.cast(image_aug, tf.float32), 0.0,
-                                     255.0)  # TODO: Dar erro pq image_aug é uint8, posso realmente dar casting pra int32?
+        image_aug = apply_with_random_selector(image_aug, lambda image, ordering: distort_color(image, ordering), num_distort_cases=4)
 
         return image_aug, depth_aug
 
