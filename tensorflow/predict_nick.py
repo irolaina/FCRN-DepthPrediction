@@ -309,8 +309,7 @@ def train(args):
                 # TODO: Adicionar um contador para evitar falsos positivos
                 # TODO: Adicionar contador, caso o master reset for acionado mais que N vezes. Abortar treinamento.
                 if np.max(batch_pred) < 0.2:
-                    print("batch_pred_max:", np.max(batch_pred))
-                    print("[Train] MASTER RESET triggered!!!")
+                    print("[Train] MASTER RESET triggered!!! max(batch_pred):", np.max(batch_pred))
                     sess.run(init_op)
 
                 # # Detect Invalid Pairs
