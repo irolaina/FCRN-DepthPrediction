@@ -143,8 +143,8 @@ tf_image.set_shape(image_shape)
 tf_depth.set_shape(depth_shape)
 
 # Downsizes Images
-tf_image = tf.image.resize_images(tf_image, [input_size[0], input_size[1]])
-tf_depth = tf.image.resize_images(tf_depth, [output_size[0], output_size[1]])
+tf_image = tf.image.resize_images(tf_image, [input_size[0], input_size[1]], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+tf_depth = tf.image.resize_images(tf_depth, [output_size[0], output_size[1]], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
 tf_image_shape = tf.shape(tf_image)
 tf_depth_shape = tf.shape(tf_depth)
