@@ -15,7 +15,6 @@
 
 # [Train] FIXME: Early Stopping
 
-# [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
 # [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
@@ -156,20 +155,20 @@ def predict(model_data_path, image_path):
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     tf_image_resized = tf.image.resize_images(tf_image, [height, width])
     # tf_image_resized = tf.image.resize_images(tf.cast(tf_image, tf.float32), [height, width],
-    #                                           method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar esta linha, tf.cast() -> tf.image.convert_image_dtype(), Validar
+    #                                           method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
     tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
-    tf_image_input = tf.expand_dims(tf_image_resized, axis=0)
+    # tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
     with tf.variable_scope('model'):
         # Construct the network
-        net = ResNet50UpProj({'data': tf_image_input}, batch=batch_size, keep_prob=1, is_training=False)
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
         tf_pred = net.get_output()
         # for var in tf.trainable_variables():
         #     print(var)
 
     # Merge Ops
-    pred_op = [tf_image, tf_image_resized_uint8, tf_image_input, tf_pred]
+    pred_op = [tf_image, tf_image_resized_uint8, tf_pred]
 
     # Print Variables
     # print(img)
@@ -177,7 +176,6 @@ def predict(model_data_path, image_path):
 
     print(tf_image)
     print(tf_image_resized)
-    print(tf_image_input)
     print(tf_pred)
 
     with tf.Session() as sess:
@@ -198,32 +196,30 @@ def predict(model_data_path, image_path):
         #  Run  #
         # ----- #
         # Evalute the network for the given image
-        image, image_resized_uint8, image_input, pred = sess.run(pred_op, feed_dict={tf_image: img})
+        image, image_resized_uint8, pred = sess.run(pred_op, feed_dict={tf_image: img})
 
         # --------- #
         #  Results  #
         # --------- #
-        fig = plt.figure(figsize=(15, 5))
+        fig = plt.figure(figsize=(15, 3))
         fig.subplots_adjust(bottom=0.025, left=0.025, top=0.975, right=0.975)
-        X = [(1, 5, (1, 2)), (1, 5, 3), (1, 5, 4), (1, 5, 5)]
+        X = [(1, 4, (1, 2)), (1, 4, 3), (1, 4, 4)]
         axes = []
         for nrows, ncols, plot_number in X:
             axes.append(fig.add_subplot(nrows, ncols, plot_number))
 
         img1 = axes[0].imshow(image)
         img2 = axes[1].imshow(image_resized_uint8)
-        img3 = axes[2].imshow(image_input[0])
-        img4 = axes[3].imshow(pred[0, :, :, 0])
+        img4 = axes[2].imshow(pred[0, :, :, 0])
         # img4 = axes[3].imshow(pred[0, :, :, 0], interpolation='nearest')
 
         axes[0].set_title('Image')
         axes[1].set_title('Resized')
-        axes[2].set_title('Input')
-        axes[3].set_title('Pred')
+        axes[2].set_title('Pred')
 
         # Fix Colorbar size
-        divider = make_axes_locatable(axes[3])
-        cax = divider.append_axes("right", size="5%", pad=0.05)
+        divider = make_axes_locatable(axes[2])
+        cax = divider.append_axes("right", size="5%", pad=0.15)
         fig.colorbar(img4, cax=cax)
 
         plt.show()
@@ -481,33 +477,29 @@ def test(args):
             timer2 = -time.time()
 
             # Evalute the network for the given image
-            # data.test_depth_filenames = [] # Only for testing the following condition!!!
+            # data.test_depth_filenames = [] # Only for testing the following condition!!! # FIXME: Atualmente, o código não dá suporte para esta situação
             if data.test_depth_filenames:  # It's not empty
                 feed_test = {model.tf_image_key: data.test_image_filenames[i],
                              model.tf_depth_key: data.test_depth_filenames[i]}
 
-                _, image, image_resized = sess.run(model.image_op, feed_test)
                 _, depth, depth_resized = sess.run(model.depth_op, feed_test)
-                pred, pred_up = sess.run(model.pred_op, feed_test)
-
-                # Clips Predictions Range at 50, 80 meters
-                # pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test) # TODO: Reativar
-
-                # plt.figure(100)
-                # plt.imshow(pred_50[0, :, :, 0])
-                # plt.figure(101)
-                # plt.imshow(pred_80[0, :, :, 0])
-                # plt.draw()
-                # plt.pause(0.001)
 
             else:
                 feed_test = {model.tf_image_key: data.test_image_filenames[i]}
-                _, image, image_resized = sess.run(model.image_op, feed_test)
-                pred, pred_up = sess.run(model.pred_op, feed_test)
+
+            _, image, image_resized = sess.run(model.image_op, feed_test)
+            pred, pred_up = sess.run(model.pred_op, feed_test)
+
+            # Clips Predictions at 50, 80 meters
+            try:
+                pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test)
+            except AttributeError:
+                pred_50 = np.zeros((model.batch_size,) + model.output_size.getSize())
+                pred_80 = np.zeros((model.batch_size,) + model.output_size.getSize())
 
             # Fill arrays for later on metrics evaluation
             pred_list.append(pred_up[0, :, :, 0])
-            gt_list.append(depth)
+            gt_list.append(depth[:, :, 0])
 
             # Saves the Test Predictions as uint16 PNG Images
             if SAVE_TEST_DISPARITIES:
@@ -535,7 +527,11 @@ def test(args):
                                              depth_resized=depth_resized[:, :, 0],
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
+                                             pred_50=pred_50[0, :, :, 0],
+                                             pred_80=pred_80[0, :, :, 0],
                                              i=i + 1)
+
+            # input("Continue...")
 
         # Testing Finished.
         timer += time.time()
@@ -551,8 +547,8 @@ def test(args):
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
 
-            LainaMetrics.evaluate(pred_array, gt_array)
-            myMetrics.evaluate(pred_array, gt_array)
+            # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
+            # myMetrics.evaluate(pred_array, gt_array) # FIXME:
             MonodepthMetrics.evaluate(pred_array, gt_array)
 
         else:
