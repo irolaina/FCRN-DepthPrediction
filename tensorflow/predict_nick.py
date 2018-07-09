@@ -61,12 +61,10 @@ from skimage import io, exposure, img_as_uint
 
 # Custom Libraries
 import modules.args as argsLib
-import modules.metrics as myMetrics
-import modules.metrics_laina as LainaMetrics
 import modules.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
-from modules.model.fcrn import ResNet50UpProj
+from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.test import Test
 from modules.utils import total_size
