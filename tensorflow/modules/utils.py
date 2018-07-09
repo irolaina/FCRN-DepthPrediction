@@ -10,7 +10,7 @@ from collections import deque
 #  Functions
 # ===========
 def total_size(o, handlers=None, verbose=False):
-    """ Returns the approximate memory footprint an object and all of its contents.
+    """Returns the approximate memory footprint an object and all of its contents.
 
     Automatically finds the contents of the following builtin containers and
     their subclasses:  tuple, list, deque, dict, set and frozenset.

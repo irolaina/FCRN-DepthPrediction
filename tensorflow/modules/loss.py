@@ -72,8 +72,12 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
-    tf_abs_error = tf.abs(tf.subtract(tf_y, tf_y_), name='abs_error')
+    tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
+
+    # TODO: Devo utilizar as operações pelo tensorflow? 1 e 3 funcionam
     tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
+    # tf_c = tf.multiply(tf.constant(0.2), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
+    # tf_c = tf.multiply(tf.Variable(0.2, trainable=False), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
 
     # Mask Out
     if valid_pixels:
@@ -81,7 +85,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
         tf_y, tf_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
 
         # Overwrites the previous tensor, so now considers only the Valid Pixels!
-        tf_abs_error = tf.abs(tf.subtract(tf_y, tf_y_), name='abs_error')
+        tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
 
     # Loss
     tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
@@ -131,6 +135,7 @@ def gradient_y(img):
     # print("gy:",gy.shape)
 
     return gy
+
 
 def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Scale Invariant Logarithmic Error"
