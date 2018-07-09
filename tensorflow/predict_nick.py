@@ -11,22 +11,21 @@
 # Must do
 # [Dataset] TODO: Verificar se aquela imagem do Apolloscape estava realmente corrompida
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
+# [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
 # [Train] FIXME: Early Stopping
 
-# [Test] TODO: Procurar métricas mais recentes de outros trabalhos
-# [Test] TODO: Ver métricas do trabalho DORN. Dep: Instalar Caffe
 # [Test] TODO: Ver métricas do Kitti para Depth Estimation
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
-# [Test] TODO: Validar Métricas
+# [Test] TODO: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
+# [Test] TODO: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
-# [Train][Major Bug!!!] FIXME: Os pares de treinamento ficam desalinhados. Já havia detectado este problema. O problema abaixo pode estar relacionado
-# TODO: Por que string_input_producer sempre começa do segundo sample?
-# As vezes a leitura das strings ficam desalinhas, já havia detectado este problema anteriormente
-# [Train] FIXME: O que causa aquelas predições com pixeis de intensidade alta? Devo ou não clippar as predições?
-# [Train] FIXME: Arrumar outras transformações de Data Augmentation, atualmente apenas a transformação de flip está funcionando
+# [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
+# [Train] FIXME: KittiDiscrete tem problemas de convergência quando utiliza-se a flag --px all
+# [Train] FIXME: python3 predict_nick.py -m train --machine xps -s kittidiscrete --px all --loss silog --max_steps 150000 --ldecay --l2norm --remove_sky -t
+# [All] TODO: Devo continuar usando tf.image.resize_images(), há relatos desta função ser bugada
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -37,7 +36,10 @@
 # TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
 # TODO: Como Monocular Depth pode auxiliar em Visual Odometry?
 # TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
+# TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
+# TODO: De acordo com DORN, abordar o problema de estimação como um problema multi-class classification é mais indicado do que tratá0lo como um problema de regressão
+# TODO: A Rede da Laina possui Weight Decay?
 
 # ===========
 #  Libraries
@@ -54,6 +56,7 @@ import pyxhook
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from skimage import io, exposure, img_as_uint
 
 # Custom Libraries
 import modules.args as argsLib
@@ -90,10 +93,10 @@ SAVE_TEST_DISPARITIES = True    # Default: True
 # ==================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
+io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
-LOG_INITIAL_VALUE = 1
 
 
 # ===========
@@ -109,10 +112,10 @@ def getSaveFolderPaths():
     return save_path, save_restore_path
 
 
-# TODO: Move
-# This function is called every time a key is presssed
 def kbevent(event):
-    # print key info
+    """This function is called every time a key is presssed."""
+
+    # Print key info
     # print(event)
 
     # If the ascii value matches spacebar, terminate the while loop
@@ -150,6 +153,9 @@ def predict(model_data_path, image_path):
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     tf_image_resized = tf.image.resize_images(tf_image, [height, width])
+    # tf_image_resized = tf.image.resize_images(tf.cast(tf_image, tf.float32), [height, width],
+    #                                           method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar esta linha, tf.cast() -> tf.image.convert_image_dtype(), Validar
+
     tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_input = tf.expand_dims(tf_image_resized, axis=0)
 
@@ -312,7 +318,6 @@ def train(args):
                 #         input("Invalid Pair Detected!")
                 # print()
 
-
                 model.summary_writer.add_summary(summary_train_loss, step)
 
                 # Prints Training Progress
@@ -350,11 +355,11 @@ def train(args):
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
                         timer3 = -time.time()
-                        # TODO: Otimizar
-                        valid_image = imageio.imread(data.test_image_filenames[i])
-                        valid_depth = imageio.imread(data.test_depth_filenames[i])
-                        feed_valid = {model.valid.tf_image_raw: np.expand_dims(valid_image, axis=0),
-                                      model.valid.tf_depth_raw: np.expand_dims(np.expand_dims(valid_depth, axis=0), axis=3)}
+                        feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
+                                      model.valid.tf_depth_key: data.test_depth_filenames[i]}
+
+                        # valid_image_key, valid_depth_key = sess.run([model.valid.tf_image_key, model.valid.tf_depth_key], feed_valid)
+                        # print(valid_image_key, valid_depth_key)
 
                         valid_image, \
                         valid_image_uint8, \
@@ -368,8 +373,8 @@ def train(args):
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            model.valid.plot.showResults(raw=valid_image_uint8[0, :, :],
-                                                         label=valid_depth[0, :, :, 0],
+                            model.valid.plot.showResults(raw=valid_image_uint8,
+                                                         label=valid_depth[:, :, 0],
                                                          pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
@@ -394,9 +399,10 @@ def train(args):
 
                 epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
             else:
-                print("[KeyEvent] 'ESC' Pressed! Training process aborted!")
+                print("[KeyEvent] 'F8' Pressed! Training process aborted!")
                 break
 
+        # End of Training!
         coord.request_stop()
         coord.join(threads)
 
@@ -434,16 +440,12 @@ def test(args):
     data = Dataloader(args)
 
     # Searches dataset images filenames
-    # data.train_image_filenames, data.train_depth_filenames, tf_train_image_filenames, tf_train_depth_filenames = data.getTrainData()
-
     if TEST_EVALUATE_SUBSET == 0:
-        _ = data.getTestData()
-        numSamples = data.numTestSamples
+        _, _, _, _, numSamples = data.getTestData()
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames = data.getTrainData()
-        numSamples = data.numTrainSamples
+        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames, numSamples = data.getTrainData()
 
-    model = Test(data)
+    model = Test(args, data)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
@@ -471,23 +473,44 @@ def test(args):
             # Evalute the network for the given image
             # data.test_depth_filenames = [] # Only for testing the following condition!!!
             if data.test_depth_filenames:  # It's not empty
-                feed_test = {model.tf_image_path: data.test_image_filenames[i],
-                             model.tf_depth_path: data.test_depth_filenames[i]}
+                feed_test = {model.tf_image_key: data.test_image_filenames[i],
+                             model.tf_depth_key: data.test_depth_filenames[i]}
 
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 _, depth, depth_resized = sess.run(model.depth_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
+
+                # Clips Predictions Range at 50, 80 meters
+                # pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test) # TODO: Reativar
+
+                # plt.figure(100)
+                # plt.imshow(pred_50[0, :, :, 0])
+                # plt.figure(101)
+                # plt.imshow(pred_80[0, :, :, 0])
+                # plt.draw()
+                # plt.pause(0.001)
+
             else:
-                feed_test = {model.tf_image_path: data.test_image_filenames[i]}
+                feed_test = {model.tf_image_key: data.test_image_filenames[i]}
                 _, image, image_resized = sess.run(model.image_op, feed_test)
                 pred, pred_up = sess.run(model.pred_op, feed_test)
 
-            # TODO: Remover, não faz sentido nesta branch (pred depth in meters)
-            log_depth = np.log(depth[:, :, 0] + LOG_INITIAL_VALUE)
-
             # Fill arrays for later on metrics evaluation
             pred_list.append(pred_up[0, :, :, 0])
-            gt_list.append(log_depth)
+            gt_list.append(depth)
+
+            # Saves the Test Predictions as uint16 PNG Images
+            if SAVE_TEST_DISPARITIES:
+                # Convert the Predictions Images from float32 to uint16
+                pred_up_uint16 = exposure.rescale_intensity(pred_up[0], out_range='float')
+                pred_up_uint16 = img_as_uint(pred_up_uint16)
+
+                depth_uint16 = exposure.rescale_intensity(depth, out_range='float')
+                depth_uint16 = img_as_uint(depth_uint16)
+
+                # Save PNG Images
+                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16)
+                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16)
 
             # Prints Testing Progress
             timer2 += time.time()
@@ -500,33 +523,17 @@ def test(args):
                                              depth=depth[:, :, 0],
                                              image_resized=image_resized,
                                              depth_resized=depth_resized[:, :, 0],
-                                             log_label=np.log(depth_resized[:, :, 0] + LOG_INITIAL_VALUE),
                                              pred=pred[0, :, :, 0],
                                              pred_up=pred_up[0, :, :, 0],
-                                             log_depth=log_depth,
                                              i=i + 1)
 
         # Testing Finished.
         timer += time.time()
         print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % timer)
 
-        # ==============
-        #  Save Results
-        # ==============
-        # Saves the Test Predictions
-        if SAVE_TEST_DISPARITIES:
-            print("[Network/Testing] Saving testing predictions...")
-            output_directory = os.path.dirname(args.model_path) if args.output_directory == '' else args.output_directory
-
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
-
-            save_path_pred = os.path.abspath(os.path.join(output_directory, '../')) + '/' + args.dataset + '_pred.npy'
-
-            # TODO: Quais mais variaveis preciso salvar? Não seria melhor salvar a pred_up? Seria legal usar um dictionary?
-            # data = {'pred': bla, 'pred_up': bla}
-            np.save(save_path_pred, pred)
-
+        # =========
+        #  Results
+        # =========
         # Calculate Metrics
         if data.test_depth_filenames:
             print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
