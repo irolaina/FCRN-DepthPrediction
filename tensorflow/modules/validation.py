@@ -36,37 +36,24 @@ class Validation:
             self.tf_depth_raw = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
         # True Depth Value Calculation. May vary from dataset to dataset.
-        self.tf_depth_meters = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
+        tf_depth = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
 
-        # Convert uint8/uint16 to float32
-        self.tf_image_raw_float32 = tf.cast(self.tf_image_raw, tf.float32, name='image')
-        self.tf_depth_raw_float32 = tf.cast(self.tf_depth_raw, tf.float32, name='depth')
-
-        # Workaround for assigning bug
-        self.tf_image = self.tf_image_raw_float32
-        self.tf_depth = self.tf_depth_meters
+        # Network Input/Output. Overwrite Tensors!
+        tf_image = tf.cast(self.tf_image_raw, tf.float32)   # uint8 -> float32 [0.0, 255.0]
+        # tf_image = tf.image.convert_image_dtype(self.tf_image_raw, tf.float32)   # uint8 -> float32 [0.0, 1.0]
+        self.tf_image = tf_image
+        self.tf_depth = tf_depth
 
         # Crops Input and Depth Images (Removes Sky)
         if args.remove_sky:
-            # self.tf_image, self.tf_depth = Dataloader.removeSky(self.tf_image_raw_float32, self.tf_depth_meters, dataset_name) # FIXME: Why doesn't it work?
-
-            # Workaround
-            if dataset_name[0:5] == 'kitti':
-                tf_image_shape = tf.shape(self.tf_image_raw_float32)
-                tf_depth_shape = tf.shape(self.tf_depth_meters)
-
-                crop_height_perc = tf.constant(0.3, tf.float32)
-                tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[1], tf.float32)
-                tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[1], tf.float32)
-
-                self.tf_image = self.tf_image_raw_float32[:, tf.cast(tf_image_new_height, tf.int32):, :]
-                self.tf_depth = self.tf_depth_meters[:, tf.cast(tf_depth_new_height, tf.int32):, :]
+            self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
 
         # Downsizes Input and Depth Images
-        self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
-        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
+        self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+        self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
 
-        self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual purpose
+        self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual Purpose
+        # self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
 
         self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1, is_training=False)
         self.tf_pred = self.fcrn.get_output()
