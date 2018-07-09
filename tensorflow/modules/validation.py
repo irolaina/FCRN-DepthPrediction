@@ -3,9 +3,9 @@
 # ===========
 import tensorflow as tf
 
-from modules.third_party.laina.fcrn import ResNet50UpProj
-from .plot import Plot
 from .dataloader import Dataloader
+from .third_party.laina.fcrn import ResNet50UpProj
+from .plot import Plot
 
 # ==================
 #  Global Variables

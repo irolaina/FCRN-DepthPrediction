@@ -153,7 +153,7 @@ def predict(model_data_path, image_path):
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     tf_image_resized = tf.image.resize_images(tf_image, [height, width])
     # tf_image_resized = tf.image.resize_images(tf.cast(tf_image, tf.float32), [height, width],
-    #                                           method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+    #                                           method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True) # TODO: Usar esta linha, tf.cast() -> tf.image.convert_image_dtype(), Validar
 
     tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     # tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
