@@ -13,7 +13,7 @@ DEFAULT_PADDING = 'SAME'
 
 
 def get_incoming_shape(incoming):
-    """ Returns the incoming data shape """
+    """Returns the incoming data shape."""
     if isinstance(incoming, tf.Tensor):
         return incoming.get_shape().as_list()
     elif type(incoming) in [np.array, list, tuple]:

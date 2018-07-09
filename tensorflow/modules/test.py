@@ -15,7 +15,7 @@ from .size import Size
 #  Class Declaration
 # ===================
 class Test:
-    def __init__(self, data):
+    def __init__(self, args, data):
         # Construct the network
         with tf.variable_scope('model'):
             input_size = Size(228, 304, 3)
@@ -52,7 +52,7 @@ class Test:
                     tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
 
             # True Depth Value Calculation. May vary from dataset to dataset.
-            tf_depth = data.rawdepth2meters(data.dataset_name, tf_depth)
+            tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
 
             # tf_image.set_shape(input_size.getSize())
             # tf_depth.set_shape(output_size.getSize())
