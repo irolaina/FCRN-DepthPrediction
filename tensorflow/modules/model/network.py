@@ -126,7 +126,8 @@ class Network(object):
 
     def make_var(self, name, shape):
         """Creates a new TensorFlow variable."""
-        return tf.get_variable(name, shape, dtype='float32', trainable=self.trainable)
+        # return tf.get_variable(name, shape, initializer=tf.glorot_uniform_initializer(), dtype='float32', trainable=self.trainable)
+        return tf.get_variable(name, shape, initializer=tf.glorot_normal_initializer(), dtype='float32', trainable=self.trainable)
 
     @staticmethod
     def validate_padding(padding):
