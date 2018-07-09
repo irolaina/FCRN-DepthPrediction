@@ -307,6 +307,7 @@ def train(args):
                 # Reset network parameters to prevent the model from collapsing
                 # TODO: Validar. Se a condição for facilmente/frequentemente atingida, o modelo talvez não convirja nunca.
                 # TODO: Adicionar um contador para evitar falsos positivos
+                # TODO: Adicionar contador, caso o master reset for acionado mais que N vezes. Abortar treinamento.
                 if np.max(batch_pred) < 0.2:
                     print("batch_pred_max:", np.max(batch_pred))
                     print("[Train] MASTER RESET triggered!!!")
