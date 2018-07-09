@@ -160,7 +160,7 @@ class Dataloader:
             tf_imask = tf.where(tf_depth < 65535, tf.ones_like(tf_depth), tf.zeros_like(tf_depth))
             tf_depth = tf_depth * tf_imask
 
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 200.0
+            tf_depth = tf_depth / 200.0
         elif dataset_name == 'kittidepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
         elif dataset_name.split('_')[0] == 'kittidiscrete' or \
