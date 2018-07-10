@@ -5,13 +5,13 @@ import numpy as np
 import tensorflow as tf
 
 from collections import deque
-from .third_party.laina.fcrn import ResNet50UpProj
 from scipy.misc import imresize
 
-from .plot import Plot
 from .dataloader import Dataloader
+from .third_party.laina.fcrn import ResNet50UpProj
 from .third_party.inception_preprocessing import apply_with_random_selector
 from .third_party.inception_preprocessing import distort_color
+from .plot import Plot
 
 # ==================
 #  Global Variables
@@ -30,7 +30,8 @@ class Train:
     def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
         with tf.name_scope('Input'):
             # Raw Input/Output
-            # tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32
+            # tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
+            tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
@@ -75,8 +76,8 @@ class Train:
             # print(self.tf_depth_resized)
             # input("resized")
 
-            self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual Purpose
-            # self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
+            # self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual Purpose
+            self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
 
             # ==============
             #  Batch Config

@@ -102,8 +102,8 @@ def main():
 
     # Create a placeholder for the input image
     input_node = tf.placeholder(tf.uint8, shape=(height, width, channels))
-    # tf_image_float32 = tf.cast(input_node, tf.float32)  # TODO: Usar tf.cast?
-    tf_image_float32 = tf.image.convert_image_dtype(input_node, tf.float32) # TODO: Usar tf.cast?
+    # tf_image_float32 = tf.cast(input_node, tf.float32)
+    tf_image_float32 = tf.image.convert_image_dtype(input_node, tf.float32)
 
     with tf.variable_scope('model'): # Disable for running original models!!!
         # Construct the network
