@@ -1,1 +1,1 @@
-from .model.fcrn import ResNet50UpProj
+from modules.third_party.laina.fcrn import ResNet50UpProj
