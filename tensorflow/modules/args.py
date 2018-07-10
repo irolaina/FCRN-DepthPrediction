@@ -19,8 +19,8 @@ def argumentHandler():
     # ========== #
     #  Training  #
     # ========== #
-    parser.add_argument('--machine', type=str, help="Select the current Machine: 'olorin', 'xps', etc",
-                        default='xps')
+    parser.add_argument('--machine', type=str, help="Select the current Machine: 'olorin', 'nicolas', etc",
+                        default='nicolas')
 
     parser.add_argument('--model_name', type=str, help="Select Network topology: 'fcrn', etc",
                         default='fcrn')

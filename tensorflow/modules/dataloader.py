@@ -38,7 +38,7 @@ class Dataloader:
         # Defines dataset_root path depending on which machine is used.
         dataset_root = None
 
-        if args.machine == 'xps':
+        if args.machine == 'nicolas':
             dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
@@ -155,13 +155,11 @@ class Dataloader:
     def rawdepth2meters(tf_depth, dataset_name):
         """True Depth Value Calculation. May vary from dataset to dataset."""
         if dataset_name == 'apolloscape':
-			# TODO: Faz sentido eu dar cast antes de aplicar o where?
             # Changes the invalid pixel value (65353) to 0.
-            tf_depth = tf.cast(tf_depth, tf.float32)
             tf_imask = tf.where(tf_depth < 65535, tf.ones_like(tf_depth), tf.zeros_like(tf_depth))
             tf_depth = tf_depth * tf_imask
 
-            tf_depth = tf_depth / 200.0
+            tf_depth = tf.cast(tf_depth, tf.float32) / 200.0
         elif dataset_name == 'kittidepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
         elif dataset_name.split('_')[0] == 'kittidiscrete' or \

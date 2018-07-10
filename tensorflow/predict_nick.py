@@ -13,16 +13,19 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
-# [Train] FIXME: O Modelo Colapsa quando treina-se o KittiDepth, KittiDiscrete com a opção --px all!
 # [Train] FIXME: Early Stopping
 
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
-# [Test] TODO: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
-# [Test] TODO: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
+# [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
+# [Test] FIXME: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
+# [Train] FIXME: KittiDiscrete tem problemas de convergência quando utiliza-se a flag --px all
+# [Train] FIXME: python3 predict_nick.py -m train --machine nicolas -s kittidiscrete --px all --loss silog --max_steps 150000 --ldecay --l2norm --remove_sky -t
+# [Train] FIXME: python3 predict_nick.py -m train --machine nicolas -s kittidepth --px all --loss silog --max_steps 150000 --ldecay --l2norm --remove_sky -t
+# [Train] FIXME: python3 predict_nick.py -m train --machine nicolas -s kittidiscrete --px all --loss berhu --max_steps 150000 --ldecay --l2norm --remove_sky -t
 # [All] TODO: Devo continuar usando tf.image.resize_images(), há relatos desta função ser bugada
 
 # Optional
@@ -37,7 +40,7 @@
 # TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
 # TODO: De acordo com DORN, abordar o problema de estimação como um problema multi-class classification é mais indicado do que tratá0lo como um problema de regressão
-# [Train] TODO: A Rede da Laina possui Weight Decay?
+# TODO: A Rede da Laina possui Weight Decay?
 
 # ===========
 #  Libraries
@@ -58,8 +61,6 @@ from skimage import io, exposure, img_as_uint
 
 # Custom Libraries
 import modules.args as argsLib
-import modules.metrics as myMetrics
-import modules.metrics_laina as LainaMetrics
 import modules.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
@@ -302,6 +303,14 @@ def train(args):
                                                model.train.fcrn.get_output(),
                                                model.train.tf_loss,
                                                model.tf_summary_train_loss])
+
+                # Reset network parameters to prevent the model from collapsing
+                # TODO: Validar. Se a condição for facilmente/frequentemente atingida, o modelo talvez não convirja nunca.
+                # TODO: Adicionar um contador para evitar falsos positivos
+                # TODO: Adicionar contador, caso o master reset for acionado mais que N vezes. Abortar treinamento.
+                if np.max(batch_pred) < 0.2:
+                    print("[Train] MASTER RESET triggered!!! max(batch_pred):", np.max(batch_pred))
+                    sess.run(init_op)
 
                 # # Detect Invalid Pairs
                 # for i in range(args.batch_size):

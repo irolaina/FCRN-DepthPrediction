@@ -3,7 +3,8 @@
 # ===========
 import tensorflow as tf
 
-from modules.third_party.laina.fcrn import ResNet50UpProj
+from .dataloader import Dataloader
+from .third_party.laina.fcrn import ResNet50UpProj
 from .size import Size
 
 
@@ -43,26 +44,15 @@ class Test:
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
 
+            # Crops Input and Depth Images (Removes Sky)
+            if args.remove_sky:
+                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, args.dataset)
+
             # Network Input/Output. Overwrite Tensors!
             # tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
             tf_image = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
             self.tf_image = tf_image
             self.tf_depth = tf_depth
-
-            if args.remove_sky:
-                # Crops Input and Depth Images (Removes Sky)
-                # self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, args.dataset)
-
-                if data.dataset_name[0:5] == 'kitti':
-                    tf_image_shape = tf.shape(tf_image)
-                    tf_depth_shape = tf.shape(tf_depth)
-
-                    crop_height_perc = tf.constant(0.3, tf.float32)
-                    tf_image_new_height = tf.multiply(crop_height_perc, tf.cast(tf_image_shape[0], tf.float32))
-                    tf_depth_new_height = tf.multiply(crop_height_perc, tf.cast(tf_depth_shape[0], tf.float32))
-
-                    tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-                    tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
 
             # tf_image.set_shape(input_size.getSize())
             # tf_depth.set_shape(output_size.getSize())

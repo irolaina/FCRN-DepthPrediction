@@ -4,7 +4,7 @@
 import tensorflow as tf
 
 from .dataloader import Dataloader
-from modules.third_party.laina.fcrn import ResNet50UpProj
+from .third_party.laina.fcrn import ResNet50UpProj
 from .plot import Plot
 
 # ==================
