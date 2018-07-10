@@ -8,6 +8,7 @@
 #  Libraries
 # ===========
 import argparse
+import glob
 import os
 import sys
 
@@ -30,7 +31,7 @@ def argumentHandler():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
-    parser.add_argument('model_path', help='Converted parameters for the model')
+    parser.add_argument('model_path', help='Converted parameters for the model', default='')
     parser.add_argument('video_path', help='Directory of images to predict')
     return parser.parse_args()
 
@@ -77,6 +78,15 @@ class CvTimer(object):
 # ======
 def main():
     args = argumentHandler()
+
+    if args.model_path == '':
+        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")
+
+        for i, model in enumerate(found_models):
+            print(i, model)
+
+        selected_model_id = input("\nSelect Model: ")
+        args.model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
 
     timer = CvTimer()
 
