@@ -61,3 +61,11 @@ Dependencies:
     grep video /etc/group
     sudo usermod -a -G video olorin
     sudo chmod 777 /dev/video0
+    
+# DeepLab's Four Alignment Rules:
+URL: https://github.com/tensorflow/tensorflow/issues/6720
+
+1) Use of odd-sized kernels in all convolution and pooling ops.
+2) Use of SAME boundary conditions in all convolution and pooling ops.
+3) Use align_corners=True when upsampling feature maps with bilinear interpolation.
+4) Use of inputs with height/width equal to a multiple of the output_stride, plus one (for example, when the CNN output stride is 8, use height or width equal to 8 * n + 1, for some n, e.g., image HxW set to 321x513).
