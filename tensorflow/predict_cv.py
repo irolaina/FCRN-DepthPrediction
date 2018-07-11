@@ -115,7 +115,7 @@ def main():
     # tf_image_float32 = tf.cast(input_node, tf.float32)
     tf_image_float32 = tf.image.convert_image_dtype(input_node, tf.float32)
 
-    with tf.variable_scope('model'): # Disable for running original models!!!
+    with tf.variable_scope('model'):  # Disable for running original models!!!
         # Construct the network
         net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
 
@@ -142,8 +142,6 @@ def main():
         # Use to load from npy file
         # net.load(args.model_path, sess)
 
-        isFirstTime = True
-        success = True
         count = 0
         while True:
             # Capture frame-by-frame
@@ -153,15 +151,12 @@ def main():
             # Evalute the network for the given image
             try:
                 pred, pred_50, pred_80 = sess.run([tf_pred, tf_pred_50, tf_pred_80], feed_dict={input_node: frame})
-                pred_50_uint8 = cv2.convertScaleAbs(pred_50[0])
-                pred_80_uint8 = cv2.convertScaleAbs(pred_80[0])
                 pred_50_uint8_scaled = cv2.convertScaleAbs(pred_50[0] * (255 / np.max(pred[0])))
                 pred_80_uint8_scaled = cv2.convertScaleAbs(pred_80[0] * (255 / np.max(pred[0])))
                 cv2.imshow('pred_50 (scaled)', pred_50_uint8_scaled)
                 cv2.imshow('pred_80 (scaled)', pred_80_uint8_scaled)
             except UnboundLocalError:
                 pred = sess.run(tf_pred, feed_dict={input_node: frame})
-
 
             # Debug
             # print(frame)
@@ -173,8 +168,8 @@ def main():
 
             # Image Processing
             pred_uint8 = cv2.convertScaleAbs(pred[0])
-            pred_uint8_scaled = cv2.convertScaleAbs(pred[0]*(255/np.max(pred[0])))
-            pred_jet = cv2.applyColorMap(255-pred_uint8_scaled, cv2.COLORMAP_JET)
+            pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+            pred_jet = cv2.applyColorMap(255 - pred_uint8_scaled, cv2.COLORMAP_JET)
             pred_hsv = cv2.applyColorMap(pred_uint8_scaled, cv2.COLORMAP_HSV)
 
             pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
