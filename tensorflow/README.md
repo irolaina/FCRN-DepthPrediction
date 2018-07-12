@@ -84,7 +84,7 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
 
     $ roscore   
     $ rosbag play -l kitti_2011_09_26_drive_0001_synced.bag
-    $ python2 listener_image.py
+    $ python2 ros_listener_image.py
     $ rviz
 
 Optional:     
