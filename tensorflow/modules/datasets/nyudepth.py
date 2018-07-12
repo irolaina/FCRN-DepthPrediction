@@ -47,7 +47,7 @@ import time
 import numpy as np
 
 from ..filenames import FilenamesHandler
-from ..size import Size
+from .dataset import Dataset
 
 
 # ==================
@@ -63,18 +63,12 @@ from ..size import Size
 # ===================
 #  Class Declaration
 # ===================
-class NyuDepth(FilenamesHandler):
-    def __init__(self, dataset_root, name):
-        super().__init__()
+class NyuDepth(Dataset, FilenamesHandler):
+    def __init__(self, *args, **kwargs):
+        dataset_root = kwargs.pop('dataset_root')
+        super(NyuDepth, self).__init__(*args, **kwargs)
+
         self.dataset_path = dataset_root + "nyu-depth-v2/data/images/"
-
-        self.name = name
-
-        self.image_size = Size(480, 640, 3)
-        self.depth_size = Size(480, 640, 1)
-
-        # Max Depth to limit predictions
-        self.max_depth = 10.0
 
         print("[Dataloader] NyuDepth object created.")
 

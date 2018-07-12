@@ -28,7 +28,7 @@ import time
 import numpy as np
 
 from ..filenames import FilenamesHandler
-from ..size import Size
+from .dataset import Dataset
 
 
 # ==================
@@ -44,19 +44,13 @@ from ..size import Size
 # ===================
 #  Class Declaration
 # ===================
-class Apolloscape(FilenamesHandler):
-    def __init__(self, dataset_root, name):
-        super().__init__()
+class Apolloscape(Dataset, FilenamesHandler):
+    def __init__(self, *args, **kwargs):
+        dataset_root = kwargs.pop('dataset_root')
+        super(Apolloscape, self).__init__(*args, **kwargs)
+
         self.dataset_path = dataset_root + "apolloscape/data/"
 
-        self.name = name
-
-        self.image_size = Size(2710, 3384, 3)
-        self.depth_size = Size(2710, 3384, 1)
-
-        # Max Depth to limit predictions
-        self.max_depth = None
-        
         print("[Dataloader] Apolloscape object created.")
 
     def getFilenamesLists(self, mode):

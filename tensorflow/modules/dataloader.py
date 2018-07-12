@@ -47,10 +47,10 @@ class Dataloader:
         # print(selectedDataset)
 
         if self.selectedDataset == 'apolloscape':
-            self.datasetObj = Apolloscape(dataset_root, self.selectedDataset)
+            self.datasetObj = Apolloscape(dataset_root=dataset_root, name=self.selectedDataset, height=2710, width=3384, max_depth=None)
 
         elif self.selectedDataset == 'kittidepth':
-            self.datasetObj = KittiDepth(dataset_root, self.selectedDataset)
+            self.datasetObj = KittiDepth(dataset_root=dataset_root, name=self.selectedDataset, height=375, width=1242, max_depth=80.0)
 
         elif self.selectedDataset == 'kittidiscrete' or \
              self.selectedDataset == 'kittidiscrete_city' or \
@@ -58,7 +58,7 @@ class Dataloader:
              self.selectedDataset == 'kittidiscrete_road' or \
              self.selectedDataset == 'kittidiscrete_campus' or \
              self.selectedDataset == 'kittidiscrete_person':
-            self.datasetObj = KittiDiscrete(dataset_root, self.selectedDataset)
+            self.datasetObj = KittiDiscrete(dataset_root=dataset_root, name=self.selectedDataset, height=375, width=1242, max_depth=None)
 
         elif self.selectedDataset == 'kitticontinuous' or \
              self.selectedDataset == 'kitticontinuous_city' or \
@@ -69,7 +69,7 @@ class Dataloader:
             self.datasetObj = KittiContinuous(dataset_root=dataset_root, name=self.selectedDataset, height=375, width=1242, max_depth=85.0)
 
         elif self.selectedDataset == 'nyudepth':
-            self.datasetObj = NyuDepth(dataset_root, self.selectedDataset)
+            self.datasetObj = NyuDepth(dataset_root=dataset_root, name=self.selectedDataset, height=480, width=640, max_depth=None)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "

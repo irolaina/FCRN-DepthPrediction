@@ -25,7 +25,7 @@ import time
 import numpy as np
 
 from ..filenames import FilenamesHandler
-from ..size import Size
+from .dataset import Dataset
 
 
 # ==================
@@ -41,18 +41,12 @@ from ..size import Size
 # ===================
 #  Class Declaration
 # ===================
-class KittiDiscrete(FilenamesHandler):
-    def __init__(self, dataset_root, name):
-        super().__init__()
+class KittiDiscrete(Dataset, FilenamesHandler):
+    def __init__(self, *args, **kwargs):
+        dataset_root = kwargs.pop('dataset_root')
+        super(KittiDiscrete, self).__init__(*args, **kwargs)
+
         self.dataset_path = dataset_root + "kitti/raw_data/"
-
-        self.name = name
-
-        self.image_size = Size(375, 1242, 3)
-        self.depth_size = Size(375, 1242, 1)
-
-        # Max Depth to limit predictions
-        self.max_depth = 85.0
 
         print("[Dataloader] KittiDiscrete object created.")
 
