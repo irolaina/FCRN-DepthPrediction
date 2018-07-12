@@ -66,7 +66,7 @@ class Dataloader:
              self.selectedDataset == 'kitticontinuous_road' or \
              self.selectedDataset == 'kitticontinuous_campus' or \
              self.selectedDataset == 'kitticontinuous_person':
-            self.datasetObj = KittiContinuous(dataset_root, self.selectedDataset)
+            self.datasetObj = KittiContinuous(dataset_root=dataset_root, name=self.selectedDataset, height=375, width=1242, max_depth=85.0)
 
         elif self.selectedDataset == 'nyudepth':
             self.datasetObj = NyuDepth(dataset_root, self.selectedDataset)

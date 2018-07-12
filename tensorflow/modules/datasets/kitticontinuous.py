@@ -25,7 +25,7 @@ import time
 import numpy as np
 
 from ..filenames import FilenamesHandler
-from ..size import Size
+from .dataset import Dataset
 
 
 # ==================
@@ -41,20 +41,11 @@ from ..size import Size
 # ===================
 #  Class Declaration
 # ===================
-class KittiContinuous(FilenamesHandler):
-    def __init__(self, dataset_root, name):
-        super().__init__()
-        self.dataset_path = dataset_root + "kitti/raw_data/"
+class KittiContinuous(Dataset, FilenamesHandler):
+    def __init__(self, *args, **kwargs):
+        super(KittiContinuous, self).__init__(*args, **kwargs)
 
-        self.name = name
-
-        self.image_size = Size(375, 1242, 3)
-        self.depth_size = Size(375, 1242, 1)
-
-        # Max Depth to limit predictions
-        self.max_depth = 85.0
-
-        print("[Dataloader] KittiContinuous object created.")
+        print("[Dataloader] KittiContinuous object created.")  # TODO: Acredito que possa ser passado pra classes dataset
 
     def getFilenamesLists(self, mode):
         image_filenames = []
