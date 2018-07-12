@@ -59,8 +59,8 @@ def argumentHandler():
 def talker():
     args = argumentHandler()
 
-    pub = rospy.Publisher('chatter', String, queue_size=10)
-    pub2 = rospy.Publisher('chatter_pred', Image, queue_size=10)
+    pub_string = rospy.Publisher('chatter', String, queue_size=10)
+    pub_pred = rospy.Publisher('chatter_pred', Image, queue_size=10)
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10) # 10hz
 
@@ -132,8 +132,8 @@ def talker():
 
             hello_str = "hello world %s" % rospy.get_time()
             rospy.loginfo(hello_str)
-            pub.publish(hello_str)
-            pub2.publish(image_message)
+            pub_string.publish(hello_str)
+            pub_pred.publish(image_message)
             rate.sleep()
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
