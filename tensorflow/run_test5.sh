@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 GPU=1
-STEPS=150000
+STEPS=300000
 # Dataset doesn't exist on Olorin!
 # python3 predict_nick.py -m train --machine $USER --gpu $GPU -s apolloscape --px valid --loss mse   --max_steps $STEPS --ldecay --l2norm --data_aug
 # python3 predict_nick.py -m train --machine $USER --gpu $GPU -s apolloscape --px valid --loss berhu --max_steps $STEPS --ldecay --l2norm --data_aug
