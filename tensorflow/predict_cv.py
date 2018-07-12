@@ -17,6 +17,7 @@ import numpy as np
 import tensorflow as tf
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
+from modules.utils import detect_available_models
 
 # ==================
 #  Global Variables
@@ -79,14 +80,7 @@ class CvTimer(object):
 def main():
     args = argumentHandler()
 
-    if args.model_path == '':
-        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")
-
-        for i, model in enumerate(found_models):
-            print(i, model)
-
-        selected_model_id = input("\nSelect Model: ")
-        args.model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
+    args.model_path = detect_available_models(args)
 
     timer = CvTimer()
 

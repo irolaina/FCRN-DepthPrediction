@@ -44,6 +44,7 @@
 #  Libraries
 # ===========
 import os
+import glob
 import sys
 import time
 import warnings
@@ -66,6 +67,7 @@ from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.test import Test
 from modules.utils import total_size
+from modules.utils import detect_available_models
 
 # ==========================
 #  [Train] Framework Config
@@ -434,6 +436,8 @@ def test(args):
 
     # Local Variables
     numSamples = None
+
+    args.model_path = detect_available_models(args)
 
     # -----------------------------------------
     #  Network Testing Model - Importing Graph
