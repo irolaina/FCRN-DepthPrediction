@@ -9,5 +9,18 @@ test split proposed by Eigen et al [12] that has been widely evaluated by the wo
 
 Trecho retirado de "Self-Supervised Monocular Image Depth Learning and Confidence Estimation"
 
+## Monodepth's Evaluation on KITTI Description
 Monodepth Evaluation Code:
-https://github.com/mrharicot/monodepth/blob/master/utils/evaluate_kitti.py
+
+    https://github.com/mrharicot/monodepth/blob/master/utils/evaluate_kitti.py
+
+To evaluate run:  
+```shell
+python utils/evaluate_kitti.py --split kitti --predicted_disp_path ~/tmp/my_model/disparities.npy \
+--gt_path ~/data/KITTI/
+```
+The `--split` flag allows you to choose which dataset you want to test on.  
+* `kitti` corresponds to the 200 official training set pairs from [KITTI stereo 2015](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo).  
+* `eigen` corresponds to the 697 test images used by [Eigen NIPS14](http://www.cs.nyu.edu/~deigen/depth/) and uses the raw LIDAR points.
+
+**Warning**: The results on the Eigen split are usually cropped, which you can do by passing the `--garg_crop` flag.
