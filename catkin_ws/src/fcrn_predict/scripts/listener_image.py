@@ -33,111 +33,42 @@
 #
 # Revision $Id$
 
-## Simple talker demo that listens to std_msgs/Strings published 
-## to the 'chatter' topic
+## Simple talker demo that listens to std_msgs/Strings published to the 'chatter' topic
 
 import argparse
-import cv2
-import rospy
-import numpy as np
-import tensorflow as tf
 import os
-from std_msgs.msg import String
-from sensor_msgs.msg import Image
+
+import cv2
+import numpy as np
+import rospy
+import tensorflow as tf
 from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+from std_msgs.msg import String
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
+
 
 def argumentHandler():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
-    parser.add_argument('-r', '--model_path', help='Converted parameters for the model', default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn')
+    parser.add_argument('-r', '--model_path', help='Converted parameters for the model',
+                        default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn')
     parser.add_argument('-i', '--video_path', help='Directory of images to predict')
     return parser.parse_args()
+
 
 args = argumentHandler()
 bridge = CvBridge()
 
-# # ===================
-# #  Class Declaration
-# # ===================
-# class ImportGraph(object):
-#     """  Importing and running isolated TF graph """
-#     def __init__(self, restore_path):
-#         # Local Variables
-#         restore_filepath = None
-#
-#         # Get the Path of the Model to be Restored
-#         restore_files = os.listdir(restore_path)
-#         restore_files_ext = []
-#         for i in range(len(restore_files)):
-#             restore_files_ext.append(restore_files[i].split('.')[-1])
-#
-#         extensions = ['checkpoint', 'index', 'meta', 'data-00000-of-00001']
-#         if len([i for i in extensions if i in restore_files_ext]) == len(extensions):
-#             pass
-#         else:
-#             raise FileExistsError
-#
-#         for file in restore_files:
-#             if not file.find("model"):
-#                 model_fileName = os.path.splitext(file)[0]
-#                 restore_filepath = restore_path + model_fileName  # Path to file with extension *.ckpt
-#                 break
-#
-#         # Creates local graph and use it in the session
-#         self.graph = tf.Graph()
-#         self.sess = tf.Session(graph=self.graph)
-#         with self.graph.as_default():
-#             # Import saved model from location 'restore_filepath' into local graph
-#             print('\n[Network/Restore] Restoring model from file: %s' % restore_filepath)
-#             saver = tf.train.import_meta_graph(restore_filepath + '.meta', clear_devices=True)
-#             saver.restore(self.sess, restore_filepath)
-#             print("[Network/Restore] Model restored!")
-#             print("[Network/Restore] Restored variables:\n", tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), '\n')
-#
-#             # Gets activation function from saved collection
-#             # You may need to change this in case you name it differently
-#             self.prediction = tf.get_collection('prediction')[0]
-#             self.inputs = tf.get_collection('inputs')[0]
-#             self.keep_prob = tf.get_collection('keep_prob')[0]
-#             self.recursivity = tf.get_collection('recursivity')[0]  # Tensor Variable
-#
-#             # Gets recursivity value. Overwrites Tensor("Input/recursivity:0", shape=(), dtype=int32) Variable!
-#             self.recursivity = self.recursivity.eval(session=self.sess)  # Int value
-#
-#     def networkPredict(self, netInput, numClasses):
-#         """ Running the activation function previously imported """
-#         # The 'inputs' corresponds to name of input placeholder
-#         data = np.expand_dims(np.expand_dims(netInput, 0), 2)  # (idx, numInputs, 1) - Normalized
-#         feed_dict = {self.inputs: data, self.keep_prob: 1.0}
-#
-#         # ----- Session Run! ----- #
-#         output = self.sess.run(self.prediction, feed_dict=feed_dict)
-#         output_round = (np.arange(numClasses) == np.argmax(output)).astype(np.float32)
-#         # -----
-#
-#         # Debug
-#         print(output, output_round)
-#
-#         return output, output_round
-
-###############################################################################
 print(args.model_path)
 print(args.video_path)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-# Load from Camera or Video
-# cap = cv2.VideoCapture(0)
-# cap = cv2.VideoCapture(args.video_path)
 
-# if not cap.isOpened():  # Check if it succeeded
-#     print("It wasn't possible to open the camera.")
-#     return -1
-
-class Network():
+class Network(object):
     def __init__(self):
         # ----------------
         #  Building Graph
@@ -151,7 +82,7 @@ class Network():
 
             # Create a placeholder for the input image
             self.input_node = tf.placeholder(tf.uint8, shape=(self.height, self.width, channels))
-            self.input_shape = tf.placeholder(tf.int32, shape=(3))
+            self.input_shape = tf.placeholder(tf.int32, shape=3)
             # tf_image_float32 = tf.cast(input_node, tf.float32)
             tf_image_float32 = tf.image.convert_image_dtype(self.input_node, tf.float32)
 
@@ -161,7 +92,8 @@ class Network():
                                      is_training=False)
 
             self.tf_pred = net.get_output()
-            self.tf_pred_up = tf.image.resize_images(self.tf_pred, self.input_shape[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)
+            self.tf_pred_up = tf.image.resize_images(self.tf_pred, self.input_shape[:2], tf.image.ResizeMethod.BILINEAR,
+                                                     align_corners=True)
 
             # --------------------------
             #  Restore Graph Parameters
@@ -176,10 +108,12 @@ class Network():
             # Use to load from npy file
             # net.load(args.model_path, self.sess)
 
+
 def talker(image_raw, pub_string, pub_pred, rate, net):
     # Capture frame-by-frame
     image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_NEAREST)
-    pred, pred_up  = net.sess.run([net.tf_pred, net.tf_pred_up], feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
+    pred, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
+                                 feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
 
     # Image Processing
     # pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
@@ -202,6 +136,7 @@ def talker(image_raw, pub_string, pub_pred, rate, net):
     if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
         return 0
 
+
 def callback(received_image_msg, args):
     # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
     cv_image = bridge.imgmsg_to_cv2(received_image_msg, desired_encoding="passthrough")
@@ -213,6 +148,7 @@ def callback(received_image_msg, args):
 
     if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
         return 0
+
 
 def listener():
     # In ROS, nodes are uniquely named. If two nodes with the same
@@ -234,6 +170,7 @@ def listener():
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
+
 
 if __name__ == '__main__':
     listener()
