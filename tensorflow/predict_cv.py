@@ -165,6 +165,7 @@ def main():
             pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
             pred_jet = cv2.applyColorMap(255 - pred_uint8_scaled, cv2.COLORMAP_JET)
             pred_hsv = cv2.applyColorMap(pred_uint8_scaled, cv2.COLORMAP_HSV)
+            pred_median = cv2.medianBlur(pred_uint8_scaled, 3)
 
             pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
             cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
@@ -199,6 +200,7 @@ def main():
             cv2.imshow('pred_jet', pred_jet_resized)
             cv2.imshow('pred (scaled)', pred_uint8_scaled)
             cv2.imshow('pred_hsv (scaled)', pred_hsv_resized)
+            cv2.imshow('Median Filter', pred_median)
 
             # Save Images
             if SAVE_IMAGES:
