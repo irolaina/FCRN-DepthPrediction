@@ -2,10 +2,15 @@
 .idea/*
 models/*
 misc/*
-!misc/getDatasetInfo/
+catkin_ws/*
 tensorflow/output/*
 tensorflow/tmp/*
+
+# Exceptions
+!catkin_ws/src/
+!misc/getDatasetInfo/
 !tensorflow/tmp/reproduce_random_shuffle_error.py
+
 # Exclude Extensions
 */.DS_Store
 *.pyc
