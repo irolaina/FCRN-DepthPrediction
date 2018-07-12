@@ -151,6 +151,7 @@ class Network():
 
             # Create a placeholder for the input image
             self.input_node = tf.placeholder(tf.uint8, shape=(self.height, self.width, channels))
+            self.input_shape = tf.placeholder(tf.int32, shape=(3))
             # tf_image_float32 = tf.cast(input_node, tf.float32)
             tf_image_float32 = tf.image.convert_image_dtype(self.input_node, tf.float32)
 
@@ -160,6 +161,7 @@ class Network():
                                      is_training=False)
 
             self.tf_pred = net.get_output()
+            self.tf_pred_up = tf.image.resize_images(self.tf_pred, self.input_shape[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)
 
             # --------------------------
             #  Restore Graph Parameters
@@ -177,17 +179,19 @@ class Network():
 def talker(image_raw, pub_string, pub_pred, rate, net):
     # Capture frame-by-frame
     image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_NEAREST)
-    pred = net.sess.run(net.tf_pred, feed_dict={net.input_node: image})
+    pred, pred_up  = net.sess.run([net.tf_pred, net.tf_pred_up], feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
 
     # Image Processing
-    pred_uint8 = cv2.convertScaleAbs(pred[0])
-    pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
-    pred = pred_uint8_scaled
+    # pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+    # image_message = bridge.cv2_to_imgmsg(pred_uint8_scaled, encoding="passthrough")
 
-    image_message = bridge.cv2_to_imgmsg(pred, encoding="passthrough")
+    pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
+    image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
+
     # cv2.imshow("image_raw", image_raw)
     # cv2.imshow('image', image)
-    # cv2.imshow('pred', pred)
+    # cv2.imshow('pred', pred_uint8_scaled)
+    # cv2.imshow('pred_up', pred_up_uint8_scaled)
 
     hello_str = "hello world %s" % rospy.get_time()
     rospy.loginfo(hello_str)
