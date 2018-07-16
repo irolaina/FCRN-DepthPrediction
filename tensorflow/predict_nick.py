@@ -60,7 +60,7 @@ from skimage import io, exposure, img_as_uint
 
 # Custom Libraries
 import modules.args as argsLib
-import modules.metrics_monodepth as MonodepthMetrics
+import modules.metrics.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.third_party.laina.fcrn import ResNet50UpProj
