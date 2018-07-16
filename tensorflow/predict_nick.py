@@ -14,6 +14,7 @@
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
 # [Train] FIXME: Early Stopping
+# [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'silog'
 
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
