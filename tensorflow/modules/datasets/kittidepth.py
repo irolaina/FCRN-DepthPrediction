@@ -62,7 +62,6 @@ class KittiDepth(Dataset, FilenamesHandler):
         file = 'data/' + self.name + '_' + mode + '.txt'
 
         if os.path.exists(file):
-            timer = -time.time()
             data = self.loadList(file)
 
             # Parsing Data
