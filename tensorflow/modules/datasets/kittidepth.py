@@ -26,6 +26,7 @@ import numpy as np
 
 from ..filenames import FilenamesHandler
 from .dataset import Dataset
+from ..filenames import join_dataset_path
 
 
 # ==================
@@ -68,10 +69,8 @@ class KittiDepth(Dataset, FilenamesHandler):
             image_filenames = list(data[:, 0])
             depth_filenames = list(data[:, 1])
 
-            image_filenames = [self.dataset_path + image for image in image_filenames]
-            depth_filenames = [self.dataset_path + depth for depth in depth_filenames]
-            timer += time.time()
-            print('time:', timer, 's\n')
+            image_filenames = join_dataset_path(image_filenames, self.dataset_path)
+            depth_filenames = join_dataset_path(depth_filenames, self.dataset_path)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
@@ -117,7 +116,16 @@ class KittiDepth(Dataset, FilenamesHandler):
                         depth_filenames.append(depth_filenames_tmp[j])
 
             n2, m2 = len(image_filenames), len(depth_filenames)
-            assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
+
+            n2 = 1
+            m2 = 3
+
+            if not n2 == m2:
+                print("[AssertionError] Length must be equal!")
+                raise AssertionError()
+
+            input("aki")
+
             print("time: %f s" % (time.time() - start))
 
             # Shuffles

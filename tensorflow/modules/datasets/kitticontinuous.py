@@ -26,6 +26,7 @@ import numpy as np
 
 from ..filenames import FilenamesHandler
 from .dataset import Dataset
+from ..filenames import join_dataset_path
 
 
 # ==================
@@ -64,11 +65,8 @@ class KittiContinuous(Dataset, FilenamesHandler):
             image_filenames = list(data[:, 0])
             depth_filenames = list(data[:, 1])
 
-            timer = -time.time()
-            image_filenames = [self.dataset_path + image for image in image_filenames]
-            depth_filenames = [self.dataset_path + depth for depth in depth_filenames]
-            timer += time.time()
-            print('time:', timer, 's\n')
+            image_filenames = join_dataset_path(image_filenames, self.dataset_path)
+            depth_filenames = join_dataset_path(depth_filenames, self.dataset_path)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")

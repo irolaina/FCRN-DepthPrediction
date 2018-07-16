@@ -3,6 +3,7 @@
 # ===========
 import os
 import sys
+import time
 
 import numpy as np
 
@@ -51,3 +52,11 @@ class FilenamesHandler(object):
         np.savetxt(save_file_path, filenames, fmt='%s', delimiter='\t')
 
         print("\n[Dataset] '%s' file saved." % save_file_path)
+
+def join_dataset_path(filenames, dataset_path):
+    timer = -time.time()
+    filenames = [dataset_path + depth for depth in filenames]
+    timer += time.time()
+    print('time:', timer, 's\n')
+
+    return filenames
