@@ -24,3 +24,7 @@ The `--split` flag allows you to choose which dataset you want to test on.
 * `eigen` corresponds to the 697 test images used by [Eigen NIPS14](http://www.cs.nyu.edu/~deigen/depth/) and uses the raw LIDAR points.
 
 **Warning**: The results on the Eigen split are usually cropped, which you can do by passing the `--garg_crop` flag.
+
+## Semi-supervised monocular depth map prediction (CVPR2017)
+
+https://github.com/a-jahani/semodepth/blob/master/eval/eval_kitti.py

@@ -21,47 +21,87 @@ def compute_errors(pred, gt):
 
 
 def evaluate(pred_array, gt_array):
-    num_samples = len(pred_array)
-    pred_depths, gt_depths = pred_array, gt_array
-    min_depth, max_depth = 1e-3, 80
+    args_split = 'nick'
+    # args_predicted_disp_path = # TODO: Terminar
+    # args_gt_path = # TODO: Terminar
+    args_min_depth = 1e-3
+    args_max_depth = 80
+    args_eigen_crop = False
+    args_garg_crop = False
 
-    rms = np.zeros(num_samples, np.float32)
+    # pred_disparities = np.load(args.predicted_disp_path)
+
+    if args_split == 'kitti':
+        num_samples = 200
+
+        gt_disparities = load_gt_disp_kitti(args.gt_path)
+        gt_depths, pred_depths, pred_disparities_resized = convert_disps_to_depths_kitti(gt_disparities, pred_disparities)
+
+    elif args_split == 'eigen':
+        num_samples = 697
+        test_files = read_text_lines(args.gt_path + 'eigen_test_files.txt')
+        gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args.gt_path)
+
+        num_test = len(im_files)
+        gt_depths = []
+        pred_depths = []
+        for t_id in range(num_samples):
+            camera_id = cams[t_id]  # 2 is left, 3 is right
+            depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
+            gt_depths.append(depth.astype(np.float32))
+
+            disp_pred = cv2.resize(pred_disparities[t_id], (im_sizes[t_id][1], im_sizes[t_id][0]), interpolation=cv2.INTER_LINEAR)
+            disp_pred = disp_pred * disp_pred.shape[1]
+
+            # need to convert from disparity to depth
+            focal_length, baseline = get_focal_length_baseline(gt_calib[t_id], camera_id)
+            depth_pred = (baseline * focal_length) / disp_pred
+            depth_pred[np.isinf(depth_pred)] = 0
+
+            pred_depths.append(depth_pred)
+    elif args_split == 'nick':
+        num_samples = len(pred_array)
+        pred_depths, gt_depths = pred_array, gt_array
+
+    rms     = np.zeros(num_samples, np.float32)
     log_rms = np.zeros(num_samples, np.float32)
     abs_rel = np.zeros(num_samples, np.float32)
-    sq_rel = np.zeros(num_samples, np.float32)
-    d1_all = np.zeros(num_samples, np.float32)
-    a1 = np.zeros(num_samples, np.float32)
-    a2 = np.zeros(num_samples, np.float32)
-    a3 = np.zeros(num_samples, np.float32)
+    sq_rel  = np.zeros(num_samples, np.float32)
+    d1_all  = np.zeros(num_samples, np.float32)
+    a1      = np.zeros(num_samples, np.float32)
+    a2      = np.zeros(num_samples, np.float32)
+    a3      = np.zeros(num_samples, np.float32)
 
     for i in range(num_samples):
+
         gt_depth = gt_depths[i]
         pred_depth = pred_depths[i]
 
-        pred_depth[pred_depth < min_depth] = min_depth
-        pred_depth[pred_depth > max_depth] = max_depth
+        pred_depth[pred_depth < args_min_depth] = args_min_depth
+        pred_depth[pred_depth > args_max_depth] = args_max_depth
 
         # if split == 'eigen':
         #     mask = np.logical_and(gt_depth > min_depth, gt_depth < max_depth)
         #
-        #     if garg_crop or eigen_crop:
+        #
+        #     if args.garg_crop or args.eigen_crop:
         #         gt_height, gt_width = gt_depth.shape
         #
         #         # crop used by Garg ECCV16
         #         # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
-        #         if garg_crop:
-        #             crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
-        #                              0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+        #         if args.garg_crop:
+        #             crop = np.array([0.40810811 * gt_height,  0.99189189 * gt_height,
+        #                              0.03594771 * gt_width,   0.96405229 * gt_width]).astype(np.int32)
         #         # crop we found by trial and error to reproduce Eigen NIPS14 results
-        #         elif eigen_crop:
-        #             crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
-        #                              0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+        #         elif args.eigen_crop:
+        #             crop = np.array([0.3324324 * gt_height,  0.91351351 * gt_height,
+        #                              0.0359477 * gt_width,   0.96405229 * gt_width]).astype(np.int32)
         #
         #         crop_mask = np.zeros(mask.shape)
-        #         crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
+        #         crop_mask[crop[0]:crop[1],crop[2]:crop[3]] = 1
         #         mask = np.logical_and(mask, crop_mask)
         #
-        # if split == 'kitti':
+        # if args.split == 'kitti':
         #     gt_disp = gt_disparities[i]
         #     mask = gt_disp > 0
         #     pred_disp = pred_disparities_resized[i]
@@ -71,6 +111,7 @@ def evaluate(pred_array, gt_array):
         #     d1_all[i] = 100.0 * bad_pixels.sum() / mask.sum()
 
         mask = gt_depth > 0
+
 
         abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(pred_depth[mask], gt_depth[mask])
 
