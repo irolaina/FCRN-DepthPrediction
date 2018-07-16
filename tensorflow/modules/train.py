@@ -51,22 +51,25 @@ class Train:
             self.tf_depth = tf_depth
 
             # Downsizes Input and Depth Images
-            # FIXME: O mais correto seria utilizar NEAREST_NEIGHBOR para redimensionar as imagens, porém a rede apresenta problemas de convergência com este método.
-            # FIXME: Estou na dúvida se o problema estar no method ou no align_corners
-            self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width])
-            self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width])
-
+            # Recommend: align_corners=False
+            # MonoDepth utilizes the AREA method.
             # self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], tf.image.ResizeMethod.BILINEAR, False)
             # self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], tf.image.ResizeMethod.BILINEAR, False)
 
             # self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], tf.image.ResizeMethod.BILINEAR, True)
             # self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], tf.image.ResizeMethod.BILINEAR, True)
 
-            # self.tf_image_resized = tf.image.resize_images(tf.cast(self.tf_image, tf.float32), [input_size.height, input_size.width], tf.image.ResizeMethod.NEAREST_NEIGHBOR, False)
+            # self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], tf.image.ResizeMethod.NEAREST_NEIGHBOR, False)
             # self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], tf.image.ResizeMethod.NEAREST_NEIGHBOR, False)
 
-            # self.tf_image_resized = tf.image.resize_images(tf.cast(self.tf_image, tf.float32), [input_size.height, input_size.width], tf.image.ResizeMethod.NEAREST_NEIGHBOR, True)
+            # self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], tf.image.ResizeMethod.NEAREST_NEIGHBOR, True)
             # self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], tf.image.ResizeMethod.NEAREST_NEIGHBOR, True)
+
+            self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], tf.image.ResizeMethod.AREA, False)
+            self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], tf.image.ResizeMethod.AREA, False)
+
+            # self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], tf.image.ResizeMethod.AREA, True)
+            # self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], tf.image.ResizeMethod.AREA, True)
 
             # FIXME: Por que dá erro?
             # self.tf_image_resized = tf.py_func(lambda img: imresize(img, [output_size.height, output_size.width]), [tf.cast(self.tf_image, tf.float32)], [tf.float32])
