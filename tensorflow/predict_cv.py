@@ -8,7 +8,6 @@
 #  Libraries
 # ===========
 import argparse
-import glob
 import os
 import sys
 
@@ -37,11 +36,11 @@ def argumentHandler():
     return parser.parse_args()
 
 
-def circular_counter(max):
+def circular_counter(max_value):
     """helper function that creates an eternal counter till a max value"""
     x = 0
     while True:
-        if x == max:
+        if x == max_value:
             x = 0
         x += 1
         yield x
@@ -139,7 +138,7 @@ def main():
         count = 0
         while True:
             # Capture frame-by-frame
-            success, frame = cap.read()
+            _, frame = cap.read()
             frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)
 
             # Evalute the network for the given image
