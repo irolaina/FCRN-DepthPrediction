@@ -45,7 +45,6 @@
 #  Libraries
 # ===========
 import os
-import glob
 import sys
 import time
 import warnings
@@ -97,7 +96,7 @@ io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
-
+running = True
 
 # ===========
 #  Functions
@@ -141,7 +140,7 @@ def predict(model_data_path, image_path):
     print('[%s] Selected mode: Predict' % appName)
 
     # Default input size
-    batch_size, height, width, nchannels = 1, 228, 304, 3
+    batch_size, height, width = 1, 228, 304
 
     # Read image (uint8)
     img = Image.open(image_path)
