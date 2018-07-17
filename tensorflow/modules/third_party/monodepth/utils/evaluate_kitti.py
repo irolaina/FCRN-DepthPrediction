@@ -1,5 +1,4 @@
 import numpy as np
-import cv, cv2
 import argparse
 from .evaluation_utils import *
 
@@ -20,7 +19,7 @@ if __name__ == '__main__':
 
     if args.split == 'kitti':
         num_samples = 200
-        
+
         gt_disparities = load_gt_disp_kitti(args.gt_path)
         gt_depths, pred_depths, pred_disparities_resized = convert_disps_to_depths_kitti(gt_disparities, pred_disparities)
 
@@ -57,7 +56,7 @@ if __name__ == '__main__':
     a3      = np.zeros(num_samples, np.float32)
     
     for i in range(num_samples):
-        
+
         gt_depth = gt_depths[i]
         pred_depth = pred_depths[i]
 
@@ -67,22 +66,21 @@ if __name__ == '__main__':
         if args.split == 'eigen':
             mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
 
-            
             if args.garg_crop or args.eigen_crop:
                 gt_height, gt_width = gt_depth.shape
 
                 # crop used by Garg ECCV16
                 # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
                 if args.garg_crop:
-                    crop = np.array([0.40810811 * gt_height,  0.99189189 * gt_height,   
+                    crop = np.array([0.40810811 * gt_height,  0.99189189 * gt_height,
                                      0.03594771 * gt_width,   0.96405229 * gt_width]).astype(np.int32)
                 # crop we found by trial and error to reproduce Eigen NIPS14 results
                 elif args.eigen_crop:
-                    crop = np.array([0.3324324 * gt_height,  0.91351351 * gt_height,   
+                    crop = np.array([0.3324324 * gt_height,  0.91351351 * gt_height,
                                      0.0359477 * gt_width,   0.96405229 * gt_width]).astype(np.int32)
 
                 crop_mask = np.zeros(mask.shape)
-                crop_mask[crop[0]:crop[1],crop[2]:crop[3]] = 1
+                crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
                 mask = np.logical_and(mask, crop_mask)
 
         if args.split == 'kitti':
