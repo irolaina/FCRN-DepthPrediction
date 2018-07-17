@@ -191,7 +191,9 @@ def np_RMSE_log(y, y_):
 # ---------------------------- #
 def np_RMSE_log_scaleInv(y, y_):
     # Check if y and y* have the same dimensions
-    assert (y.shape == y_.shape), "Houston we've got a problem"
+    if not y.shape == y_.shape:
+        print("[AssertionError] Shape must be equal!")
+        raise AssertionError()
 
     npixels_total = np.size(y)  # batchSize*height*width
 
