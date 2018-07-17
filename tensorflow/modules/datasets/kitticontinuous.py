@@ -25,7 +25,6 @@ import time
 import numpy as np
 
 from .dataset import Dataset
-from ..filenames import join_dataset_path
 
 
 # ==================

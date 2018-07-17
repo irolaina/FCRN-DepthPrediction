@@ -26,7 +26,6 @@ import numpy as np
 
 from ..filenames import FilenamesHandler
 from .dataset import Dataset
-from ..filenames import join_dataset_path
 
 
 # ==================
