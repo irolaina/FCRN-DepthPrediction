@@ -44,10 +44,7 @@ from ..filenames import join_dataset_path
 # ===================
 class KittiContinuous(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
-        dataset_root = kwargs.pop('dataset_root')
         super(KittiContinuous, self).__init__(*args, **kwargs)
-
-        self.dataset_path = dataset_root + "kitti/raw_data/"
 
         print("[Dataloader] KittiContinuous object created.")  # TODO: Acredito que possa ser passado pra classes dataset
 

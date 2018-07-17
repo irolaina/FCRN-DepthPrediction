@@ -66,10 +66,7 @@ from ..filenames import join_dataset_path
 # ===================
 class NyuDepth(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
-        dataset_root = kwargs.pop('dataset_root')
         super(NyuDepth, self).__init__(*args, **kwargs)
-
-        self.dataset_path = dataset_root + "nyu-depth-v2/data/images/"
 
         print("[Dataloader] NyuDepth object created.")
 

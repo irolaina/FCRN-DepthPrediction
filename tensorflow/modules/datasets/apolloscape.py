@@ -47,10 +47,7 @@ from ..filenames import join_dataset_path
 # ===================
 class Apolloscape(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
-        dataset_root = kwargs.pop('dataset_root')
         super(Apolloscape, self).__init__(*args, **kwargs)
-
-        self.dataset_path = dataset_root + "apolloscape/data/"
 
         print("[Dataloader] Apolloscape object created.")
 

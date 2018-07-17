@@ -9,6 +9,7 @@ from ..size import Size
 # ===================
 class Dataset(object):
     def __init__(self, *args, **kwargs):
+        self.dataset_path = kwargs.pop('dataset_path')
         self.name = kwargs.pop('name')
         height = kwargs.pop('height')
         width = kwargs.pop('width')

@@ -44,10 +44,7 @@ from ..filenames import join_dataset_path
 # ===================
 class KittiDiscrete(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
-        dataset_root = kwargs.pop('dataset_root')
         super(KittiDiscrete, self).__init__(*args, **kwargs)
-
-        self.dataset_path = dataset_root + "kitti/raw_data/"
 
         print("[Dataloader] KittiDiscrete object created.")
 
