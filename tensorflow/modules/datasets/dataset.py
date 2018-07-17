@@ -2,12 +2,12 @@
 #  Libraries
 # ===========
 from ..size import Size
-
+from ..filenames import FilenamesHandler
 
 # ===================
 #  Class Declaration
 # ===================
-class Dataset(object):
+class Dataset(FilenamesHandler):
     def __init__(self, *args, **kwargs):
         self.dataset_path = kwargs.pop('dataset_path')
         self.name = kwargs.pop('name')

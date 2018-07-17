@@ -24,7 +24,6 @@ import time
 
 import numpy as np
 
-from ..filenames import FilenamesHandler
 from .dataset import Dataset
 from ..filenames import join_dataset_path
 
@@ -42,28 +41,18 @@ from ..filenames import join_dataset_path
 # ===================
 #  Class Declaration
 # ===================
-class KittiContinuous(Dataset, FilenamesHandler):
+class KittiContinuous(Dataset):
     def __init__(self, *args, **kwargs):
         super(KittiContinuous, self).__init__(*args, **kwargs)
 
         print("[Dataloader] KittiContinuous object created.")  # TODO: Acredito que possa ser passado pra classes dataset
 
     def getFilenamesLists(self, mode):
-        image_filenames = []
-        depth_filenames = []
-
         file = 'data/' + self.name + '_' + mode + '.txt'
         ratio = 0.8
 
         if os.path.exists(file):
-            data = self.loadList(file)
-
-            # Parsing Data
-            image_filenames = list(data[:, 0])
-            depth_filenames = list(data[:, 1])
-
-            image_filenames = join_dataset_path(image_filenames, self.dataset_path)
-            depth_filenames = join_dataset_path(depth_filenames, self.dataset_path)
+            image_filenames, depth_filenames = self.loadInputList(file, self.dataset_path)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
