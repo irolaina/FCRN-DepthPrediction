@@ -130,7 +130,9 @@ class KittiDiscrete(Dataset, FilenamesHandler):
                         depth_filenames.append(depth_filenames_tmp[j])
 
             n2, m2 = len(image_filenames), len(depth_filenames)
-            assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
+            if not n2 == m2:
+                print("[AssertionError] Length must be equal!")
+                raise AssertionError()
             print("time: %f s" % (time.time() - start))
 
             # Shuffles
