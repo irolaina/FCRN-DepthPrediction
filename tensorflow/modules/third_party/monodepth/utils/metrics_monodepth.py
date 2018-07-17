@@ -73,7 +73,6 @@ def evaluate(pred_array, gt_array):
     a3      = np.zeros(num_samples, np.float32)
 
     for i in range(num_samples):
-
         gt_depth = gt_depths[i]
         pred_depth = pred_depths[i]
 
