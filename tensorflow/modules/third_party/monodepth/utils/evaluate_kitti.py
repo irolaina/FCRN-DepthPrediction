@@ -1,7 +1,7 @@
 import numpy as np
 import cv, cv2
 import argparse
-from evaluation_utils import *
+from .evaluation_utils import *
 
 parser = argparse.ArgumentParser(description='Evaluation on the KITTI dataset')
 parser.add_argument('--split',               type=str,   help='data split, kitti or eigen',         required=True)
