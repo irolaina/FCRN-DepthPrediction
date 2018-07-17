@@ -5,7 +5,7 @@ import os
 import numpy as np
 import tensorflow as tf
 
-data = np.genfromtxt("data/apolloscape_train.txt", dtype='str', delimiter='\t')
+# data = np.genfromtxt("data/apolloscape_train.txt", dtype='str', delimiter='\t')
 data = np.genfromtxt("data/apolloscape_test.txt", dtype='str', delimiter='\t')
 
 root_path = "/media/nicolas/nicolas_seagate/datasets/apolloscape/data/"

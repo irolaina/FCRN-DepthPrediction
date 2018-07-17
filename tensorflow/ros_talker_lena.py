@@ -33,8 +33,7 @@
 #
 # Revision $Id$
 
-## Simple talker demo that published std_msgs/Strings messages
-## to the 'chatter' topic
+# Simple talker demo that published std_msgs/Strings messages to the 'chatter' topic
 
 import cv2
 import rospy
@@ -42,11 +41,12 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
+
 def talker():
     pub = rospy.Publisher('chatter', String, queue_size=10)
     pub2 = rospy.Publisher('chatter_lena', Image, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(10)  # 10hz
 
     bridge = CvBridge()
 
@@ -64,6 +64,7 @@ def talker():
 
         if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
             break
+
 
 if __name__ == '__main__':
     try:
