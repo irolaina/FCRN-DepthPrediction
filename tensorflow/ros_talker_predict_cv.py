@@ -113,16 +113,13 @@ def talker():
         # Use to load from npy file
         # net.load(args.model_path, sess)
 
-        count = 0
-
         while not rospy.is_shutdown():
             # Capture frame-by-frame
-            success, frame = cap.read()
+            _, frame = cap.read()
             frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
             pred = sess.run(tf_pred, feed_dict={input_node: frame})
 
             # Image Processing
-            pred_uint8 = cv2.convertScaleAbs(pred[0])
             pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
             img = pred_uint8_scaled
             ###############################################################################
