@@ -61,6 +61,7 @@ class FilenamesHandler(object):
 
         print("\n[Dataset] '%s' file saved." % save_file_path)
 
+
 def join_dataset_path(filenames, dataset_path):
     timer = -time.time()
     filenames = [dataset_path + depth for depth in filenames]

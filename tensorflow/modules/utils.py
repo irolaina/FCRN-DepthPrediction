@@ -59,8 +59,8 @@ def total_size(o, handlers=None, verbose=False):
 
     return sizeof(o)
 
-def detect_available_models(args):
 
+def detect_available_models(args):
     if args.model_path == '':
         found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")
         found_models.sort()

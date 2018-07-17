@@ -4,6 +4,7 @@
 from ..size import Size
 from ..filenames import FilenamesHandler
 
+
 # ===================
 #  Class Declaration
 # ===================
