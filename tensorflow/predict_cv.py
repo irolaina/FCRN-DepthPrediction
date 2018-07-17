@@ -8,6 +8,7 @@
 #  Libraries
 # ===========
 import argparse
+import glob
 import os
 import sys
 
@@ -30,8 +31,8 @@ def argumentHandler():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
-    parser.add_argument('model_path', help='Converted parameters for the model')
-    parser.add_argument('video_path', help='Directory of images to predict')
+    parser.add_argument('-r', '--model_path', help='Converted parameters for the model', default='')
+    parser.add_argument('-i', '--video_path', help='Directory of images to predict')
     return parser.parse_args()
 
 
@@ -78,6 +79,15 @@ class CvTimer(object):
 def main():
     args = argumentHandler()
 
+    if args.model_path == '':
+        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")
+
+        for i, model in enumerate(found_models):
+            print(i, model)
+
+        selected_model_id = input("\nSelect Model: ")
+        args.model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
+
     timer = CvTimer()
 
     print(args.model_path)
@@ -109,6 +119,14 @@ def main():
         # Construct the network
         net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
 
+    tf_pred = net.get_output()
+
+    if 'kitti' in args.model_path:
+        tf_imask_50 = tf.where(tf_pred < 50.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
+        tf_imask_80 = tf.where(tf_pred < 80.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
+
+        tf_pred_50 = tf.multiply(tf_pred, tf_imask_50)
+        tf_pred_80 = tf.multiply(tf_pred, tf_imask_80)
 
     # ---------------
     #  Running Graph
@@ -133,7 +151,17 @@ def main():
             frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)
 
             # Evalute the network for the given image
-            pred = sess.run(net.get_output(), feed_dict={input_node: frame})
+            try:
+                pred, pred_50, pred_80 = sess.run([tf_pred, tf_pred_50, tf_pred_80], feed_dict={input_node: frame})
+                pred_50_uint8 = cv2.convertScaleAbs(pred_50[0])
+                pred_80_uint8 = cv2.convertScaleAbs(pred_80[0])
+                pred_50_uint8_scaled = cv2.convertScaleAbs(pred_50[0] * (255 / np.max(pred[0])))
+                pred_80_uint8_scaled = cv2.convertScaleAbs(pred_80[0] * (255 / np.max(pred[0])))
+                cv2.imshow('pred_50 (scaled)', pred_50_uint8_scaled)
+                cv2.imshow('pred_80 (scaled)', pred_80_uint8_scaled)
+            except UnboundLocalError:
+                pred = sess.run(tf_pred, feed_dict={input_node: frame})
+
 
             # Debug
             # print(frame)
@@ -145,9 +173,9 @@ def main():
 
             # Image Processing
             pred_uint8 = cv2.convertScaleAbs(pred[0])
-
-            pred_jet = cv2.applyColorMap(pred_uint8, cv2.COLORMAP_JET)
-            pred_hsv = cv2.applyColorMap(pred_uint8*5, cv2.COLORMAP_HSV)
+            pred_uint8_scaled = cv2.convertScaleAbs(pred[0]*(255/np.max(pred[0])))
+            pred_jet = cv2.applyColorMap(255-pred_uint8_scaled, cv2.COLORMAP_JET)
+            pred_hsv = cv2.applyColorMap(pred_uint8_scaled, cv2.COLORMAP_HSV)
 
             pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
             cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
@@ -180,6 +208,7 @@ def main():
             cv2.imshow('frame', frame)
             cv2.imshow('pred', pred_uint8)
             cv2.imshow('pred_jet', pred_jet_resized)
+            cv2.imshow('pred (scaled)', pred_uint8_scaled)
             cv2.imshow('pred_hsv (scaled)', pred_hsv_resized)
 
             # Save Images
