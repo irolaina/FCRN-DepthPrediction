@@ -118,7 +118,7 @@ def talker():
         while not rospy.is_shutdown():
             # Capture frame-by-frame
             success, frame = cap.read()
-            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)
+            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
             pred = sess.run(tf_pred, feed_dict={input_node: frame})
 
             # Image Processing

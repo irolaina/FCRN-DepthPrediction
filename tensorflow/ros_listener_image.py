@@ -111,7 +111,7 @@ class Network(object):
 
 def talker(image_raw, pub_string, pub_pred, rate, net):
     # Capture frame-by-frame
-    image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_NEAREST)
+    image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
     pred, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
                                  feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
 

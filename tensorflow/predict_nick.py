@@ -153,7 +153,7 @@ def predict(model_data_path, image_path):
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     # tf_image_float32 = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
     tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
-    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.AREA, align_corners=True)
 
     # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
@@ -206,10 +206,9 @@ def predict(model_data_path, image_path):
         for nrows, ncols, plot_number in X:
             axes.append(fig.add_subplot(nrows, ncols, plot_number))
 
-        img1 = axes[0].imshow(image)
-        img2 = axes[1].imshow(image_resized_uint8)
-        img4 = axes[2].imshow(pred[0, :, :, 0])
-        # img4 = axes[3].imshow(pred[0, :, :, 0], interpolation='nearest')
+        img0 = axes[0].imshow(image)
+        img1 = axes[1].imshow(image_resized_uint8)
+        img2 = axes[2].imshow(pred[0, :, :, 0])
 
         axes[0].set_title('Image')
         axes[1].set_title('Resized')
@@ -218,7 +217,7 @@ def predict(model_data_path, image_path):
         # Fix Colorbar size
         divider = make_axes_locatable(axes[2])
         cax = divider.append_axes("right", size="5%", pad=0.15)
-        fig.colorbar(img4, cax=cax)
+        fig.colorbar(img2, cax=cax)
 
         plt.show()
 

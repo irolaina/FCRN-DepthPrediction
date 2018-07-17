@@ -139,7 +139,7 @@ def main():
         while True:
             # Capture frame-by-frame
             _, frame = cap.read()
-            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)
+            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
 
             # Evalute the network for the given image
             try:
