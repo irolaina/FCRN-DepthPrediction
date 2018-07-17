@@ -1,4 +1,3 @@
-import glob
 import imageio
 import matplotlib.pyplot as plt
 import os
