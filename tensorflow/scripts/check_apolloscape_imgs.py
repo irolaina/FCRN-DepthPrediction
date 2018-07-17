@@ -28,7 +28,6 @@ print(len(depths_filename))
 
 numSamples = len(images_filename)
 
-
 # Tensorflow Tensors
 tf_image_key = tf.placeholder(tf.string)
 tf_depth_key = tf.placeholder(tf.string)
@@ -45,11 +44,11 @@ with tf.Session() as sess:
     sess.run(init_op)
 
     invalidPairs = []
-    for i in range(24450, numSamples): # TODO: Remover valor inicial para percorrer caso deseja-se percorrer todas as imagens
+    for i in range(24450, numSamples):  # TODO: Remover valor inicial para percorrer caso deseja-se percorrer todas as imagens
         print(i, images_filename[i], depths_filename[i])
 
         # Run Session
-        feed_input = {tf_image_key: images_filename[i], tf_depth_key:depths_filename[i]}
+        feed_input = {tf_image_key: images_filename[i], tf_depth_key: depths_filename[i]}
         image, depth = sess.run([tf_image_raw, tf_depth_raw], feed_input)
 
         # Check if the pair is valid
