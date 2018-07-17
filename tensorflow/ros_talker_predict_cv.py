@@ -33,8 +33,7 @@
 #
 # Revision $Id$
 
-## Simple talker demo that published std_msgs/Strings messages
-## to the 'chatter' topic
+# Simple talker demo that published std_msgs/Strings messages to the 'chatter' topic
 
 import argparse
 import cv2
@@ -48,13 +47,16 @@ from cv_bridge import CvBridge
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
 
+
 def argumentHandler():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
-    parser.add_argument('-r', '--model_path', help='Converted parameters for the model', default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn')
+    parser.add_argument('-r', '--model_path', help='Converted parameters for the model',
+                        default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn')
     parser.add_argument('-i', '--video_path', help='Directory of images to predict')
     return parser.parse_args()
+
 
 def talker():
     args = argumentHandler()
@@ -62,7 +64,7 @@ def talker():
     pub_string = rospy.Publisher('chatter', String, queue_size=10)
     pub_pred = rospy.Publisher('chatter_pred', Image, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(10)  # 10hz
 
     bridge = CvBridge()
 
@@ -135,6 +137,7 @@ def talker():
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
                 break
+
 
 if __name__ == '__main__':
     try:
