@@ -43,42 +43,31 @@ class Dataloader:
             dataset_root = "/media/olorin/Documentos/datasets/"
 
         # Detects which dataset was selected and creates the 'datasetObj'.
-        self.selectedDataset = args.dataset
-        # print(selectedDataset)
+        # print(args.dataset)
 
-        if self.selectedDataset == 'apolloscape':
+        if args.dataset == 'apolloscape':
             dataset_path = dataset_root + "apolloscape/data/"
-            self.datasetObj = Apolloscape(dataset_path=dataset_path, name=self.selectedDataset, height=2710, width=3384, max_depth=None)
+            self.datasetObj = Apolloscape(dataset_path=dataset_path, name=args.dataset, height=2710, width=3384, max_depth=None)
 
-        elif self.selectedDataset == 'kittidepth':
+        elif args.dataset == 'kittidepth':
             dataset_path = dataset_root + "kitti/"
-            self.datasetObj = KittiDepth(dataset_path=dataset_path, name=self.selectedDataset, height=375, width=1242, max_depth=80.0)
+            self.datasetObj = KittiDepth(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=80.0)
 
-        elif self.selectedDataset == 'kittidiscrete' or \
-             self.selectedDataset == 'kittidiscrete_city' or \
-             self.selectedDataset == 'kittidiscrete_residential' or \
-             self.selectedDataset == 'kittidiscrete_road' or \
-             self.selectedDataset == 'kittidiscrete_campus' or \
-             self.selectedDataset == 'kittidiscrete_person':
+        elif args.dataset.split('_')[0] == 'kittidiscrete':
             dataset_path = dataset_root + "kitti/raw_data/"
-            self.datasetObj = KittiDiscrete(dataset_path=dataset_path, name=self.selectedDataset, height=375, width=1242, max_depth=None)
+            self.datasetObj = KittiDiscrete(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=None)
 
-        elif self.selectedDataset == 'kitticontinuous' or \
-             self.selectedDataset == 'kitticontinuous_city' or \
-             self.selectedDataset == 'kitticontinuous_residential' or \
-             self.selectedDataset == 'kitticontinuous_road' or \
-             self.selectedDataset == 'kitticontinuous_campus' or \
-             self.selectedDataset == 'kitticontinuous_person':
+        elif args.dataset.split('_')[0] == 'kitticontinuous':
             dataset_path = dataset_root + "kitti/raw_data/"
-            self.datasetObj = KittiContinuous(dataset_path=dataset_path, name=self.selectedDataset, height=375, width=1242, max_depth=85.0)
+            self.datasetObj = KittiContinuous(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=85.0)
 
-        elif self.selectedDataset == 'nyudepth':
+        elif args.dataset == 'nyudepth':
             dataset_path = dataset_root + "nyu-depth-v2/data/images/"
-            self.datasetObj = NyuDepth(dataset_path=dataset_path, name=self.selectedDataset, height=480, width=640, max_depth=None)
+            self.datasetObj = NyuDepth(dataset_path=dataset_path, name=args.dataset, height=480, width=640, max_depth=None)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "
-                  "Check the list of supported datasets." % self.selectedDataset)
+                  "Check the list of supported datasets." % args.dataset)
             sys.exit()
 
         # Collects Dataset Info
