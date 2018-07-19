@@ -14,17 +14,6 @@ LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
-def np_maskOutInvalidPixels(y, y_):
-    condition = y_ <= 0
-    idx_i, idx_j = np.where(condition)
-
-    y_masked = np.copy(y)
-    for k in range(0, len(idx_i)):
-        y_masked[idx_i[k], idx_j[k]] = 0.0  # Predictions with labels equal to zero are set to zero.
-
-    return y_masked
-
-
 def tf_maskOutInvalidPixels(tf_pred, tf_labels):
     # Identify Pixels to be masked out.
     tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
