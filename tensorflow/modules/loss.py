@@ -45,7 +45,7 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
 def np_MSE(y, y_):
     numPixels = y_.size
 
-    return np.square(y_ - y) / numPixels  # MSE calculated for each pixel
+    return np.square(y_ - y)
 
 
 def tf_MSE(tf_y, tf_y_, valid_pixels=True):
@@ -60,7 +60,7 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
     tf_npixels = tf.cast(tf.size(tf_y_), tf.float32)
 
     # Loss
-    mse = (tf.reduce_sum(tf.square(tf_y_ - tf_y)) / tf_npixels)
+    mse = tf.div(tf.reduce_sum(tf.square(tf_y_ - tf_y)), tf_npixels)
 
     return loss_name, mse
 
@@ -73,11 +73,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 
     # C Constant Calculation
     tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
-
-    # TODO: Devo utilizar as operações pelo tensorflow? 1 e 3 funcionam
-    tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
-    # tf_c = tf.multiply(tf.constant(0.2), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
-    # tf_c = tf.multiply(tf.Variable(0.2, trainable=False), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
+    tf_c = tf.multiply(tf.constant(0.2), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
 
     # Mask Out
     if valid_pixels:
@@ -88,8 +84,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
         tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
 
     # Loss
-    tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
-                             (tf.square(tf_abs_error) + tf.square(tf_c)) / (2 * tf_c))
+    tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error, tf.div((tf.square(tf_abs_error) + tf.square(tf_c)), tf.multiply(tf.constant(2.0), tf_c)))
 
     tf_loss = tf.reduce_sum(tf_berHu_loss)
 
@@ -160,9 +155,9 @@ def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
 
     # Loss
     tf_npixels = tf.cast(tf.size(tf_d), tf.float32)
-    mean_term = (tf.reduce_sum(tf.square(tf_d)) / tf_npixels)
-    variance_term = ((gamma / tf.square(tf_npixels)) * tf.square(tf.reduce_sum(tf_d)))
-    grads_term = (tf.reduce_sum(tf.square(tf_gx_d)) + tf.reduce_sum(tf.square(tf_gy_d))) / tf_npixels
+    mean_term = tf.div(tf.reduce_sum(tf.square(tf_d)), tf_npixels)
+    variance_term = tf.multiply(tf.div(gamma, tf.square(tf_npixels)), tf.square(tf.reduce_sum(tf_d)))
+    grads_term = tf.div((tf.reduce_sum(tf.square(tf_gx_d)) + tf.reduce_sum(tf.square(tf_gy_d))), tf_npixels)
 
     tf_loss_d = mean_term - variance_term + grads_term
 
