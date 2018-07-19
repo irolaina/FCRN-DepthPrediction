@@ -13,7 +13,6 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
-# [Train] FIXME: Early Stopping
 # [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'silog'
 
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
@@ -22,8 +21,9 @@
 # [Test] FIXME: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
+# [Train] FIXME: Early Stopping parece não disparar.
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
-# [All] TODO: Devo continuar usando tf.image.resize_images(), há relatos desta função ser bugada
+# [All] TODO: Devo continuar usando tf.image.resize_images()? Há relatos desta função ser bugada
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
