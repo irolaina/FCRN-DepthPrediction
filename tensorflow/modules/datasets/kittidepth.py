@@ -14,6 +14,7 @@
 # valid(u,v) = I(u,v)>0;
 # -----
 
+
 # ===========
 #  Libraries
 # ===========
@@ -24,7 +25,7 @@ import time
 import numpy as np
 
 from ..filenames import FilenamesHandler
-from ..size import Size
+from .dataset import Dataset
 
 
 # ==================
@@ -40,18 +41,9 @@ from ..size import Size
 # ===================
 #  Class Declaration
 # ===================
-class KittiDepth(FilenamesHandler):
-    def __init__(self, dataset_root, name):
-        super().__init__()
-        self.dataset_path = dataset_root + "kitti/"
-
-        self.name = name
-
-        self.image_size = Size(375, 1242, 3)
-        self.depth_size = Size(375, 1242, 1)
-
-        # Max Depth to limit predictions
-        self.max_depth = 80.0
+class KittiDepth(Dataset, FilenamesHandler):
+    def __init__(self, *args, **kwargs):
+        super(KittiDepth, self).__init__(*args, **kwargs)
 
         print("[Dataloader] KittiDepth object created.")
 
@@ -66,17 +58,7 @@ class KittiDepth(FilenamesHandler):
         file = 'data/' + self.name + '_' + mode + '.txt'
 
         if os.path.exists(file):
-            timer = -time.time()
-            data = self.loadList(file)
-
-            # Parsing Data
-            image_filenames = list(data[:, 0])
-            depth_filenames = list(data[:, 1])
-
-            image_filenames = [self.dataset_path + image for image in image_filenames]
-            depth_filenames = [self.dataset_path + depth for depth in depth_filenames]
-            timer += time.time()
-            print('time:', timer, 's\n')
+            image_filenames, depth_filenames = self.loadInputList(file, self.dataset_path)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
@@ -122,7 +104,16 @@ class KittiDepth(FilenamesHandler):
                         depth_filenames.append(depth_filenames_tmp[j])
 
             n2, m2 = len(image_filenames), len(depth_filenames)
-            assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
+
+            n2 = 1
+            m2 = 3
+
+            if not n2 == m2:
+                print("[AssertionError] Length must be equal!")
+                raise AssertionError()
+
+            input("aki")
+
             print("time: %f s" % (time.time() - start))
 
             # Shuffles

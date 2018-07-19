@@ -17,8 +17,7 @@ for i, folder in enumerate(folders):
 
     detected = "!!!" if len(files_hilbert) != len(files_image) else ''
 
-    print(i, folder, "\t%d/%d\t%s"  % (len(files_hilbert), len(files_image), detected))
-
+    print(i, folder, "\t%d/%d\t%s" % (len(files_hilbert), len(files_image), detected))
 
 # ======================================================================================= #
 #  Check if KittiDiscrete/KittiContinuous have the same number of images than KittiDepth  #
@@ -30,7 +29,7 @@ root_folder_hilbert = "/home/nicolas/remote/olorin_root/media/olorin/Documentos/
 
 # Finds input images and labels inside list of folders.
 folders_depth = glob.glob(root_folder_depth)
-folders_hilbert = glob.glob(root_folder_hilbert+"*/")
+folders_hilbert = glob.glob(root_folder_hilbert + "*/")
 
 for i, folder in enumerate(folders_depth):
     os.chdir(folder)
@@ -50,6 +49,6 @@ for i, folder in enumerate(folders_depth):
 
     detected = "!!!" if len(files_hilbert) - 10 != len(files_depth) else ''
 
-    print(i, folder, "\t%d/%d\t%s"  % (len(files_hilbert), len(files_depth), detected))
+    print(i, folder, "\t%d/%d\t%s" % (len(files_hilbert), len(files_depth), detected))
 
 print("Done.")

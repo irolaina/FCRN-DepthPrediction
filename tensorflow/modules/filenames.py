@@ -3,6 +3,7 @@
 # ===========
 import os
 import sys
+import time
 
 import numpy as np
 
@@ -22,10 +23,11 @@ import numpy as np
 # ===================
 class FilenamesHandler(object):
     def __init__(self):
-        pass
+        self.image_filenames = []
+        self.depth_filenames = []
 
     @staticmethod
-    def loadList(filename):
+    def loadInputList(filename, dataset_path):
         print("\n[Dataloader] Loading '%s'..." % filename)
         try:
             data = np.genfromtxt(filename, dtype='str', delimiter='\t')
@@ -34,7 +36,14 @@ class FilenamesHandler(object):
             print("[OSError] Could not find the '%s' file." % filename)
             sys.exit()
 
-        return data
+        # Parsing Data
+        image_filenames = list(data[:, 0])
+        depth_filenames = list(data[:, 1])
+
+        image_filenames = join_dataset_path(image_filenames, dataset_path)
+        depth_filenames = join_dataset_path(depth_filenames, dataset_path)
+
+        return image_filenames, depth_filenames
 
     @staticmethod
     def saveList(image_filenames, depth_filenames, name, mode):
@@ -51,3 +60,12 @@ class FilenamesHandler(object):
         np.savetxt(save_file_path, filenames, fmt='%s', delimiter='\t')
 
         print("\n[Dataset] '%s' file saved." % save_file_path)
+
+
+def join_dataset_path(filenames, dataset_path):
+    timer = -time.time()
+    filenames = [dataset_path + depth for depth in filenames]
+    timer += time.time()
+    print('time:', timer, 's\n')
+
+    return filenames

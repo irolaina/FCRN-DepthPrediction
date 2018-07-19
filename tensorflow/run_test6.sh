@@ -10,17 +10,17 @@ STEPS=300000
 # python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s apolloscape --px all   --loss silog --max_steps ${STEPS} --ldecay --l2norm --data_aug
 
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px valid --loss mse   --max_steps ${STEPS} --ldecay --l2norm --data_aug
-python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px valid --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug
+#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px valid --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px valid --loss silog --max_steps ${STEPS} --ldecay --l2norm --data_aug
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px all   --loss mse   --max_steps ${STEPS} --ldecay --l2norm --data_aug
-#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px all   --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug  # Doesn't converge!
+python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px all   --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug  # Doesn't converge!
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidepth --px all   --loss silog --max_steps ${STEPS} --ldecay --l2norm --data_aug
 
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px valid --loss mse   --max_steps ${STEPS} --ldecay --l2norm --data_aug
-python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px valid --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug
+#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px valid --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px valid --loss silog --max_steps ${STEPS} --ldecay --l2norm --data_aug
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px all   --loss mse   --max_steps ${STEPS} --ldecay --l2norm --data_aug
-#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px all   --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug  # Doesn't converge!
+python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px all   --loss berhu --max_steps ${STEPS} --ldecay --l2norm --data_aug  # Doesn't converge!
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete --px all   --loss silog --max_steps ${STEPS} --ldecay --l2norm --data_aug
 
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss mse   --max_steps ${STEPS} --ldecay --l2norm --data_aug

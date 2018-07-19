@@ -58,8 +58,8 @@ class Test:
             # tf_depth.set_shape(output_size.getSize())
 
             # Downsizes Input and Depth Images
-            tf_image_resized = tf.image.resize_images(tf_image, [self.input_size.height, self.input_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
-            tf_depth_resized = tf.image.resize_images(tf_depth, [self.output_size.height, self.output_size.width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+            tf_image_resized = tf.image.resize_images(tf_image, [self.input_size.height, self.input_size.width], method=tf.image.ResizeMethod.AREA, align_corners=True)
+            tf_depth_resized = tf.image.resize_images(tf_depth, [self.output_size.height, self.output_size.width], method=tf.image.ResizeMethod.AREA, align_corners=True)
 
             # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
             tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose

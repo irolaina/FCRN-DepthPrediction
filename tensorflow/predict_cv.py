@@ -8,7 +8,6 @@
 #  Libraries
 # ===========
 import argparse
-import glob
 import os
 import sys
 
@@ -17,6 +16,7 @@ import numpy as np
 import tensorflow as tf
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
+from modules.utils import detect_available_models
 
 # ==================
 #  Global Variables
@@ -36,11 +36,11 @@ def argumentHandler():
     return parser.parse_args()
 
 
-def circular_counter(max):
+def circular_counter(max_value):
     """helper function that creates an eternal counter till a max value"""
     x = 0
     while True:
-        if x == max:
+        if x == max_value:
             x = 0
         x += 1
         yield x
@@ -79,14 +79,7 @@ class CvTimer(object):
 def main():
     args = argumentHandler()
 
-    if args.model_path == '':
-        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")
-
-        for i, model in enumerate(found_models):
-            print(i, model)
-
-        selected_model_id = input("\nSelect Model: ")
-        args.model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
+    args.model_path = detect_available_models(args)
 
     timer = CvTimer()
 
@@ -115,7 +108,7 @@ def main():
     # tf_image_float32 = tf.cast(input_node, tf.float32)
     tf_image_float32 = tf.image.convert_image_dtype(input_node, tf.float32)
 
-    with tf.variable_scope('model'): # Disable for running original models!!!
+    with tf.variable_scope('model'):  # Disable for running original models!!!
         # Construct the network
         net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
 
@@ -142,26 +135,21 @@ def main():
         # Use to load from npy file
         # net.load(args.model_path, sess)
 
-        isFirstTime = True
-        success = True
         count = 0
         while True:
             # Capture frame-by-frame
-            success, frame = cap.read()
-            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_NEAREST)
+            _, frame = cap.read()
+            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
 
             # Evalute the network for the given image
             try:
                 pred, pred_50, pred_80 = sess.run([tf_pred, tf_pred_50, tf_pred_80], feed_dict={input_node: frame})
-                pred_50_uint8 = cv2.convertScaleAbs(pred_50[0])
-                pred_80_uint8 = cv2.convertScaleAbs(pred_80[0])
                 pred_50_uint8_scaled = cv2.convertScaleAbs(pred_50[0] * (255 / np.max(pred[0])))
                 pred_80_uint8_scaled = cv2.convertScaleAbs(pred_80[0] * (255 / np.max(pred[0])))
                 cv2.imshow('pred_50 (scaled)', pred_50_uint8_scaled)
                 cv2.imshow('pred_80 (scaled)', pred_80_uint8_scaled)
             except UnboundLocalError:
                 pred = sess.run(tf_pred, feed_dict={input_node: frame})
-
 
             # Debug
             # print(frame)
@@ -173,9 +161,10 @@ def main():
 
             # Image Processing
             pred_uint8 = cv2.convertScaleAbs(pred[0])
-            pred_uint8_scaled = cv2.convertScaleAbs(pred[0]*(255/np.max(pred[0])))
-            pred_jet = cv2.applyColorMap(255-pred_uint8_scaled, cv2.COLORMAP_JET)
+            pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+            pred_jet = cv2.applyColorMap(255 - pred_uint8_scaled, cv2.COLORMAP_JET)
             pred_hsv = cv2.applyColorMap(pred_uint8_scaled, cv2.COLORMAP_HSV)
+            pred_median = cv2.medianBlur(pred_uint8_scaled, 3)
 
             pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
             cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
@@ -210,6 +199,7 @@ def main():
             cv2.imshow('pred_jet', pred_jet_resized)
             cv2.imshow('pred (scaled)', pred_uint8_scaled)
             cv2.imshow('pred_hsv (scaled)', pred_hsv_resized)
+            cv2.imshow('Median Filter', pred_median)
 
             # Save Images
             if SAVE_IMAGES:

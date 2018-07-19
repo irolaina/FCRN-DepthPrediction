@@ -36,11 +36,15 @@ Kitti Depth Prediction:
 
 # Real-Time Prediction using OpenCV:
 
-    python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4
-    python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor2.mp4
+Runs the specified model:
 
-    python3 predict_cv.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/drone_indoor.mp4 --gpu 1 2> tmp/error.txt
-    python3 predict_cv.py output/fcrn/kitticontinuous/all_px/berhu/2018-06-29_17-59-58/restore/model.fcrn ../misc/outdoor_dubai_city.mp4
+    python3 predict_cv.py -r ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt -i ../misc/drone_indoor.mp4
+    python3 predict_cv.py -r output/fcrn/kitticontinuous/all_px/berhu/2018-06-29_17-59-58/restore/model.fcrn ../misc/outdoor_dubai_city.mp4
+
+
+Detects and lists the available models:
+
+    python3 predict_cv.py -i ../misc/drone_indoor.mp4 --gpu 1
 
 Encode Video:
 
@@ -69,3 +73,21 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
 2) Use of SAME boundary conditions in all convolution and pooling ops.
 3) Use align_corners=True when upsampling feature maps with bilinear interpolation.
 4) Use of inputs with height/width equal to a multiple of the output_stride, plus one (for example, when the CNN output stride is 8, use height or width equal to 8 * n + 1, for some n, e.g., image HxW set to 321x513).
+
+# ROS Bag and Network Prediction Integration
+
+1.) Generate ROS Bag file using Kitti2bag:
+
+    $ python2 kitti2bag.py -t 2011_09_26 -r 0001 raw_synced
+
+2.) Run the following ROS nodes:
+
+    $ roscore   
+    $ rosbag play -l kitti_2011_09_26_drive_0001_synced.bag
+    $ python2 ros_listener_image.py
+    $ rviz
+
+Optional:     
+    
+    $ rostopic list
+    $ rqt_graph

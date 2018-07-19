@@ -47,7 +47,7 @@ import time
 import numpy as np
 
 from ..filenames import FilenamesHandler
-from ..size import Size
+from .dataset import Dataset
 
 
 # ==================
@@ -63,18 +63,9 @@ from ..size import Size
 # ===================
 #  Class Declaration
 # ===================
-class NyuDepth(FilenamesHandler):
-    def __init__(self, dataset_root, name):
-        super().__init__()
-        self.dataset_path = dataset_root + "nyu-depth-v2/data/images/"
-
-        self.name = name
-
-        self.image_size = Size(480, 640, 3)
-        self.depth_size = Size(480, 640, 1)
-
-        # Max Depth to limit predictions
-        self.max_depth = 10.0
+class NyuDepth(Dataset, FilenamesHandler):
+    def __init__(self, *args, **kwargs):
+        super(NyuDepth, self).__init__(*args, **kwargs)
 
         print("[Dataloader] NyuDepth object created.")
 
@@ -85,17 +76,7 @@ class NyuDepth(FilenamesHandler):
         file = 'data/' + self.name + '_' + mode + '.txt'
 
         if os.path.exists(file):
-            data = self.loadList(file)
-
-            # Parsing Data
-            image_filenames = list(data[:, 0])
-            depth_filenames = list(data[:, 1])
-
-            timer = -time.time()
-            image_filenames = [self.dataset_path + image for image in image_filenames]
-            depth_filenames = [self.dataset_path + depth for depth in depth_filenames]
-            timer += time.time()
-            print('time:', timer, 's\n')
+            image_filenames, depth_filenames = self.loadInputList(file, self.dataset_path)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
@@ -134,7 +115,9 @@ class NyuDepth(FilenamesHandler):
                         depth_filenames.append(depth_filenames_tmp[j])
 
             n2, m2 = len(image_filenames), len(depth_filenames)
-            assert (n2 == m2), "Houston we've got a problem."  # Length must be equal!
+            if not n2 == m2:
+                print("[AssertionError] Length must be equal!")
+                raise AssertionError()
             print("time: %f s" % (time.time() - start))
 
             # Shuffles

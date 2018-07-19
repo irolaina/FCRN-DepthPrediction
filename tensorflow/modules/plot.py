@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import modules.loss as loss
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+
 # ==================
 #  Global Variables
 # ==================
@@ -181,7 +182,6 @@ class Plot(object):
             self.cax6.set_data(pred_50)
             self.cax7.set_data(pred_80)
             # self.cax7.set_data(predMSE)
-
 
             plt.draw()
 

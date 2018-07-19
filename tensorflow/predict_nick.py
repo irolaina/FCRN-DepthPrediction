@@ -14,6 +14,7 @@
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
 # [Train] FIXME: Early Stopping
+# [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'silog'
 
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
@@ -59,13 +60,14 @@ from skimage import io, exposure, img_as_uint
 
 # Custom Libraries
 import modules.args as argsLib
-import modules.metrics_monodepth as MonodepthMetrics
+import modules.third_party.monodepth.utils.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.test import Test
 from modules.utils import total_size
+from modules.utils import detect_available_models
 
 # ==========================
 #  [Train] Framework Config
@@ -94,6 +96,7 @@ io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
+running = True
 
 
 # ===========
@@ -138,7 +141,7 @@ def predict(model_data_path, image_path):
     print('[%s] Selected mode: Predict' % appName)
 
     # Default input size
-    batch_size, height, width, nchannels = 1, 228, 304, 3
+    batch_size, height, width = 1, 228, 304
 
     # Read image (uint8)
     img = Image.open(image_path)
@@ -151,7 +154,7 @@ def predict(model_data_path, image_path):
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     # tf_image_float32 = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
     tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
-    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=True)
+    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.AREA, align_corners=True)
 
     # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
@@ -204,10 +207,9 @@ def predict(model_data_path, image_path):
         for nrows, ncols, plot_number in X:
             axes.append(fig.add_subplot(nrows, ncols, plot_number))
 
-        img1 = axes[0].imshow(image)
-        img2 = axes[1].imshow(image_resized_uint8)
-        img4 = axes[2].imshow(pred[0, :, :, 0])
-        # img4 = axes[3].imshow(pred[0, :, :, 0], interpolation='nearest')
+        img0 = axes[0].imshow(image)
+        img1 = axes[1].imshow(image_resized_uint8)
+        img2 = axes[2].imshow(pred[0, :, :, 0])
 
         axes[0].set_title('Image')
         axes[1].set_title('Resized')
@@ -216,7 +218,7 @@ def predict(model_data_path, image_path):
         # Fix Colorbar size
         divider = make_axes_locatable(axes[2])
         cax = divider.append_axes("right", size="5%", pad=0.15)
-        fig.colorbar(img4, cax=cax)
+        fig.colorbar(img2, cax=cax)
 
         plt.show()
 
@@ -434,6 +436,8 @@ def test(args):
 
     # Local Variables
     numSamples = None
+
+    args.model_path = detect_available_models(args)
 
     # -----------------------------------------
     #  Network Testing Model - Importing Graph

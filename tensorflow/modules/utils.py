@@ -1,6 +1,9 @@
 # ===========
 #  Libraries
 # ===========
+import glob
+import os
+
 from sys import getsizeof, stderr
 from itertools import chain
 from collections import deque
@@ -55,3 +58,17 @@ def total_size(o, handlers=None, verbose=False):
         return s
 
     return sizeof(o)
+
+
+def detect_available_models(args):
+    if args.model_path == '':
+        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")
+        found_models.sort()
+
+        for i, model in enumerate(found_models):
+            print(i, model)
+
+        selected_model_id = input("\nSelect Model: ")
+        selected_model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
+
+    return selected_model_path
