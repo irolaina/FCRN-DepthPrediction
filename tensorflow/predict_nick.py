@@ -445,7 +445,7 @@ def test(args):
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, numSamples = data.getTestData()
+        _, _, _, _, numSamples = data.getTestData(test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
         data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames, numSamples = data.getTrainData()
 
@@ -469,8 +469,8 @@ def test(args):
 
         timer = -time.time()
         pred_list, gt_list = [], []
-        for i in range(numSamples):
-        # for i in range(5): # Only for testing!
+        # for i in range(numSamples):
+        for i in range(5): # Only for testing!
 
             timer2 = -time.time()
 
@@ -540,7 +540,7 @@ def test(args):
         # =========
         # Calculate Metrics
         if data.test_depth_filenames:
-            print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
+            print("[Network/Testing] Calculating Metrics based on Test Predictions...")
 
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
