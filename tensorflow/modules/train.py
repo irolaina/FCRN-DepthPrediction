@@ -35,7 +35,6 @@ class Train:
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
-            # FIXME: Não está funcionando
             if enableDataAug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
