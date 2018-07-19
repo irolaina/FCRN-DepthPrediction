@@ -3,9 +3,7 @@
 # ===========
 import sys
 
-import numpy as np
 import tensorflow as tf
-from skimage import transform
 
 from modules.datasets.apolloscape import Apolloscape
 from modules.datasets.kitticontinuous import KittiContinuous
