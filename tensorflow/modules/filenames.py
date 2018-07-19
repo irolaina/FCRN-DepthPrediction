@@ -27,7 +27,7 @@ class FilenamesHandler(object):
         self.depth_filenames = []
 
     @staticmethod
-    def loadInputList(filename, dataset_path):
+    def read_text_file(filename, dataset_path):
         print("\n[Dataloader] Loading '%s'..." % filename)
         try:
             data = np.genfromtxt(filename, dtype='str', delimiter='\t')

@@ -75,7 +75,7 @@ class NyuDepth(Dataset, FilenamesHandler):
         file = 'data/' + self.name + '_' + mode + '.txt'
 
         if os.path.exists(file):
-            image_filenames, depth_filenames = self.loadInputList(file, self.dataset_path)
+            image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
