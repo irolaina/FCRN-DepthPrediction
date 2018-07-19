@@ -1,23 +1,5 @@
 import numpy as np
-
-
-def compute_errors(pred, gt):
-    thr = np.maximum((gt / pred), (pred / gt))
-    d1 = (thr < 1.25).mean()
-    d2 = (thr < 1.25 ** 2).mean()
-    d3 = (thr < 1.25 ** 3).mean()
-
-    rmse = (gt - pred) ** 2
-    rmse = np.sqrt(rmse.mean())
-
-    rmse_log = (np.log(gt) - np.log(pred)) ** 2
-    rmse_log = np.sqrt(rmse_log.mean())
-
-    abs_rel = np.mean(np.abs(gt - pred) / gt)
-
-    sq_rel = np.mean(((gt - pred) ** 2) / gt)
-
-    return abs_rel, sq_rel, rmse, rmse_log, d1, d2, d3
+from .evaluation_utils import *
 
 
 def evaluate(pred_array, gt_array):
@@ -110,7 +92,6 @@ def evaluate(pred_array, gt_array):
         #     d1_all[i] = 100.0 * bad_pixels.sum() / mask.sum()
 
         mask = gt_depth > 0
-
 
         abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(pred_depth[mask], gt_depth[mask])
 
