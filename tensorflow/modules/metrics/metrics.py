@@ -58,16 +58,15 @@ def evaluate(pred_array, gt_array):
 # ------------------- #
 def np_maskOutInvalidPixels(y, y_):
     # Index Vectors for Valid Pixels
-    nvalids_idx = np.where(y_ > 0)
+    mask = np.where(y_ > 0)
 
     # Masking Out Invalid Pixels!
-    y = y[nvalids_idx[0], nvalids_idx[1], nvalids_idx[2]]
-    y_ = y_[nvalids_idx[0], nvalids_idx[1], nvalids_idx[2]]
+    y = y[mask]
+    y_ = y_[mask]
 
-    npixels_valid = len(nvalids_idx[0])
+    npixels_valid = len(mask)
 
-    return y, y_, nvalids_idx, npixels_valid
-
+    return y, y_, mask, npixels_valid
 
 # ----------- #
 #  Threshold  #
