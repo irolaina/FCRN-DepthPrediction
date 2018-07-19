@@ -20,3 +20,5 @@ class Dataset(FilenamesHandler):
 
         self.image_size = Size(height, width, 3)
         self.depth_size = Size(height, width, 1)
+
+        print("[Dataloader] %s object created." % self.name)

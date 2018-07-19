@@ -45,7 +45,6 @@ class KittiDepth(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
         super(KittiDepth, self).__init__(*args, **kwargs)
 
-        print("[Dataloader] KittiDepth object created.")
 
     def getFilenamesLists(self, mode):
         image_filenames = []

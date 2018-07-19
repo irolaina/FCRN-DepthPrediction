@@ -48,7 +48,6 @@ class Apolloscape(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
         super(Apolloscape, self).__init__(*args, **kwargs)
 
-        print("[Dataloader] Apolloscape object created.")
 
     def getFilenamesLists(self, mode):
         image_filenames = []

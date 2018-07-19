@@ -44,7 +44,6 @@ class KittiContinuous(Dataset):
     def __init__(self, *args, **kwargs):
         super(KittiContinuous, self).__init__(*args, **kwargs)
 
-        print("[Dataloader] KittiContinuous object created.")  # TODO: Acredito que possa ser passado pra classes dataset
 
     def getFilenamesLists(self, mode):
         file = 'data/' + self.name + '_' + mode + '.txt'

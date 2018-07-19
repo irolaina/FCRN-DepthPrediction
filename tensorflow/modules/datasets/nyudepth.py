@@ -67,7 +67,6 @@ class NyuDepth(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
         super(NyuDepth, self).__init__(*args, **kwargs)
 
-        print("[Dataloader] NyuDepth object created.")
 
     def getFilenamesLists(self, mode):
         image_filenames = []

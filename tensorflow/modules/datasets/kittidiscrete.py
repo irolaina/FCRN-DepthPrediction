@@ -45,7 +45,6 @@ class KittiDiscrete(Dataset, FilenamesHandler):
     def __init__(self, *args, **kwargs):
         super(KittiDiscrete, self).__init__(*args, **kwargs)
 
-        print("[Dataloader] KittiDiscrete object created.")
 
     def getFilenamesLists(self, mode):
         image_filenames = []
