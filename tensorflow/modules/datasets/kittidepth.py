@@ -24,7 +24,6 @@ import time
 
 import numpy as np
 
-from ..filenames import FilenamesHandler
 from .dataset import Dataset
 
 
@@ -41,24 +40,25 @@ from .dataset import Dataset
 # ===================
 #  Class Declaration
 # ===================
-class KittiDepth(Dataset, FilenamesHandler):
+class KittiDepth(Dataset):
     def __init__(self, *args, **kwargs):
         super(KittiDepth, self).__init__(*args, **kwargs)
 
 
-    def getFilenamesLists(self, mode):
-        image_filenames = []
-        depth_filenames = []
+    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
+        file = self.get_file_path(mode, test_split, test_file_path)
 
         # Workaround # FIXME: Temporary
         if mode == 'test':
             mode = 'val'
 
-        file = 'data/' + self.name + '_' + mode + '.txt'
-
         if os.path.exists(file):
             image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
         else:
+            # TODO: Acredito que dê pra remover as variaveis abaixo
+            image_filenames = []
+            depth_filenames = []
+
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
@@ -131,4 +131,4 @@ class KittiDepth(Dataset, FilenamesHandler):
 
             self.saveList(image_filenames_dump, depth_filenames_dump, self.name, mode)
 
-        return image_filenames, depth_filenames
+        return image_filenames, depth_filenames, file

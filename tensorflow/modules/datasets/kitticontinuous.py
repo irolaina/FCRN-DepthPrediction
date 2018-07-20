@@ -45,13 +45,17 @@ class KittiContinuous(Dataset):
         super(KittiContinuous, self).__init__(*args, **kwargs)
 
 
-    def getFilenamesLists(self, mode):
-        file = 'data/' + self.name + '_' + mode + '.txt'
+    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
+        file = self.get_file_path(mode, test_split, test_file_path)
         ratio = 0.8
 
         if os.path.exists(file):
             image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
         else:
+            # TODO: Acredito que dê pra remover as variaveis abaixo
+            image_filenames = []
+            depth_filenames = []
+
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
@@ -151,4 +155,4 @@ class KittiContinuous(Dataset):
 
             self.saveList(image_filenames_dump, depth_filenames_dump, self.name, mode)
 
-        return image_filenames, depth_filenames
+        return image_filenames, depth_filenames, file
