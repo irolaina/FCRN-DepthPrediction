@@ -25,10 +25,6 @@ def argumentHandler():
     parser.add_argument('--model_name', type=str, help="Select Network topology: 'fcrn', etc",
                         default='fcrn')
 
-    parser.add_argument('--data_path', type=str,
-                        help="Set relative path to the input dataset <filename>.pkl file",
-                        default='/media/olorin/Documentos/datasets/')
-
     parser.add_argument('-s', '--dataset', action='store',
                         help="Selects the dataset ['apolloscape', 'kittidepth', 'kittidiscrete', 'kitticontinuous', 'kitticontinuous_residential', 'nyudepth']",
                         default='')
