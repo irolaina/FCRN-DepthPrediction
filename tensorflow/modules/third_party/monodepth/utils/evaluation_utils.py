@@ -141,7 +141,7 @@ def read_calib_file(path):
                 # try to cast to float array
                 try:
                     # data[key] = np.array(map(float, value.split(' '))) # Python2
-                    data[key] = np.array([float(elem) for elem in value.split(' ')]) # Python3
+                    data[key] = np.array([float(elem) for elem in value.split(' ')])  # Python3
                 except ValueError:
                     # casting error: data[key] already eq. value, so pass
                     pass
@@ -212,7 +212,17 @@ def generate_depth_map(calib_dir, velo_file_name, im_shape, cam=2, interp=False,
 
     # find the duplicate points and choose the closest depth
     inds = sub2ind(depth.shape, velo_pts_im[:, 1], velo_pts_im[:, 0])
-    dupe_inds = [item for item, count in Counter(inds).iteritems() if count > 1]
+    dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
+
+    # print(cam2cam)
+    # print(velo2cam)
+    # print('inds:', inds)
+    # print(inds.shape, inds.dtype)
+    # print('Counter(inds):', Counter(inds))
+    # print(Counter(inds).items())
+    # print(dupe_inds)
+    # input("generate_depth_map")
+
     for dd in dupe_inds:
         pts = np.where(inds == dd)[0]
         x_loc = int(velo_pts_im[pts[0], 0])
