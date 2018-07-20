@@ -91,3 +91,23 @@ Optional:
     
     $ rostopic list
     $ rqt_graph
+
+# Run Coverage for Codacy Support 
+
+https://support.codacy.com/hc/en-us/articles/207279819-Coverage
+https://support.codacy.com/hc/en-us/articles/207279819-Coverage
+https://support.codacy.com/hc/en-us/articles/207312879-Generate-Coverage
+
+Setup:
+    pip install codacy-coverage
+    export CODACY_PROJECT_TOKEN=%Project_Token%
+
+Updating Codacy:
+
+    coverage run predict_nick.py -m train --machine nicolas -s kittidiscrete --px all --loss mse --max_steps 150000 --ldecay --l2norm --data_aug -t
+    coverage xml
+    python-codacy-coverage -r coverage.xml
+
+Use `coverage report` to report on the results:
+    
+    coverage report -m
