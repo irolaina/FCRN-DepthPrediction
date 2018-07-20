@@ -61,6 +61,9 @@ def argumentHandler():
     parser.add_argument('-v', '--show_valid_progress', action='store_true', help="Show Validation Progress Images",
                         default=False)
 
+    parser.add_argument('--test_split', type=str, help="Select the desired test split for State-of-art evaluation: 'eigen', 'kitti', etc",
+                        default='')
+
     parser.add_argument('--test_file_path', type=str, help="Evaluates the Model for the images speficied by test_file.txt file",
                         default='')
 
