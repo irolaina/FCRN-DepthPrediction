@@ -55,6 +55,7 @@ import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage import io, exposure, img_as_uint
+from tqdm import tqdm
 
 # Custom Libraries
 import modules.args as argsLib
@@ -90,7 +91,6 @@ SAVE_TEST_DISPARITIES = True    # Default: True
 # ==================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
-io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
@@ -445,7 +445,7 @@ def test(args):
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, numSamples = data.getTestData()
+        _, _, _, _, numSamples, args.test_file_path = data.getTestData(test_split=args.test_split, test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
         data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames, numSamples = data.getTrainData()
 
@@ -469,9 +469,10 @@ def test(args):
 
         timer = -time.time()
         pred_list, gt_list = [], []
-        for i in range(numSamples):
-        # for i in range(5): # Only for testing!
 
+        print("[Network/Testing] Generating Predictions...")
+        # numSamples = 5 # Only for testing!
+        for i in tqdm(range(numSamples)):
             timer2 = -time.time()
 
             # Evalute the network for the given image
@@ -514,7 +515,7 @@ def test(args):
 
             # Prints Testing Progress
             timer2 += time.time()
-            print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
+            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
             # break # Test
 
             # Show Results
@@ -540,14 +541,21 @@ def test(args):
         # =========
         # Calculate Metrics
         if data.test_depth_filenames:
-            print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
+            print("[Network/Testing] Calculating Metrics based on Test Predictions...")
 
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
 
+            print()
+            print('args.test_split:', args.test_split)
+            print('args.test_file_path:', args.test_file_path)
+            print('dataset_path:', data.datasetObj.dataset_path)
+            print()
+            # input("[Metrics] Press ENTER to start evaluation...") # TODO: Desativar?
+
             # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
             # myMetrics.evaluate(pred_array, gt_array) # FIXME:
-            MonodepthMetrics.evaluate(pred_array, gt_array)
+            MonodepthMetrics.evaluate(args, pred_array, gt_array, data.datasetObj.dataset_path)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
