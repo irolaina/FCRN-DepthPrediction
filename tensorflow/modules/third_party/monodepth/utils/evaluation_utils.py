@@ -66,6 +66,7 @@ def convert_disps_to_depths_kitti(gt_disparities, pred_disparities):
         pred_depths.append(pred_depth)
     return gt_depths, pred_depths, pred_disparities_resized
 
+# TODO: Acredito que esta função possa ser aprimorada
 def convert_gt_disps_to_depths_kitti(gt_disparities):
     gt_depths = []
 
@@ -76,6 +77,10 @@ def convert_gt_disps_to_depths_kitti(gt_disparities):
         mask = gt_disp > 0
 
         gt_depth = width_to_focal[width] * 0.54 / (gt_disp + (1.0 - mask))
+
+        # Workaround by Nick
+        mask = np.logical_and(gt_disp > 0.0, gt_depth)
+        gt_depth = gt_depth * mask
 
         gt_depths.append(gt_depth)
     return gt_depths
