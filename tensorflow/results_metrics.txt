@@ -1,3 +1,10 @@
-                                                                                    split,   abs_rel,     sq_rel,        rms,    log_rms,     d1_all,         d1,         d2,         d3
-output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn.meta  eigen,    0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
-output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn.meta  kitti,    0.1416,     0.8654,      5.396,      0.288,      0.000,      0.850,      0.954,      0.979
+                                                                                        split,   abs_rel,     sq_rel,        rms,    log_rms,     d1_all,         d1,         d2,         d3
+output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn.meta      eigen,    0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
+
+output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn.meta       kitti,    0.1035,     0.9231,      4.587,      0.178,      0.000,      0.889,      0.959,      0.983
+output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn.meta    kitti,    0.1225,     1.2004,      5.179,      0.197,      0.000,      0.868,      0.950,      0.978
+output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn.meta      kitti,    0.1416,     0.8654,      5.396,      0.288,      0.000,      0.850,      0.954,      0.979
+output/fcrn/kittidepth/valid_px/silog/2018-07-13_15-16-33/restore/model.fcrn.meta       kitti,    0.2279,     2.3579,      7.662,      0.390,      0.000,      0.668,      0.839,      0.916
+
+output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn.meta        nyudepth,    0.2692,     0.3002,      0.820,      0.299,      0.000,      0.594,      0.845,      0.943
+
