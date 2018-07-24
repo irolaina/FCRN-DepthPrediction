@@ -5,13 +5,13 @@ import cv2
 from .evaluation_utils import *
 from tqdm import tqdm
 
-def evaluate(args, pred_array, gt_array, args_gt_path): # TODO: Validar
+def evaluate(args, pred_array, gt_array, args_gt_path):
     # --------------------------------------------- #
     #  Generate Depth Maps for kitti, eigen splits  #
     # --------------------------------------------- #
     # pred_disparities = np.load(args.predicted_disp_path)
 
-    if args.test_split == 'kitti': # TODO: Validar
+    if args.test_split == 'kitti':
         num_samples = 200
 
         # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
@@ -19,14 +19,39 @@ def evaluate(args, pred_array, gt_array, args_gt_path): # TODO: Validar
         # gt_depths, pred_depths, pred_disparities_resized = convert_disps_to_depths_kitti(gt_disparities, pred_disparities)
         gt_depths = convert_gt_disps_to_depths_kitti(gt_disparities)
 
-        # TODO: Remover
-        gt_depths = gt_disparities
-        print(pred_array[0])
-        input("oi")
-        print(gt_depths[0])
-        input("oi2")
+        print('\n[Metrics] Generating depth maps...')
+        # num_samples = 5  # Only for testing!
+        for t_id in tqdm(range(num_samples)):
+            # Show the Disparity/Depth ground truths and the corresponding predictions for the evaluation images.
+            if False: # TODO: ativar pela flag -u
+                print("gt_disp:", gt_disparities[t_id])
+                print(np.min(gt_disparities[t_id]), np.max(gt_disparities[t_id]))
+                print()
+                print("gt_depth:", gt_depths[t_id])
+                print(np.min(gt_depths[t_id]), np.max(gt_depths[t_id]))
+                print()
+                print("pred:", pred_array[t_id])
+                print(np.min(pred_array[t_id]), np.max(pred_array[t_id]))
+                input()
 
-    elif args.test_split == 'eigen': # TODO: Validar
+                plt.figure(100)
+                plt.imshow(gt_disparities[t_id])
+                plt.title('gt_disp')
+
+                plt.figure(101)
+                plt.imshow(gt_depths[t_id].astype(np.uint8))
+                plt.title('gt_depth')
+
+                plt.figure(102)
+                plt.imshow(pred_array[t_id])
+                plt.title('pred')
+
+                plt.draw()
+                plt.pause(0.01)
+
+                input("Continue...")
+
+    elif args.test_split == 'eigen':
         num_samples = 697
         test_files = read_text_lines(args.test_file_path)
         gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args_gt_path)
@@ -53,16 +78,26 @@ def evaluate(args, pred_array, gt_array, args_gt_path): # TODO: Validar
             # pred_depths.append(depth_pred)
 
             # Show the corresponding generated Depth Map from the Stereo Pair.
-            # plt.figure(100)
-            # plt.imshow(depth.astype(np.uint8))
-            # plt.title('depth map')
-            #
-            # plt.figure(101)
-            # plt.imshow(imageio.imread(im_files[t_id]))
-            # plt.title('left')
-            #
-            # plt.draw()
-            # plt.pause(0.01)
+            if False:
+                print(depth)
+                input("depth")
+                print(pred_array[t_id])
+                input("pred")
+
+                plt.figure(100)
+                plt.imshow(imageio.imread(im_files[t_id]))
+                plt.title('image')
+
+                plt.figure(101)
+                plt.imshow(depth.astype(np.uint8))
+                plt.title('label')
+
+                plt.figure(102)
+                plt.imshow(pred_array[t_id])
+                plt.title('pred')
+
+                plt.draw()
+                plt.pause(0.01)
 
     else:
         num_samples = len(pred_array)
@@ -112,20 +147,25 @@ def evaluate(args, pred_array, gt_array, args_gt_path): # TODO: Validar
                 crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
                 mask = np.logical_and(mask, crop_mask)
 
-        if args.test_split == 'kitti': # TODO: Validar!
-            gt_disp = gt_disparities[i]
-            mask = gt_disp > 0
-            pred_disp = pred_disparities_resized[i]
+        if args.test_split == 'kitti':
+            # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
+            # gt_disp = gt_disparities[i]
+            # mask = gt_disp > 0
+            # pred_disp = pred_disparities_resized[i]
+            #
+            # disp_diff = np.abs(gt_disp[mask] - pred_disp[mask])
+            # bad_pixels = np.logical_and(disp_diff >= 3, (disp_diff / gt_disp[mask]) >= 0.05)
+            # d1_all[i] = 100.0 * bad_pixels.sum() / mask.sum()
 
-            disp_diff = np.abs(gt_disp[mask] - pred_disp[mask])
-            bad_pixels = np.logical_and(disp_diff >= 3, (disp_diff / gt_disp[mask]) >= 0.05)
-            d1_all[i] = 100.0 * bad_pixels.sum() / mask.sum()
+            mask = gt_depth > 0
+        else:
+            mask = gt_depth > 0
 
         abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask], pred_depth[mask])
         # abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask], gt_depth[mask]) # Only for Testing
 
         # Show gt/pred Images
-        if False:
+        if False: # TODO: Remover?
             plt.figure(102)
             plt.title('pred')
             plt.imshow(pred_depth)
@@ -137,6 +177,10 @@ def evaluate(args, pred_array, gt_array, args_gt_path): # TODO: Validar
             plt.draw()
             plt.pause(1)
 
+    # Save results on .txt file
+    # TODO: Implementar
+
+    # Display Results
     print()
     print("# ----------------- #")
     print("#  Metrics Results  #")
