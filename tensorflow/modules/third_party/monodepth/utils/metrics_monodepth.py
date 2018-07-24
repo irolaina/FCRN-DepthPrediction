@@ -177,9 +177,10 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             plt.draw()
             plt.pause(1)
 
-    # Save results on .txt file
     # TODO: Implementar
+    # Save results on .txt file
 
+    # TODO: adicionar split como informação
     # Display Results
     print()
     print("# ----------------- #")

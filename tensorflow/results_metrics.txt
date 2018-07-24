@@ -8,3 +8,9 @@ output/fcrn/kittidepth/valid_px/silog/2018-07-13_15-16-33/restore/model.fcrn.met
 
 output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn.meta        nyudepth,    0.2692,     0.3002,      0.820,      0.299,      0.000,      0.594,      0.845,      0.943
 
+
+                              rms,	  rel,	  d1,	  d2,	  d3,
+Make3D	                    8.734,	0.280,	60.1,   82.0,   92.6,
+Mancini et al (IROS 2016)	7.508,	  -  ,	31.8,	61.7,	81.3,
+Eigen et al (NIPS 2014)	    7.156,	0.190,	69.2,	89.9,	96.7,
+Sparse-to-Dense	            6.266,	0.208,	59.1,	90.0,	96.2,
