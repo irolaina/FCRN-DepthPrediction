@@ -54,7 +54,7 @@ import pyxhook
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from skimage import io, exposure, img_as_uint
+from skimage import exposure, img_as_uint
 from tqdm import tqdm
 
 # Custom Libraries
@@ -62,10 +62,9 @@ import modules.args as argsLib
 import modules.third_party.monodepth.utils.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
-from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.test import Test
-from modules.utils import total_size
+from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.utils import detect_available_models
 
 # ==========================
