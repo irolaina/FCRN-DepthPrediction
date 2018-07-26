@@ -46,9 +46,13 @@ class FilenamesHandler(object):
         return image_filenames, depth_filenames
 
     @staticmethod
-    def saveList(image_filenames, depth_filenames, name, mode):
+    def saveList(image_filenames, depth_filenames, name, mode, dataset_path):
+        # TODO: add comemnt
+        image_filenames_dump = [image.replace(dataset_path, '') for image in image_filenames]
+        depth_filenames_dump = [depth.replace(dataset_path, '') for depth in depth_filenames]
+
         # Column-Concatenation of Lists of Strings
-        filenames = list(zip(image_filenames, depth_filenames))
+        filenames = list(zip(image_filenames_dump, depth_filenames_dump))
         filenames = np.array(filenames)
 
         # Saving the 'filenames' variable to *.txt
