@@ -24,16 +24,6 @@ import os
 from .dataset import Dataset
 
 
-# ==================
-#  Global Variables
-# ==================
-
-
-# ===========
-#  Functions
-# ===========
-
-
 # ===================
 #  Class Declaration
 # ===================
