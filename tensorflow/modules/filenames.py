@@ -46,7 +46,8 @@ class FilenamesHandler(object):
         return image_filenames, depth_filenames
 
     @staticmethod
-    def search_pairs(image_filenames_tmp, depth_filenames_tmp, image_filenames_aux, depth_filenames_aux): # TODO: Preciso realmente ter essas duas variaveis? Podem ser unificadas?
+    def search_pairs(image_filenames_tmp, depth_filenames_tmp,
+                     image_filenames_aux, depth_filenames_aux):  # TODO: Preciso realmente ter essas duas variaveis? Podem ser unificadas?
         image_filenames = []
         depth_filenames = []
 

@@ -20,9 +20,6 @@
 # ===========
 import glob
 import os
-import time
-
-import numpy as np
 
 from .dataset import Dataset
 
@@ -43,7 +40,6 @@ from .dataset import Dataset
 class KittiDepth(Dataset):
     def __init__(self, *args, **kwargs):
         super(KittiDepth, self).__init__(*args, **kwargs)
-
 
     def getFilenamesLists(self, mode, test_split='', test_file_path=''):
         # Workaround # FIXME: Temporary
@@ -73,7 +69,7 @@ class KittiDepth(Dataset):
 
             # TODO: Add Comment
             image_filenames, depth_filenames, _, m2 = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,
-                                                                         image_filenames_aux, depth_filenames_aux)
+                                                                        image_filenames_aux, depth_filenames_aux)
 
             # Debug
             # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))

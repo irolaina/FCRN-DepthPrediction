@@ -20,7 +20,6 @@
 # ===========
 import glob
 import os
-import time
 
 import numpy as np
 
@@ -43,7 +42,6 @@ from .dataset import Dataset
 class KittiDiscrete(Dataset):
     def __init__(self, *args, **kwargs):
         super(KittiDiscrete, self).__init__(*args, **kwargs)
-
 
     def getFilenamesLists(self, mode, test_split='', test_file_path=''):
         file = self.get_file_path(mode, test_split, test_file_path)

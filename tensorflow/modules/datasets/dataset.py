@@ -23,7 +23,7 @@ class Dataset(FilenamesHandler):
 
         print("[Dataloader] %s object created." % self.name)
 
-    def get_file_path(self, mode, test_split, test_file_path): # TODO: change name
+    def get_file_path(self, mode, test_split, test_file_path):  # TODO: change name
         if test_split == 'eigen':
             file = 'modules/third_party/monodepth/utils/filenames/eigen_test_files.txt'
 
