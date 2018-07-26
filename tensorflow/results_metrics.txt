@@ -1,16 +1,17 @@
-                                                                                        split,   abs_rel,     sq_rel,        rms,    log_rms,     d1_all,         d1,         d2,         d3
-output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn.meta      eigen,    0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
+                                                                                          split,    abs_rel,     sq_rel,        rms,    log_rms,     d1_all,         d1,         d2,         d3
+	                                                                         Make3D,      kitti,      0.280,        -  ,      8.734,	    -  ,	    -  ,      0.601,      0.820,      0.926
+                                                          Mancini et al (IROS 2016),      kitti,        -  ,        -  ,      7.508,	    -  ,	    -  ,      0.318,      0.617,      0.813
+                                                            Eigen et al (NIPS 2014),      kitti,      0.190,        -  ,      7.156,	    -  ,	    -  ,      0.692,      0.899,      0.967
+                                                                    Sparse-to-Dense,      kitti,      0.208,        -  ,      6.266,	    -  ,	    -  ,      0.591,	  0.900,      0.962
 
-output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn.meta       kitti,    0.1035,     0.9231,      4.587,      0.178,      0.000,      0.889,      0.959,      0.983
-output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn.meta    kitti,    0.1225,     1.2004,      5.179,      0.197,      0.000,      0.868,      0.950,      0.978
-output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn.meta      kitti,    0.1416,     0.8654,      5.396,      0.288,      0.000,      0.850,      0.954,      0.979
-output/fcrn/kittidepth/valid_px/silog/2018-07-13_15-16-33/restore/model.fcrn.meta       kitti,    0.2279,     2.3579,      7.662,      0.390,      0.000,      0.668,      0.839,      0.916
+      output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,      eigen,     0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
 
-output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn.meta        nyudepth,    0.2692,     0.3002,      0.820,      0.299,      0.000,      0.594,      0.845,      0.943
+       output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,      kitti,     0.1035,     0.9231,      4.587,      0.178,      0.000,      0.889,      0.959,      0.983
+    output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,      kitti,     0.1225,     1.2004,      5.179,      0.197,      0.000,      0.868,      0.950,      0.978
+      output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,      kitti,     0.1416,     0.8654,      5.396,      0.288,      0.000,      0.850,      0.954,      0.979
+       output/fcrn/kittidepth/valid_px/silog/2018-07-13_15-16-33/restore/model.fcrn,      kitti,     0.2279,     2.3579,      7.662,      0.390,      0.000,      0.668,      0.839,      0.916
+    output/fcrn/kitticontinuous/all_px/berhu/2018-07-02_20-00-32/restore/model.fcrn,      kitti,     0.3386,     4.1908,     12.318,      0.577,      0.000,      0.285,      0.597,      0.780
 
+           output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn,   nyudepth,     0.2692,     0.3002,      0.820,      0.299,      0.000,      0.594,      0.845,      0.943
 
-                              rms,	  rel,	  d1,	  d2,	  d3,
-Make3D	                    8.734,	0.280,	60.1,   82.0,   92.6,
-Mancini et al (IROS 2016)	7.508,	  -  ,	31.8,	61.7,	81.3,
-Eigen et al (NIPS 2014)	    7.156,	0.190,	69.2,	89.9,	96.7,
-Sparse-to-Dense	            6.266,	0.208,	59.1,	90.0,	96.2,
+Organizar Simulações:
