@@ -72,7 +72,7 @@ class KittiDepth(Dataset):
             depth_filenames_aux = ['/'.join([depth[i] for i in depth_idx]) for depth in depth_filenames_aux]
 
             # TODO: Add Comment
-            image_filenames, depth_filenames, n2, m2 = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,
+            image_filenames, depth_filenames, _, m2 = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,
                                                                          image_filenames_aux, depth_filenames_aux)
 
             # Debug

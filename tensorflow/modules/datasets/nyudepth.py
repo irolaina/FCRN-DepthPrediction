@@ -97,7 +97,7 @@ class NyuDepth(Dataset):
                     depth_filenames_aux.append(os.path.split(depth)[1].replace('_depth.png', ''))
 
             # TODO: Add Comment
-            image_filenames, depth_filenames, n2, m2 = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,
+            image_filenames, depth_filenames, _, m2 = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,
                                                                          image_filenames_aux, depth_filenames_aux)
 
             # Debug

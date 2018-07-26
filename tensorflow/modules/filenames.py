@@ -64,7 +64,7 @@ class FilenamesHandler(object):
         # print(len(depth_filenames_aux))
         # input("depth_filenames_aux")
 
-        n, m = len(image_filenames_aux), len(depth_filenames_aux)
+        _, m = len(image_filenames_aux), len(depth_filenames_aux)
 
         # Sequential Search. This kind of search ensures that the images are paired!
         print("[Dataloader] Checking if RGB and Depth images are paired... ")
