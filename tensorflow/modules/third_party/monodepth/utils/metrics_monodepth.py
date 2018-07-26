@@ -1,9 +1,9 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import imageio
-import cv2
-from .evaluation_utils import *
+import matplotlib.pyplot as plt
 from tqdm import tqdm
+
+from .evaluation_utils import *
+
 
 def evaluate(args, pred_array, gt_array, args_gt_path):
     # --------------------------------------------- #
@@ -16,14 +16,15 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
 
         # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
         gt_disparities = load_gt_disp_kitti(args_gt_path)
+
+        print('\n[Metrics] Generating depth maps...')
         # gt_depths, pred_depths, pred_disparities_resized = convert_disps_to_depths_kitti(gt_disparities, pred_disparities)
         gt_depths = convert_gt_disps_to_depths_kitti(gt_disparities)
 
-        print('\n[Metrics] Generating depth maps...')
         # num_samples = 5  # Only for testing!
         for t_id in tqdm(range(num_samples)):
             # Show the Disparity/Depth ground truths and the corresponding predictions for the evaluation images.
-            if False: # TODO: ativar pela flag -u
+            if False:  # TODO: ativar pela flag -u
                 print("gt_disp:", gt_disparities[t_id])
                 print(np.min(gt_disparities[t_id]), np.max(gt_disparities[t_id]))
                 print()
@@ -127,7 +128,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         pred_depth[pred_depth < args.min_depth] = args.min_depth
         pred_depth[pred_depth > args.max_depth] = args.max_depth
 
-        if args.test_split == 'eigen': # TODO: Validar!
+        if args.test_split == 'eigen':  # TODO: Validar!
             mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
 
             if args.garg_crop or args.eigen_crop:
@@ -165,7 +166,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         # abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask], gt_depth[mask]) # Only for Testing
 
         # Show gt/pred Images
-        if False: # TODO: Remover?
+        if False:  # TODO: Remover?
             plt.figure(102)
             plt.title('pred')
             plt.imshow(pred_depth)
@@ -177,35 +178,34 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             plt.draw()
             plt.pause(1)
 
+    # --------- #
+    #  Results  #
+    # --------- #
+    results_header_formatter = "{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
+    results_data_formatter = "{:>83}, {:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
     # Save results on .txt file
-    print(args.dataset)
-    print(args.test_split)
-
     if args.test_split == '':
         test_split = args.dataset
     else:
         test_split = args.test_split
 
-    print(args.dataset)
-    print(args.test_split)
-    print("split:", test_split)
-
-    # TODO: Mover para utils.py
+    # TODO: Mover para utils.py?
     def saveMetricsResults():
         """Logs the obtained simulation results."""
         save_file_path = 'results_metrics.txt'
         print("[Results] Logging simulation info to '%s' file..." % save_file_path)
 
         f = open(save_file_path, 'a')
-        f.write("{:>85}, {:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}".format(args.model_path,
-                                                                                                                test_split,
-                                                                                                              abs_rel.mean(),
-                                                                                                              sq_rel.mean(),
-                                                                                                              rms.mean(),
-                                                                                                              log_rms.mean(),
-                                                                                                              d1_all.mean(),
-                                                                                                              a1.mean(), a2.mean(),
-                                                                                                              a3.mean()))
+        f.write(results_data_formatter.format(
+            args.model_path,
+            test_split,
+            abs_rel.mean(),
+            sq_rel.mean(),
+            rms.mean(),
+            log_rms.mean(),
+            d1_all.mean(),
+            a1.mean(), a2.mean(),
+            a3.mean()))
         f.close()
 
     saveMetricsResults()
@@ -215,13 +215,15 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
     print("# ----------------- #")
     print("#  Metrics Results  #")
     print("# ----------------- #")
-    print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms',
-                                                                                  'd1_all', 'd1', 'd2', 'd3'))
-    print("{:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}".format(test_split,
-                                                                                                  abs_rel.mean(),
-                                                                                                  sq_rel.mean(),
-                                                                                                  rms.mean(),
-                                                                                                  log_rms.mean(),
-                                                                                                  d1_all.mean(),
-                                                                                                  a1.mean(), a2.mean(),
-                                                                                                  a3.mean()))
+    print(results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
+    print(results_data_formatter.format(
+        args.model_path,
+        test_split,
+        abs_rel.mean(),
+        sq_rel.mean(),
+        rms.mean(),
+        log_rms.mean(),
+        d1_all.mean(),
+        a1.mean(),
+        a2.mean(),
+        a3.mean()))
