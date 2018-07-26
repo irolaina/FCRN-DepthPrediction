@@ -177,18 +177,48 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             plt.draw()
             plt.pause(1)
 
-    # TODO: Implementar
     # Save results on .txt file
+    print(args.dataset)
+    print(args.test_split)
 
-    # TODO: adicionar split como informação
+    if args.test_split == '':
+        test_split = args.dataset
+    else:
+        test_split = args.test_split
+
+    print(args.dataset)
+    print(args.test_split)
+    print("split:", test_split)
+
+    # TODO: Mover para utils.py
+    def saveMetricsResults():
+        """Logs the obtained simulation results."""
+        save_file_path = 'results_metrics.txt'
+        print("[Results] Logging simulation info to '%s' file..." % save_file_path)
+
+        f = open(save_file_path, 'a')
+        f.write("{:>85}, {:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}".format(args.model_path,
+                                                                                                                test_split,
+                                                                                                              abs_rel.mean(),
+                                                                                                              sq_rel.mean(),
+                                                                                                              rms.mean(),
+                                                                                                              log_rms.mean(),
+                                                                                                              d1_all.mean(),
+                                                                                                              a1.mean(), a2.mean(),
+                                                                                                              a3.mean()))
+        f.close()
+
+    saveMetricsResults()
+
     # Display Results
     print()
     print("# ----------------- #")
     print("#  Metrics Results  #")
     print("# ----------------- #")
-    print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('abs_rel', 'sq_rel', 'rms', 'log_rms',
+    print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms',
                                                                                   'd1_all', 'd1', 'd2', 'd3'))
-    print("{:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}".format(abs_rel.mean(),
+    print("{:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}".format(test_split,
+                                                                                                  abs_rel.mean(),
                                                                                                   sq_rel.mean(),
                                                                                                   rms.mean(),
                                                                                                   log_rms.mean(),

@@ -160,7 +160,7 @@ class Model(object):
 
     @staticmethod
     def saveTrainedModel(save_path, session, saver, model_name):
-        # Creates saver obj which backups all the variables.
+        """Creates saver obj which backups all the variables."""
         print("[Network/Training] List of Saved Variables:")
         for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
             print(i)  # i.name if you want just a name
@@ -168,13 +168,14 @@ class Model(object):
         file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
         print("\n[Results] Model saved in file: %s" % file_path)
 
+    # TODO: Acho que não preciso das variaveis root_path blabla
     def saveResults(self, datetime, epoch, max_epochs, step, max_steps, sim_train):
-        # Logs the obtained simulation results
-        print("[Results] Logging simulation info to 'results.txt' file...")
-
+        """Logs the obtained simulation results."""
         root_path = os.path.abspath(os.path.join(__file__, "../.."))
         relative_path = 'results.txt'
         save_file_path = os.path.join(root_path, relative_path)
+
+        print("[Results] Logging simulation info to '%s' file..." % relative_path)
 
         f = open(save_file_path, 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tepoch: %d/%d\t\tstep: %d/%d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
