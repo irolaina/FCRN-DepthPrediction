@@ -62,7 +62,7 @@ class NyuDepth(Dataset):
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
-            # Finds input images and labels inside list of folders.
+            # Finds input images and labels inside the list of folders.
             image_filenames_tmp = []
             depth_filenames_tmp = []
 

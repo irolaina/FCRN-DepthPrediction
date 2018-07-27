@@ -6,7 +6,7 @@ import os
 # ============================================================================================================== #
 root_folder = "/home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/*/"
 
-# Finds input images and labels inside list of folders.
+# Finds input images and labels inside the list of folders.
 folders = glob.glob(root_folder + "*/")
 
 for i, folder in enumerate(folders):
@@ -27,7 +27,7 @@ for i, folder in enumerate(folders):
 root_folder_depth = "/home/nicolas/remote/olorin_root/media/olorin/hd_nicolas/datasets/kitti/depth/depth_prediction/data/train/*/"
 root_folder_hilbert = "/home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/kitti/raw_data/*/"
 
-# Finds input images and labels inside list of folders.
+# Finds input images and labels inside the list of folders.
 folders_depth = glob.glob(root_folder_depth)
 folders_hilbert = glob.glob(root_folder_hilbert + "*/")
 
