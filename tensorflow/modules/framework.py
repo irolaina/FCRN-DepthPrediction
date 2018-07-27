@@ -72,23 +72,14 @@ class Model(object):
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selected_loss == 'mse':
-                self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.tf_pred,
-                                                                 self.train.tf_batch_depth,
-                                                                 valid_pixels)
+                self.loss_name, self.train.tf_loss = loss.tf_L_MSE(self.train.tf_pred,
+                                                                   self.train.tf_batch_depth,
+                                                                   valid_pixels)
 
-                _, self.valid.tf_loss = loss.tf_MSE(self.valid.tf_pred,
-                                                    self.valid.tf_depth_resized,
-                                                    valid_pixels)
+                _, self.valid.tf_loss = loss.tf_L_MSE(self.valid.tf_pred,
+                                                      self.valid.tf_depth_resized,
+                                                      valid_pixels)
 
-            elif selected_loss == 'silog':
-                self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
-                                                               self.train.tf_batch_depth,
-                                                               valid_pixels,
-                                                               gamma=0.5)
-
-                _, self.valid.tf_loss = loss.tf_L(self.valid.tf_pred,
-                                                  self.valid.tf_depth_resized,
-                                                  valid_pixels)
             elif selected_loss == 'berhu':
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.tf_pred,
                                                                    self.train.tf_batch_depth,
@@ -97,6 +88,28 @@ class Model(object):
                 _, self.valid.tf_loss = loss.tf_BerHu(self.valid.tf_pred,
                                                       self.valid.tf_depth_resized,
                                                       valid_pixels)
+
+            elif selected_loss == 'eigen':
+                self.loss_name, self.train.tf_loss = loss.tf_L_eigen(self.train.tf_pred,
+                                                                          self.train.tf_batch_depth,
+                                                                          valid_pixels,
+                                                                          gamma=0.5)
+
+                _, self.valid.tf_loss = loss.tf_L_eigen(self.valid.tf_pred,
+                                                             self.valid.tf_depth_resized,
+                                                             valid_pixels,
+                                                             gamma=0.5)
+
+            elif selected_loss == 'eigen_grads':
+                self.loss_name, self.train.tf_loss = loss.tf_L_eigen_grads(self.train.tf_pred,
+                                                                          self.train.tf_batch_depth,
+                                                                          valid_pixels,
+                                                                          gamma=0.5)
+
+                _, self.valid.tf_loss = loss.tf_L_eigen_grads(self.valid.tf_pred,
+                                                             self.valid.tf_depth_resized,
+                                                             valid_pixels,
+                                                             gamma=0.5)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
                 sys.exit()

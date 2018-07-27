@@ -37,7 +37,7 @@ def np_MSE(y, y_):
     return np.square(y_ - y)
 
 
-def tf_MSE(tf_y, tf_y_, valid_pixels=True):
+def tf_L_MSE(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'MSE'
 
     # Mask Out
@@ -98,9 +98,39 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     return loss_name, tf_loss
 
 
-# ------------------------------------------- #
-#  Eigen's Scale-invariant Mean Squared Error #
-# ------------------------------------------- #
+# ---------------------------------------------------- #
+#  Eigen's Scale-invariant Mean Squared Error (L_eigen) #
+# ---------------------------------------------------- #
+def tf_L_eigen(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+    loss_name = "Scale Invariant Logarithmic Error"
+
+    tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
+    tf_log_y_ = tf.log(tf_y_ + LOG_INITIAL_VALUE)
+
+    # Calculate Difference. Compute over all pixels!
+    tf_d = tf_log_y - tf_log_y_
+
+    # Mask Out
+    if valid_pixels:
+        # Identify Pixels to be masked out.
+        tf_idx = tf.where(tf_y_ > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
+
+        # Overwrites the 'd', 'gx_d', 'gy_d' tensors, so now considers only the Valid Pixels!
+        tf_d = tf.gather_nd(tf_d, tf_idx)
+
+    # Loss
+    tf_npixels = tf.cast(tf.size(tf_d), tf.float32)
+    mean_term = tf.div(tf.reduce_sum(tf.square(tf_d)), tf_npixels)
+    variance_term = tf.multiply(tf.div(gamma, tf.square(tf_npixels)), tf.square(tf.reduce_sum(tf_d)))
+
+    tf_loss_d = mean_term - variance_term
+
+    return loss_name, tf_loss_d
+
+
+# ------------------------------------------------------------------------- #
+#  Eigen's Scale-invariant Mean Squared Error with Gradients (L_eigen_grads) #
+# ------------------------------------------------------------------------- #
 def gradient_x(img):
     gx = img[:, :, :-1] - img[:, :, 1:]
 
@@ -121,8 +151,8 @@ def gradient_y(img):
     return gy
 
 
-def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
-    loss_name = "Scale Invariant Logarithmic Error"
+def tf_L_eigen_grads(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+    loss_name = "Scale Invariant Logarithmic Error with Gradients"
 
     tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
     tf_log_y_ = tf.log(tf_y_ + LOG_INITIAL_VALUE)
@@ -152,6 +182,10 @@ def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
 
     return loss_name, tf_loss_d
 
+# ------------------------------------------------------------------------- #
+#  Adversarial Loss (L_gan) #
+# ------------------------------------------------------------------------- #
+# TODO: Implementar Loss function do artigo "On regression losses for Deep Depth Estimation"
 
 # ------------------ #
 #  L2 Normalization  #

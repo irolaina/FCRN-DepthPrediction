@@ -12,7 +12,7 @@
     output/fcrn/kitticontinuous/all_px/berhu/2018-07-22_22-22-01/restore/model.fcrn,      kitti,     0.1379,     0.9093,      5.705,      0.459,      0.000,      0.869,      0.952,      0.976
       output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,      kitti,     0.1416,     0.8654,      5.396,      0.288,      0.000,      0.850,      0.954,      0.979
       output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn,      kitti,     0.1478,     0.9078,      5.491,      0.314,      0.000,      0.835,      0.952,      0.978
-       output/fcrn/kittidepth/valid_px/silog/2018-07-13_15-16-33/restore/model.fcrn,      kitti,     0.2279,     2.3579,      7.662,      0.390,      0.000,      0.668,      0.839,      0.916
+ output/fcrn/kittidepth/valid_px/eigen_grads/2018-07-13_15-16-33/restore/model.fcrn,      kitti,     0.2279,     2.3579,      7.662,      0.390,      0.000,      0.668,      0.839,      0.916
     output/fcrn/kitticontinuous/all_px/berhu/2018-07-02_20-00-32/restore/model.fcrn,      kitti,     0.3386,     4.1908,     12.318,      0.577,      0.000,      0.285,      0.597,      0.780
          output/fcrn/kittidepth/all_px/berhu/2018-07-24_12-48-33/restore/model.fcrn,      kitti,     0.7304,     9.2535,     15.365,      3.442,      0.000,      0.002,      0.046,      0.145
 
