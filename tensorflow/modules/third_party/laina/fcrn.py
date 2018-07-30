@@ -205,5 +205,5 @@ class ResNet50UpProj(Network):
          .up_project([3, 3, 512, 256], l_id='4x', stride=1, BN=True)
          .up_project([3, 3, 256, 128], l_id='8x', stride=1, BN=True)
          .up_project([3, 3, 128, 64], l_id='16x', stride=1, BN=True)
-         .dropout(name='drop', keep_prob=1.)
+         .dropout(name='drop', keep_prob=self.keep_prob)
          .conv(3, 3, 1, 1, 1, name='ConvPred'))
