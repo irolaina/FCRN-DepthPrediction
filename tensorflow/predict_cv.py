@@ -186,6 +186,10 @@ def main():
 
             overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
 
+            # Concatenates Images
+            conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
+            conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
+
             # print(background.shape, background.dtype)
             # print(overlay.shape, overlay.dtype)
             # print(added_image.shape, added_image.dtype)
@@ -212,13 +216,15 @@ def main():
             # plt.pause(0.001)
 
             # Display the resulting frame - OpenCV
-            cv2.imshow('frame', frame)
-            cv2.imshow('pred', pred_uint8)
-            cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
-            cv2.imshow('pred (scaled)', pred_scaled_uint8)
-            cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
-            cv2.imshow('pred (scaled, median)', pred_median_scaled_uint8)
-            cv2.imshow('overlay', overlay)
+            # cv2.imshow('frame', frame)
+            # cv2.imshow('pred', pred_uint8)
+            # cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
+            # cv2.imshow('pred (scaled)', pred_scaled_uint8)
+            # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
+            # cv2.imshow('pred (scaled, median)', pred_median_scaled_uint8)
+            # cv2.imshow('overlay', overlay)
+            cv2.imshow('pred, pred(scaled), pred (scaled, median)', conc)
+            cv2.imshow('frame, pred_jet, pred_hsv, overlay', conc2)
 
             # Save Images
             if SAVE_IMAGES:
