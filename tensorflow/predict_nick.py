@@ -446,7 +446,7 @@ def test(args):
     if TEST_EVALUATE_SUBSET == 0:
         _, _, _, _, numSamples, args.test_file_path = data.getTestData(test_split=args.test_split, test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames, numSamples = data.getTrainData()
+        data.test_image_filenames, data.test_depth_filenames, _, _, numSamples = data.getTrainData()
 
     model = Test(args, data)
 
