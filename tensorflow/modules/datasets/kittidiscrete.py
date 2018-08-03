@@ -35,7 +35,6 @@ class KittiDiscrete(Dataset):
 
     def getFilenamesLists(self, mode, test_split='', test_file_path=''):
         file = self.get_file_path(mode, test_split, test_file_path)
-        ratio = 0.8
 
         if os.path.exists(file):
             image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
@@ -79,7 +78,7 @@ class KittiDiscrete(Dataset):
                                                                          image_filenames_aux, depth_filenames_aux)
 
             # Splits Train/Test Subsets
-            divider = int(n2 * ratio)
+            divider = int(n2 * self.ratio)
 
             if mode == 'train':
                 image_filenames = image_filenames[:divider]

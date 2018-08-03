@@ -21,6 +21,9 @@ class Dataset(FilenamesHandler):
         self.image_size = Size(height, width, 3)
         self.depth_size = Size(height, width, 1)
 
+        # Train/Test Split Ratio
+        self.ratio = 0.8
+
         print("[Dataloader] %s object created." % self.name)
 
     def get_file_path(self, mode, test_split, test_file_path):  # TODO: change name
