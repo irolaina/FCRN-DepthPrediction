@@ -38,18 +38,19 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
                 plt.figure(100)
                 plt.imshow(gt_disparities[t_id])
                 plt.title('gt_disp')
+                plt.draw()
 
                 plt.figure(101)
                 plt.imshow(gt_depths[t_id].astype(np.uint8))
                 plt.title('gt_depth')
+                plt.draw()
 
                 plt.figure(102)
                 plt.imshow(pred_array[t_id])
                 plt.title('pred')
-
                 plt.draw()
-                plt.pause(0.01)
 
+                plt.pause(1)
                 input("Continue...")
 
     elif args.test_split == 'eigen':
@@ -88,17 +89,98 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
                 plt.figure(100)
                 plt.imshow(imageio.imread(im_files[t_id]))
                 plt.title('image')
+                plt.draw()
 
                 plt.figure(101)
                 plt.imshow(depth.astype(np.uint8))
-                plt.title('label')
+                plt.title('gt_depth')
+                plt.draw()
 
                 plt.figure(102)
                 plt.imshow(pred_array[t_id])
                 plt.title('pred')
-
                 plt.draw()
-                plt.pause(0.01)
+
+                plt.pause(1)
+                input("Continue...")
+
+    elif args.test_split == 'eigen_continuous':
+        num_samples = 697
+        test_files = read_text_lines(args.test_file_path)
+        gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args_gt_path)
+
+        num_test = len(im_files)
+        gt_depths = []
+        gt_depths_continuous = []
+        pred_depths = []
+        print('\n[Metrics] Generating depth maps...')
+        # num_samples = 5  # Only for testing!
+        for t_id in tqdm(range(num_samples)):
+            camera_id = cams[t_id]  # 2 is left, 3 is right
+            depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
+            gt_depths.append(depth.astype(np.float32))
+
+            # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
+            # disp_pred = cv2.resize(pred_disparities[t_id], (im_sizes[t_id][1], im_sizes[t_id][0]), interpolation=cv2.INTER_LINEAR)
+            # disp_pred = disp_pred * disp_pred.shape[1]
+            #
+            # # need to convert from disparity to depth
+            # focal_length, baseline = get_focal_length_baseline(gt_calib[t_id], camera_id)
+            # depth_pred = (baseline * focal_length) / disp_pred
+            # depth_pred[np.isinf(depth_pred)] = 0
+            #
+            # pred_depths.append(depth_pred)
+
+            depth_split = gt_files[t_id].split('/')
+            new_depth_filename = depth_split[8] + '_' + depth_split[-1].replace('.bin', '.png')
+            depth_replace = gt_files[t_id].replace('velodyne_points/data/', 'proc_kitti_nick/disp2/')
+            depth_head, depth_tail = os.path.split(depth_replace)
+            gt_depth_continuous_path = os.path.join(depth_head, new_depth_filename)
+
+            print(gt_calib[t_id])
+            print(gt_files[t_id])
+            print(gt_depth_continuous_path)
+            print(im_sizes[t_id])
+
+            # Show the corresponding generated Depth Map from the Stereo Pair.
+            if True:
+                # Generate Images
+                image = imageio.imread(im_files[t_id])
+                depth_uint8 = depth.astype(np.uint8)
+                gt_depth_continuous = imageio.imread(gt_depth_continuous_path)
+                pred = pred_array[t_id]
+
+                # print(image)
+                # input("image")
+                # print(depth)
+                # input("gt_depth")
+                # print(gt_depth_continuous)
+                # print("gt_depth_continuous")
+                # print(pred_array[t_id])
+                # input("pred")
+
+                plt.figure(100)
+                plt.imshow(image)
+                plt.title('image')
+                plt.draw()
+
+                plt.figure(101)
+                plt.imshow(depth_uint8)
+                plt.title('gt_depth')
+                plt.draw()
+
+                plt.figure(102)
+                plt.imshow(gt_depth_continuous)
+                plt.title('gt_depth_continuous')
+                plt.draw()
+
+                plt.figure(103)
+                plt.imshow(pred)
+                plt.title('pred')
+                plt.draw()
+
+                plt.pause(1)
+                input("Continue...")
 
     else:
         num_samples = len(pred_array)
@@ -128,7 +210,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         pred_depth[pred_depth < args.min_depth] = args.min_depth
         pred_depth[pred_depth > args.max_depth] = args.max_depth
 
-        if args.test_split == 'eigen':  # TODO: Validar!
+        if args.test_split == 'eigen' or args.test_split == 'eigen_continuous':  # TODO: Validar!
             mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
 
             if args.garg_crop or args.eigen_crop:

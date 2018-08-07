@@ -25,6 +25,18 @@
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [All] TODO: Devo continuar usando tf.image.resize_images()? Há relatos desta função ser bugada
 
+# [Train] FIXME: KittiDepth e KittiDiscrete indo melhor que o KittiContinuous:
+# Especulações:
+# @nicolas: Acredito que as superfícies contínuas ao interpolar os pontos da nuvem nem sempre garantem que o valor de profundidade do ponto original, isto é, talvez o ponto original não seja um ponto âncora para a superfície.
+# @vitor: Visto que as imagens de avaliação utilizadas são esparsas, o vitor acha que elas deveriam ser contínuas.
+"Acho que isso é uma parte do problema, não existe comparação na imagem inteira, aí os benefícios do contínuo não ficam aparentes nos números obtidos."
+
+# SOLUÇÃO: TODO: Criar um novo split, Continuous Splits, o qual consiste das mesmas 697 imagens de avaliação propostas pelo Eigen, porém contínuas.
+# Isto é, utilizar as images contínuas como avaliação ao invés das esparsas, assim os métodos treinados no esparso errariam mais e os modelos treinados no dataset contínuo conseguiriam ir melhor.
+# Entretanto, esta solução dificultaria a comparação com os métodos do Estado-da-Arte.
+# @vitor: "É, seria uma metodologia de comparação nova, mas dentro dos métodos que tem comparações na literatura você pode relacionar com essa nova metodologia, mostrando que os resulados são comparáveis."
+
+
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
 # [Train] TODO: Dar suporte ao Make3D

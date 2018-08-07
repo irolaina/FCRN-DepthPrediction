@@ -4,6 +4,7 @@
                                                              Eigen et al (NIPS 2014),      kitti,      0.190,        -  ,      7.156,	    -  ,	    -  ,      0.692,      0.899,      0.967
                                                                      Sparse-to-Dense,      kitti,      0.208,        -  ,      6.266,	    -  ,	    -  ,      0.591,	  0.900,      0.962
 
+     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,      eigen,     0.1084,     0.7821,      4.537,      0.177,      0.000,      0.877,      0.963,      0.986
         output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,      eigen,     0.1137,     0.8291,      4.517,      0.201,      0.000,      0.859,      0.946,      0.977
        output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,      eigen,     0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
 
