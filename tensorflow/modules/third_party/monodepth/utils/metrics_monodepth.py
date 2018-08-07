@@ -113,6 +113,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         gt_depths = []
         gt_depths_continuous = []
         pred_depths = []
+        invalid_idx = []
         print('\n[Metrics] Generating depth maps...')
         # num_samples = 5  # Only for testing!
         for t_id in tqdm(range(num_samples)):
@@ -137,13 +138,17 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             depth_head, depth_tail = os.path.split(depth_replace)
             gt_depth_continuous_path = os.path.join(depth_head, new_depth_filename)
 
-            print(gt_calib[t_id])
-            print(gt_files[t_id])
-            print(gt_depth_continuous_path)
-            print(im_sizes[t_id])
+            # print(gt_calib[t_id])
+            # print(gt_files[t_id])
+            # print(gt_depth_continuous_path)
+            # print(im_sizes[t_id])
 
-            gt_depth_continuous = imageio.imread(gt_depth_continuous_path).astype(np.float32) / 3.0 # Convert uint8 to float, meters
-            gt_depths_continuous.append(gt_depth_continuous)
+            try:
+                gt_depth_continuous = imageio.imread(gt_depth_continuous_path).astype(np.float32) / 3.0 # Convert uint8 to float, meters
+                gt_depths_continuous.append(gt_depth_continuous)
+            except FileNotFoundError:
+                gt_depths_continuous.append(np.zeros(shape=im_sizes[t_id]))
+                invalid_idx.append(t_id)
 
             # Show the corresponding generated Depth Map from the Stereo Pair.
             if False:  # TODO: ativar pela flag -u
@@ -181,6 +186,10 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
                 plt.pause(1)
                 input("Continue...")
 
+        print()
+        print("%d missing files on continuous dataset." % len(invalid_idx))
+        print("Missing indexes:", invalid_idx)
+        print()
     else:
         num_samples = len(pred_array)
         gt_depths = gt_array
@@ -205,6 +214,10 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
 
         if args.test_split == 'eigen_continuous':
             gt_depth = gt_depths_continuous[i]
+
+            if i in invalid_idx:
+                print("invalid")
+                break
         else:
             gt_depth = gt_depths[i]
 
