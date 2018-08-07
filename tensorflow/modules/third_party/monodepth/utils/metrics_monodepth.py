@@ -80,7 +80,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             # pred_depths.append(depth_pred)
 
             # Show the corresponding generated Depth Map from the Stereo Pair.
-            if False:
+            if False:  # TODO: ativar pela flag -u
                 print(depth)
                 input("depth")
                 print(pred_array[t_id])
@@ -142,30 +142,29 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             print(gt_depth_continuous_path)
             print(im_sizes[t_id])
 
-            # Show the corresponding generated Depth Map from the Stereo Pair.
-            if True:
-                # Generate Images
-                image = imageio.imread(im_files[t_id])
-                depth_uint8 = depth.astype(np.uint8)
-                gt_depth_continuous = imageio.imread(gt_depth_continuous_path)
-                pred = pred_array[t_id]
+            gt_depth_continuous = imageio.imread(gt_depth_continuous_path).astype(np.float32) / 3.0 # Convert uint8 to float, meters
+            gt_depths_continuous.append(gt_depth_continuous)
 
-                # print(image)
+            # Show the corresponding generated Depth Map from the Stereo Pair.
+            if False:  # TODO: ativar pela flag -u
+                # print(imageio.imread(im_files[t_id]))
                 # input("image")
                 # print(depth)
+                # print(np.min(depth), np.max(depth))
                 # input("gt_depth")
                 # print(gt_depth_continuous)
+                # print(np.min(gt_depth_continuous), np.max(gt_depth_continuous))
                 # print("gt_depth_continuous")
                 # print(pred_array[t_id])
                 # input("pred")
 
                 plt.figure(100)
-                plt.imshow(image)
+                plt.imshow(imageio.imread(im_files[t_id]))
                 plt.title('image')
                 plt.draw()
 
                 plt.figure(101)
-                plt.imshow(depth_uint8)
+                plt.imshow(depth.astype(np.uint8))
                 plt.title('gt_depth')
                 plt.draw()
 
@@ -175,7 +174,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
                 plt.draw()
 
                 plt.figure(103)
-                plt.imshow(pred)
+                plt.imshow(pred_array[t_id])
                 plt.title('pred')
                 plt.draw()
 
@@ -204,7 +203,11 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
     # num_samples = 5 # Only for testing!
     for i in tqdm(range(num_samples)):
 
-        gt_depth = gt_depths[i]
+        if args.test_split == 'eigen_continuous':
+            gt_depth = gt_depths_continuous[i]
+        else:
+            gt_depth = gt_depths[i]
+
         pred_depth = pred_depths[i]
 
         pred_depth[pred_depth < args.min_depth] = args.min_depth
@@ -264,7 +267,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
     #  Results  #
     # --------- #
     results_header_formatter = "{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
-    results_data_formatter = "{:>83}, {:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
+    results_data_formatter = "{:>83}, {:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}\n"
     # Save results on .txt file
     if args.test_split == '':
         test_split = args.dataset
