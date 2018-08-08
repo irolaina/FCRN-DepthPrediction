@@ -4,12 +4,6 @@
                                                              Eigen et al (NIPS 2014),              kitti,      0.190,        -  ,      7.156,	     -  ,	     -  ,      0.692,      0.899,      0.967
                                                                      Sparse-to-Dense,              kitti,      0.208,        -  ,      6.266,	     -  ,	     -  ,      0.591,	   0.900,      0.962
 
-   output/fcrn/kitticontinuous/valid_px/berhu/2018-07-27_20-32-56/restore/model.fcrn,*   eigen_continuous,     0.0219,     0.1056,      0.831,      0.040,      0.000,      0.230,      0.250,      0.254
-     output/fcrn/kitticontinuous/all_px/berhu/2018-07-11_13-16-54/restore/model.fcrn,*   eigen_continuous,     0.0255,     0.1805,      1.221,      0.191,      0.000,      0.226,      0.246,      0.251
-        output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,*   eigen_continuous,     0.0520,     0.3381,      1.174,      0.063,      0.000,      0.200,      0.237,      0.249
-     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,*   eigen_continuous,     0.0530,     0.3733,      1.246,      0.065,      0.000,      0.203,      0.237,      0.248
-     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-12_18-33-06/restore/model.fcrn,*   eigen_continuous,     0.0535,     0.3763,      1.252,      0.065,      0.000,      0.202,      0.237,      0.248
-
      output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,               eigen,     0.1084,     0.7821,      4.537,      0.177,      0.000,      0.877,      0.963,      0.986
         output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,               eigen,     0.1137,     0.8291,      4.517,      0.201,      0.000,      0.859,      0.946,      0.977
        output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,               eigen,     0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
@@ -30,7 +24,5 @@ output/fcrn/kitticontinuous_city/all_px/eigen/2018-08-02_19-54-56/restore/model.
           output/fcrn/kittidepth/all_px/berhu/2018-07-24_12-48-33/restore/model.fcrn,               kitti,     0.7304,     9.2535,     15.365,      3.442,      0.000,      0.002,      0.046,      0.145
 
             output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn,            nyudepth,     0.2692,     0.3002,      0.820,      0.299,      0.000,      0.594,      0.845,      0.943
-
-* Faltam 59 imagens do KittiContinuous das 697 Imagens de Avaliação
 
 Organizar Simulações:

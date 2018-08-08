@@ -1,2 +1,3 @@
 model,split,abs_rel,sq_rel,rms,log_rms,d1_all,d1,d2,d3
 output/fcrn/kittidepth/valid_px/berhu/2018-07-12_10-58-40/restore/model.fcrn,kitti,0.13516705,1.2410309,5.2708964,0.2101023,0.0,0.83769107,0.9401553,0.9758345
+output/fcrn/kittidepth/valid_px/berhu/2018-07-12_10-58-40/restore/model.fcrn,eigen_continuous,0.22439688,1.5833725,4.37567,0.25824675,0.0,0.6697602,0.8219894,0.8740322
