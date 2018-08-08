@@ -1,15 +1,13 @@
 import numpy as np
-import pandas as pd
 import os
 import cv2
 from collections import Counter
-import pickle
 from scipy.interpolate import LinearNDInterpolator
 
 
 def compute_errors(gt, pred):
     thresh = np.maximum((gt / pred), (pred / gt))
-    a1 = (thresh < 1.25   ).mean()
+    a1 = (thresh < 1.25     ).mean()
     a2 = (thresh < 1.25 ** 2).mean()
     a3 = (thresh < 1.25 ** 3).mean()
 
@@ -67,6 +65,26 @@ def convert_disps_to_depths_kitti(gt_disparities, pred_disparities):
         gt_depths.append(gt_depth)
         pred_depths.append(pred_depth)
     return gt_depths, pred_depths, pred_disparities_resized
+
+
+# TODO: Acredito que esta função possa ser aprimorada
+def convert_gt_disps_to_depths_kitti(gt_disparities):
+    gt_depths = []
+
+    for i in range(len(gt_disparities)):
+        gt_disp = gt_disparities[i]
+        height, width = gt_disp.shape
+
+        mask = gt_disp > 0
+
+        gt_depth = width_to_focal[width] * 0.54 / (gt_disp + (1.0 - mask))
+
+        # Workaround by Nick
+        mask = np.logical_and(gt_disp > 0.0, gt_depth)
+        gt_depth = gt_depth * mask
+
+        gt_depths.append(gt_depth)
+    return gt_depths
 
 
 # ------- #
@@ -143,7 +161,7 @@ def read_calib_file(path):
                 # try to cast to float array
                 try:
                     # data[key] = np.array(map(float, value.split(' '))) # Python2
-                    data[key] = np.array([float(elem) for elem in value.split(' ')]) # Python3
+                    data[key] = np.array([float(elem) for elem in value.split(' ')])  # Python3
                 except ValueError:
                     # casting error: data[key] already eq. value, so pass
                     pass
@@ -214,7 +232,17 @@ def generate_depth_map(calib_dir, velo_file_name, im_shape, cam=2, interp=False,
 
     # find the duplicate points and choose the closest depth
     inds = sub2ind(depth.shape, velo_pts_im[:, 1], velo_pts_im[:, 0])
-    dupe_inds = [item for item, count in Counter(inds).iteritems() if count > 1]
+    dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
+
+    # print(cam2cam)
+    # print(velo2cam)
+    # print('inds:', inds)
+    # print(inds.shape, inds.dtype)
+    # print('Counter(inds):', Counter(inds))
+    # print(Counter(inds).items())
+    # print(dupe_inds)
+    # input("generate_depth_map")
+
     for dd in dupe_inds:
         pts = np.where(inds == dd)[0]
         x_loc = int(velo_pts_im[pts[0], 0])

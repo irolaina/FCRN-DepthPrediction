@@ -13,19 +13,29 @@
 # [Dataset] TODO: Caso ela realmente estiver corrompida no .zip, enviar e-mail para Apolloscape
 # [Dataset] FIXME: Aparentemente existe uma série de imagens inválidas no dataset apolloscape. Use scripts/check_apolloscape_imgs.py
 
-# [Train] FIXME: Early Stopping
-# [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'silog'
+# [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'eigen_grads'
 
 # [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
-# [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/silog/2018-06-27_11-14-21/restore/model.fcrn -u
+# [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/eigen_grads/2018-06-27_11-14-21/restore/model.fcrn -u
 # [Test] FIXME: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
+# [Train] FIXME: Early Stopping parece não disparar.
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
-# [Train] FIXME: python3 predict_nick.py -m train --machine nicolas -s kittidepth --px all --loss berhu --max_steps 150000 --ldecay --l2norm --remove_sky  -t
-# [Train] FIXME: python3 predict_nick.py -m train --machine nicolas -s kittidiscrete --px all --loss berhu --max_steps 150000 --ldecay --l2norm --remove_sky -t
-# [All] TODO: Devo continuar usando tf.image.resize_images(), há relatos desta função ser bugada
+# [All] TODO: Devo continuar usando tf.image.resize_images()? Há relatos desta função ser bugada
+
+# [Train] FIXME: KittiDepth e KittiDiscrete indo melhor que o KittiContinuous:
+# Especulações:
+# @nicolas: Acredito que as superfícies contínuas ao interpolar os pontos da nuvem nem sempre garantem que o valor de profundidade do ponto original, isto é, talvez o ponto original não seja um ponto âncora para a superfície.
+# @vitor: Visto que as imagens de avaliação utilizadas são esparsas, o vitor acha que elas deveriam ser contínuas.
+"Acho que isso é uma parte do problema, não existe comparação na imagem inteira, aí os benefícios do contínuo não ficam aparentes nos números obtidos."
+
+# SOLUÇÃO: TODO: Criar um novo split, Continuous Splits, o qual consiste das mesmas 697 imagens de avaliação propostas pelo Eigen, porém contínuas.
+# Isto é, utilizar as images contínuas como avaliação ao invés das esparsas, assim os métodos treinados no esparso errariam mais e os modelos treinados no dataset contínuo conseguiriam ir melhor.
+# Entretanto, esta solução dificultaria a comparação com os métodos do Estado-da-Arte.
+# @vitor: "É, seria uma metodologia de comparação nova, mas dentro dos métodos que tem comparações na literatura você pode relacionar com essa nova metodologia, mostrando que os resulados são comparáveis."
+
 
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
@@ -38,7 +48,7 @@
 # TODO: O trabalho "Sparsity Invariant CNNs" diz que redes neurais devem ser capazes de distinguir pixeis observados e pixeis inválidos. Não simplesmente "mask them out".
 # TODO: O trabalho "Deep Ordinal Regression Network (DORN) for Monocular Depth Estimation" aponta o problema com as arquitetura clássicas de MDE que inicialmente foram desenvolvidas para Image Recognition, cujas operações de max-pooling e striding reduzem a resolução espacial dos features maps para este tipo de aplicação
 # TODO: Investigar Redes Neurais que estudam esparsidade DENTRO das redes e nas ENTRADAS. Ref: "Sparsity Invariant CNNs"
-# TODO: De acordo com DORN, abordar o problema de estimação como um problema multi-class classification é mais indicado do que tratá0lo como um problema de regressão
+# TODO: De acordo com DORN, abordar o problema de estimação como um problema multi-class classification é mais indicado do que tratá-lo como um problema de regressão
 # TODO: A Rede da Laina possui Weight Decay?
 
 # ===========
@@ -56,17 +66,17 @@ import pyxhook
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from skimage import io, exposure, img_as_uint
+from skimage import exposure, img_as_uint
+from tqdm import tqdm
 
 # Custom Libraries
 import modules.args as argsLib
 import modules.third_party.monodepth.utils.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
-from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.plot import Plot
 from modules.test import Test
-from modules.utils import total_size
+from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.utils import detect_available_models
 
 # ==========================
@@ -92,7 +102,6 @@ SAVE_TEST_DISPARITIES = True    # Default: True
 # ==================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
-io.use_plugin('freeimage')
 
 appName = 'fcrn'
 datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
@@ -447,9 +456,9 @@ def test(args):
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, numSamples = data.getTestData()
+        _, _, _, _, numSamples, args.test_file_path = data.getTestData(test_split=args.test_split, test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, tf_test_image_filenames, tf_test_depth_filenames, numSamples = data.getTrainData()
+        data.test_image_filenames, data.test_depth_filenames, _, _, numSamples = data.getTrainData()
 
     model = Test(args, data)
 
@@ -471,9 +480,10 @@ def test(args):
 
         timer = -time.time()
         pred_list, gt_list = [], []
-        for i in range(numSamples):
-        # for i in range(5): # Only for testing!
 
+        print("[Network/Testing] Generating Predictions...")
+        # numSamples = 5 # Only for testing!
+        for i in tqdm(range(numSamples)):
             timer2 = -time.time()
 
             # Evalute the network for the given image
@@ -516,7 +526,7 @@ def test(args):
 
             # Prints Testing Progress
             timer2 += time.time()
-            print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
+            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
             # break # Test
 
             # Show Results
@@ -542,14 +552,21 @@ def test(args):
         # =========
         # Calculate Metrics
         if data.test_depth_filenames:
-            print("[Network/Testing] Calculating Metrics based on Testing Predictions...")
+            print("[Network/Testing] Calculating Metrics based on Test Predictions...")
 
             pred_array = np.array(pred_list)
             gt_array = np.array(gt_list)
 
+            print()
+            print('args.test_split:', args.test_split)
+            print('args.test_file_path:', args.test_file_path)
+            print('dataset_path:', data.datasetObj.dataset_path)
+            print()
+            # input("[Metrics] Press ENTER to start evaluation...") # TODO: Desativar?
+
             # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
             # myMetrics.evaluate(pred_array, gt_array) # FIXME:
-            MonodepthMetrics.evaluate(pred_array, gt_array)
+            MonodepthMetrics.evaluate(args, pred_array, gt_array, data.datasetObj.dataset_path)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")

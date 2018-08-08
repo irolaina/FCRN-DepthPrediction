@@ -3,9 +3,7 @@
 # ===========
 import sys
 
-import numpy as np
 import tensorflow as tf
-from skimage import transform
 
 from modules.datasets.apolloscape import Apolloscape
 from modules.datasets.kitticontinuous import KittiContinuous
@@ -103,7 +101,7 @@ class Dataloader:
         print("\n[Dataloader] dataloader object created.")
 
     def getTrainData(self, mode='train'):
-        image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
+        image_filenames, depth_filenames, _ = self.datasetObj.getFilenamesLists(mode)
         tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
@@ -123,8 +121,8 @@ class Dataloader:
 
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTrainSamples
 
-    def getTestData(self, mode='test'):
-        image_filenames, depth_filenames = self.datasetObj.getFilenamesLists(mode)
+    def getTestData(self, mode='test', test_split='', test_file_path=''):
+        image_filenames, depth_filenames, file = self.datasetObj.getFilenamesLists(mode, test_split, test_file_path)
         tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
@@ -142,7 +140,7 @@ class Dataloader:
         self.tf_test_image_filenames = tf_image_filenames
         self.tf_test_depth_filenames = tf_depth_filenames
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTestSamples
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTestSamples, file
 
     @staticmethod
     def rawdepth2meters(tf_depth, dataset_name):

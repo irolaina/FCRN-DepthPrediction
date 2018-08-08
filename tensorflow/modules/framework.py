@@ -11,6 +11,7 @@ from modules.size import Size
 from modules.train import Train
 from modules.validation import Validation
 
+
 # ==================
 #  Global Variables
 # ==================
@@ -61,10 +62,13 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name, self.args.data_aug)
+            self.train = Train(self.args, data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key,
+                               data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth,
+                               data.dataset_name, self.args.data_aug)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
+            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth,
+                                    data.dataset_name)
 
     def build_losses(self, selected_loss, selected_px):
         valid_pixels = True if selected_px == 'valid' else False
@@ -72,23 +76,14 @@ class Model(object):
         with tf.name_scope("Losses"):
             # Select Loss Function:
             if selected_loss == 'mse':
-                self.loss_name, self.train.tf_loss = loss.tf_MSE(self.train.tf_pred,
-                                                                 self.train.tf_batch_depth,
-                                                                 valid_pixels)
+                self.loss_name, self.train.tf_loss = loss.tf_L_MSE(self.train.tf_pred,
+                                                                   self.train.tf_batch_depth,
+                                                                   valid_pixels)
 
-                _, self.valid.tf_loss = loss.tf_MSE(self.valid.tf_pred,
-                                                    self.valid.tf_depth_resized,
-                                                    valid_pixels)
+                _, self.valid.tf_loss = loss.tf_L_MSE(self.valid.tf_pred,
+                                                      self.valid.tf_depth_resized,
+                                                      valid_pixels)
 
-            elif selected_loss == 'silog':
-                self.loss_name, self.train.tf_loss = loss.tf_L(self.train.tf_pred,
-                                                               self.train.tf_batch_depth,
-                                                               valid_pixels,
-                                                               gamma=0.5)
-
-                _, self.valid.tf_loss = loss.tf_L(self.valid.tf_pred,
-                                                  self.valid.tf_depth_resized,
-                                                  valid_pixels)
             elif selected_loss == 'berhu':
                 self.loss_name, self.train.tf_loss = loss.tf_BerHu(self.train.tf_pred,
                                                                    self.train.tf_batch_depth,
@@ -97,6 +92,28 @@ class Model(object):
                 _, self.valid.tf_loss = loss.tf_BerHu(self.valid.tf_pred,
                                                       self.valid.tf_depth_resized,
                                                       valid_pixels)
+
+            elif selected_loss == 'eigen':
+                self.loss_name, self.train.tf_loss = loss.tf_L_eigen(self.train.tf_pred,
+                                                                     self.train.tf_batch_depth,
+                                                                     valid_pixels,
+                                                                     gamma=0.5)
+
+                _, self.valid.tf_loss = loss.tf_L_eigen(self.valid.tf_pred,
+                                                        self.valid.tf_depth_resized,
+                                                        valid_pixels,
+                                                        gamma=0.5)
+
+            elif selected_loss == 'eigen_grads':
+                self.loss_name, self.train.tf_loss = loss.tf_L_eigen_grads(self.train.tf_pred,
+                                                                           self.train.tf_batch_depth,
+                                                                           valid_pixels,
+                                                                           gamma=0.5)
+
+                _, self.valid.tf_loss = loss.tf_L_eigen_grads(self.valid.tf_pred,
+                                                              self.valid.tf_depth_resized,
+                                                              valid_pixels,
+                                                              gamma=0.5)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
                 sys.exit()
@@ -160,7 +177,7 @@ class Model(object):
 
     @staticmethod
     def saveTrainedModel(save_path, session, saver, model_name):
-        # Creates saver obj which backups all the variables.
+        """Creates saver obj which backups all the variables."""
         print("[Network/Training] List of Saved Variables:")
         for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
             print(i)  # i.name if you want just a name
@@ -168,16 +185,18 @@ class Model(object):
         file_path = saver.save(session, os.path.join(save_path, "model." + model_name))
         print("\n[Results] Model saved in file: %s" % file_path)
 
+    # TODO: Acho que não preciso das variaveis root_path blabla
     def saveResults(self, datetime, epoch, max_epochs, step, max_steps, sim_train):
-        # Logs the obtained simulation results
-        print("[Results] Logging simulation info to 'results.txt' file...")
-
+        """Logs the obtained simulation results."""
         root_path = os.path.abspath(os.path.join(__file__, "../.."))
         relative_path = 'results.txt'
         save_file_path = os.path.join(root_path, relative_path)
 
+        print("[Results] Logging simulation info to '%s' file..." % relative_path)
+
         f = open(save_file_path, 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tepoch: %d/%d\t\tstep: %d/%d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
-            datetime, self.args.model_name, self.args.dataset, self.loss_name, epoch, max_epochs, step, max_steps, self.train.loss, self.valid.loss,
+            datetime, self.args.model_name, self.args.dataset, self.loss_name, epoch, max_epochs, step, max_steps,
+            self.train.loss, self.valid.loss,
             sim_train))
         f.close()

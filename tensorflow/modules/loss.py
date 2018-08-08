@@ -14,17 +14,6 @@ LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
-def np_maskOutInvalidPixels(y, y_):
-    condition = y_ <= 0
-    idx_i, idx_j = np.where(condition)
-
-    y_masked = np.copy(y)
-    for k in range(0, len(idx_i)):
-        y_masked[idx_i[k], idx_j[k]] = 0.0  # Predictions with labels equal to zero are set to zero.
-
-    return y_masked
-
-
 def tf_maskOutInvalidPixels(tf_pred, tf_labels):
     # Identify Pixels to be masked out.
     tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
@@ -43,12 +32,12 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
 #  Mean Squared Error  #
 # -------------------- #
 def np_MSE(y, y_):
-    numPixels = y_.size
+    # numPixels = y_.size
 
-    return np.square(y_ - y) / numPixels  # MSE calculated for each pixel
+    return np.square(y_ - y)
 
 
-def tf_MSE(tf_y, tf_y_, valid_pixels=True):
+def tf_L_MSE(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'MSE'
 
     # Mask Out
@@ -60,7 +49,7 @@ def tf_MSE(tf_y, tf_y_, valid_pixels=True):
     tf_npixels = tf.cast(tf.size(tf_y_), tf.float32)
 
     # Loss
-    mse = (tf.reduce_sum(tf.square(tf_y_ - tf_y)) / tf_npixels)
+    mse = tf.div(tf.reduce_sum(tf.square(tf_y_ - tf_y)), tf_npixels)
 
     return loss_name, mse
 
@@ -73,11 +62,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 
     # C Constant Calculation
     tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
-
-    # TODO: Devo utilizar as operações pelo tensorflow? 1 e 3 funcionam
-    tf_c = 0.2 * tf.reduce_max(tf_abs_error)  # Consider All Pixels!
-    # tf_c = tf.multiply(tf.constant(0.2), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
-    # tf_c = tf.multiply(tf.Variable(0.2, trainable=False), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
+    tf_c = tf.multiply(tf.constant(0.2), tf.reduce_max(tf_abs_error))  # Consider All Pixels!
 
     # Mask Out
     if valid_pixels:
@@ -89,7 +74,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 
     # Loss
     tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
-                             (tf.square(tf_abs_error) + tf.square(tf_c)) / (2 * tf_c))
+                             tf.div((tf.square(tf_abs_error) + tf.square(tf_c)), tf.multiply(tf.constant(2.0), tf_c)))
 
     tf_loss = tf.reduce_sum(tf_berHu_loss)
 
@@ -114,9 +99,39 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     return loss_name, tf_loss
 
 
-# ------------------------------------------- #
-#  Eigen's Scale-invariant Mean Squared Error #
-# ------------------------------------------- #
+# ---------------------------------------------------- #
+#  Eigen's Scale-invariant Mean Squared Error (L_eigen) #
+# ---------------------------------------------------- #
+def tf_L_eigen(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+    loss_name = "Scale Invariant Logarithmic Error"
+
+    tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
+    tf_log_y_ = tf.log(tf_y_ + LOG_INITIAL_VALUE)
+
+    # Calculate Difference. Compute over all pixels!
+    tf_d = tf_log_y - tf_log_y_
+
+    # Mask Out
+    if valid_pixels:
+        # Identify Pixels to be masked out.
+        tf_idx = tf.where(tf_y_ > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
+
+        # Overwrites the 'd', 'gx_d', 'gy_d' tensors, so now considers only the Valid Pixels!
+        tf_d = tf.gather_nd(tf_d, tf_idx)
+
+    # Loss
+    tf_npixels = tf.cast(tf.size(tf_d), tf.float32)
+    mean_term = tf.div(tf.reduce_sum(tf.square(tf_d)), tf_npixels)
+    variance_term = tf.multiply(tf.div(gamma, tf.square(tf_npixels)), tf.square(tf.reduce_sum(tf_d)))
+
+    tf_loss_d = mean_term - variance_term
+
+    return loss_name, tf_loss_d
+
+
+# ------------------------------------------------------------------------- #
+#  Eigen's Scale-invariant Mean Squared Error with Gradients (L_eigen_grads) #
+# ------------------------------------------------------------------------- #
 def gradient_x(img):
     gx = img[:, :, :-1] - img[:, :, 1:]
 
@@ -137,8 +152,8 @@ def gradient_y(img):
     return gy
 
 
-def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
-    loss_name = "Scale Invariant Logarithmic Error"
+def tf_L_eigen_grads(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+    loss_name = "Scale Invariant Logarithmic Error with Gradients"
 
     tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
     tf_log_y_ = tf.log(tf_y_ + LOG_INITIAL_VALUE)
@@ -160,14 +175,19 @@ def tf_L(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
 
     # Loss
     tf_npixels = tf.cast(tf.size(tf_d), tf.float32)
-    mean_term = (tf.reduce_sum(tf.square(tf_d)) / tf_npixels)
-    variance_term = ((gamma / tf.square(tf_npixels)) * tf.square(tf.reduce_sum(tf_d)))
-    grads_term = (tf.reduce_sum(tf.square(tf_gx_d)) + tf.reduce_sum(tf.square(tf_gy_d))) / tf_npixels
+    mean_term = tf.div(tf.reduce_sum(tf.square(tf_d)), tf_npixels)
+    variance_term = tf.multiply(tf.div(gamma, tf.square(tf_npixels)), tf.square(tf.reduce_sum(tf_d)))
+    grads_term = tf.div((tf.reduce_sum(tf.square(tf_gx_d)) + tf.reduce_sum(tf.square(tf_gy_d))), tf_npixels)
 
     tf_loss_d = mean_term - variance_term + grads_term
 
     return loss_name, tf_loss_d
 
+
+# ------------------------------------------------------------------------- #
+#  Adversarial Loss (L_gan) #
+# ------------------------------------------------------------------------- #
+# TODO: Implementar Loss function do artigo "On regression losses for Deep Depth Estimation"
 
 # ------------------ #
 #  L2 Normalization  #

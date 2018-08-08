@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from collections import deque
-from scipy.misc import imresize
+# from scipy.misc import imresize
 
 from .dataloader import Dataloader
 from .third_party.laina.fcrn import ResNet50UpProj
@@ -35,7 +35,6 @@ class Train:
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
-            # FIXME: Não está funcionando
             if enableDataAug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 

@@ -72,7 +72,7 @@ class Network(object):
         self.setup()
 
     def setup(self):
-        """Construct the network. """
+        """Construct the network."""
         raise NotImplementedError('Must be implemented by the subclass.')
 
     @staticmethod

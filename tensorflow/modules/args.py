@@ -34,7 +34,7 @@ def argumentHandler():
 
     parser.add_argument('--data_aug', action='store_true', help="Enable Data Augmentation", default=False)
 
-    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'silog', 'berhu', etc",
+    parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'berhu', 'eigen', 'eigen_grads' etc",
                         default='berhu')
 
     parser.add_argument('--batch_size', type=int, help="Define the Training batch size", default=4)
@@ -56,6 +56,17 @@ def argumentHandler():
 
     parser.add_argument('-v', '--show_valid_progress', action='store_true', help="Show Validation Progress Images",
                         default=False)
+
+    parser.add_argument('--test_split', type=str, help="Select the desired test split for State-of-art evaluation: 'eigen', 'kitti', etc",
+                        default='')
+
+    parser.add_argument('--test_file_path', type=str, help="Evaluates the Model for the images speficied by test_file.txt file",
+                        default='')
+
+    parser.add_argument('--min_depth', type=float, help='minimum depth for evaluation', default=1e-3)
+    parser.add_argument('--max_depth', type=float, help='maximum depth for evaluation', default=80)
+    parser.add_argument('--eigen_crop', help='if set, crops according to Eigen NIPS14', action='store_true')
+    parser.add_argument('--garg_crop', help='if set, crops according to Garg  ECCV16', action='store_true')
 
     # ========= #
     #  Testing  #

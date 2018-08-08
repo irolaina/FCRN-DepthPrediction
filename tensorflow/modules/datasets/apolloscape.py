@@ -23,79 +23,40 @@
 # ===========
 import glob
 import os
-import time
 
-import numpy as np
-
-from ..filenames import FilenamesHandler
 from .dataset import Dataset
-
-
-# ==================
-#  Global Variables
-# ==================
-
-
-# ===========
-#  Functions
-# ===========
 
 
 # ===================
 #  Class Declaration
 # ===================
-class Apolloscape(Dataset, FilenamesHandler):
+class Apolloscape(Dataset):
     def __init__(self, *args, **kwargs):
         super(Apolloscape, self).__init__(*args, **kwargs)
 
-        print("[Dataloader] Apolloscape object created.")
-
-    def getFilenamesLists(self, mode):
-        image_filenames = []
-        depth_filenames = []
-
-        file = 'data/' + self.name + '_' + mode + '.txt'
-        ratio = 0.8
+    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
+        file = self.get_file_path(mode, test_split, test_file_path)
 
         if os.path.exists(file):
-            image_filenames, depth_filenames = self.loadInputList(file, self.dataset_path)
+            image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
         else:
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
-            # Finds input images and labels inside list of folders.
+            # Finds input images and labels inside the list of folders.
+            # TODO: Arrumar comentários
             image_filenames_tmp = glob.glob(self.dataset_path + "ColorImage/*/*/*.jpg")  # ...ColorImage/Record*/Camera */*.jpg
             depth_filenames_tmp = glob.glob(self.dataset_path + "Depth/*/*/*.png")  # ...Depth/Record*/Camera */*.png
 
             image_filenames_aux = [os.path.splitext(os.path.split(image)[1])[0] for image in image_filenames_tmp]
             depth_filenames_aux = [os.path.splitext(os.path.split(depth)[1])[0] for depth in depth_filenames_tmp]
 
-            n, m = len(image_filenames_aux), len(depth_filenames_aux)
-
-            # Sequential Search. This kind of search ensures that the images are paired!
-            print("[Dataloader] Checking if RGB and Depth images are paired... ")
-
-            start = time.time()
-            for j, depth in enumerate(depth_filenames_aux):
-                print("%d/%d" % (j + 1, m))  # Debug
-                for i, image in enumerate(image_filenames_aux):
-                    if image == depth:
-                        image_filenames.append(image_filenames_tmp[i])
-                        depth_filenames.append(depth_filenames_tmp[j])
-
-            n2, m2 = len(image_filenames), len(depth_filenames)
-            if not n2 == m2:
-                print("[AssertionError] Length must be equal!")
-                raise AssertionError()
-            print("time: %f s" % (time.time() - start))
-
-            # Shuffles
-            s = np.random.choice(n2, n2, replace=False)
-            image_filenames = list(np.array(image_filenames)[s])
-            depth_filenames = list(np.array(depth_filenames)[s])
+            # TODO: Add Comment
+            image_filenames, depth_filenames, n2, m2 = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,
+                                                                         image_filenames_aux, depth_filenames_aux)
 
             # Splits Train/Test Subsets
-            divider = int(n2 * ratio)
+            divider = int(n2 * self.ratio)
 
             if mode == 'train':
                 image_filenames = image_filenames[:divider]
@@ -116,9 +77,7 @@ class Apolloscape(Dataset, FilenamesHandler):
             #     print(i)
             # input("enter")
 
-            image_filenames_dump = [image.replace(self.dataset_path, '') for image in image_filenames]
-            depth_filenames_dump = [depth.replace(self.dataset_path, '') for depth in depth_filenames]
+            # TODO: Acredito que dê pra mover a chamada dessa função para fora
+            self.saveList(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
 
-            self.saveList(image_filenames_dump, depth_filenames_dump, self.name, mode)
-
-        return image_filenames, depth_filenames
+        return image_filenames, depth_filenames, file

@@ -8,7 +8,6 @@
 # - Não acontece com as images uint8, apenas com as depth uint16
 
 # Dúvidas
-# TODO: Por que string_input_producer sempre começa do segundo sample?
 # - Será que alguma imagem da lista de imagens não existe? R.: Usei o check_filenames_exists.py e todas as imagens existem
 # - Será que o erro está sendo causado por tf_image ser uint8 e tf_depth ser uint16? R.: Mudei pra float32 e continuou dando erro
 # - Um dos erros que deu indicava que talvez uma das imagens de depth tivesse formato inválido, isto é, que não fosse
@@ -108,17 +107,16 @@ print(len(depth_filenames))
 #  Tensorflow
 # ============
 # Strings input tensors
-tf_train_image_filename_queue = tf.train.string_input_producer(image_filenames,
-                                                               shuffle=False,
-                                                               capacity=capacity)
-tf_train_depth_filename_queue = tf.train.string_input_producer(depth_filenames,
-                                                               shuffle=False,
-                                                               capacity=capacity)
+print(image_filenames)
+input("oi")
+tf_train_input_queue = tf.train.slice_input_producer([image_filenames, depth_filenames], shuffle=False, capacity=capacity)
+
+tf_image_key = tf_train_input_queue[0]
+tf_depth_key = tf_train_input_queue[1]
 
 # Reads/Decodes images
-image_reader = tf.WholeFileReader()
-tf_image_key, tf_image_file = image_reader.read(tf_train_image_filename_queue)
-tf_depth_key, tf_depth_file = image_reader.read(tf_train_depth_filename_queue)
+tf_image_file = tf.read_file(tf_image_key)
+tf_depth_file = tf.read_file(tf_depth_key)
 
 if dataset_name == 'apolloscape':
     tf_image = tf.image.decode_jpeg(tf_image_file)
