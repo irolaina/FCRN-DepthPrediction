@@ -1,0 +1,2 @@
+model,split,abs_rel,sq_rel,rms,log_rms,d1_all,d1,d2,d3
+output/fcrn/kittidepth/valid_px/berhu/2018-07-12_10-58-40/restore/model.fcrn,kitti,0.13516705,1.2410309,5.2708964,0.2101023,0.0,0.83769107,0.9401553,0.9758345

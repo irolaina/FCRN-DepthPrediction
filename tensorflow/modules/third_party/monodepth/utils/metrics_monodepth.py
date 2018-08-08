@@ -1,3 +1,4 @@
+import csv
 import imageio
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -288,8 +289,8 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         test_split = args.test_split
 
     # TODO: Mover para utils.py?
-    def saveMetricsResults():
-        """Logs the obtained simulation results."""
+    def saveMetricsResultsTXT():
+        """Logs the obtained simulation results on a .txt file."""
         save_file_path = 'results_metrics.txt'
         print("[Results] Logging simulation info to '%s' file..." % save_file_path)
 
@@ -302,11 +303,33 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             rms.mean(),
             log_rms.mean(),
             d1_all.mean(),
-            a1.mean(), a2.mean(),
+            a1.mean(),
+            a2.mean(),
             a3.mean()))
         f.close()
 
-    saveMetricsResults()
+    def saveMetricsResultsCSV():
+        """Logs the obtained simulation results on a .csv file."""
+        save_file_path = 'results_metrics.csv'
+        print("[Results] Logging simulation info to '%s' file..." % save_file_path)
+
+        fields = [args.model_path,
+                  test_split,
+                  abs_rel.mean(),
+                  sq_rel.mean(),
+                  rms.mean(),
+                  log_rms.mean(),
+                  d1_all.mean(),
+                  a1.mean(),
+                  a2.mean(),
+                  a3.mean()]
+
+        with open(save_file_path, 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(fields)
+
+    # saveMetricsResultsTXT()
+    saveMetricsResultsCSV()
 
     # Display Results
     print()
