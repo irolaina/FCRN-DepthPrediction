@@ -63,24 +63,11 @@ class NyuDepth(Dataset):
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside the list of folders.
-            image_filenames_tmp = []
-            depth_filenames_tmp = []
+            image_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/*/*_colors.png")  # ...ColorImage/Record*/Camera */*.jpg
+            depth_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/*/*_depth.png")  # ...Depth/Record*/Camera */*.png
 
-            image_filenames_aux = []
-            depth_filenames_aux = []
-            for folder in glob.glob(self.dataset_path + mode + "ing/*/"):
-                # print(folder)
-                os.chdir(folder)
-
-                for image in glob.glob('*_colors.png'):
-                    # print(file)
-                    image_filenames_tmp.append(folder + image)
-                    image_filenames_aux.append(os.path.split(image)[1].replace('_colors.png', ''))
-
-                for depth in glob.glob('*_depth.png'):
-                    # print(file)
-                    depth_filenames_tmp.append(folder + depth)
-                    depth_filenames_aux.append(os.path.split(depth)[1].replace('_depth.png', ''))
+            image_filenames_aux = [os.path.split(image)[1].replace('_colors.png', '') for image in image_filenames_tmp]
+            depth_filenames_aux = [os.path.split(depth)[1].replace('_depth.png',  '') for depth in depth_filenames_tmp]
 
             # TODO: Add Comment
             image_filenames, depth_filenames, _, _ = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,
