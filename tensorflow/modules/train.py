@@ -27,7 +27,10 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, tf_image_key, tf_image, tf_depth_key, tf_depth, input_size, output_size, max_depth, dataset_name, enableDataAug):
+    def __init__(self, args, data, input_size, output_size, enableDataAug):
+        # TODO: modificar função para que não seja preciso retornar os tensors, utilizar self. variables diretamente.
+        tf_image_key, tf_image, tf_depth_key, tf_depth = self.readImage(data.dataset.name, data.train_image_filenames, data.train_depth_filenames)
+
         with tf.name_scope('Input'):
             # Raw Input/Output
             # tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
@@ -39,11 +42,11 @@ class Train:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
             # True Depth Value Calculation. May vary from dataset to dataset.
-            tf_depth = Dataloader.rawdepth2meters(tf_depth, dataset_name)
+            tf_depth = Dataloader.rawdepth2meters(tf_depth, data.dataset.name)
 
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
-                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, data.dataset.name)
 
             # Network Input/Output. Overwrite Tensors!
             self.tf_image = tf_image
@@ -143,6 +146,58 @@ class Train:
         print(self.tf_learning_rate)
         print()
         # input("train")
+
+    def readImage(self, dataset_name, image_filenames, depth_filenames): # Used only for train
+        # Creates Inputs Queue.
+        # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may get misaligned the pair (image, depth)!!!
+
+        # filenames = list(zip(image_filenames, depth_filenames))
+        # for filename in filenames:
+        #     print(filename)
+        # print(len(filenames))
+        # input("readImage")
+
+        tf_image_filenames = tf.constant(image_filenames)
+        tf_depth_filenames = tf.constant(depth_filenames)
+
+        tf_train_input_queue = tf.train.slice_input_producer([tf_image_filenames, tf_depth_filenames], shuffle=False)
+
+        # Reads images
+        self.tf_train_image_key = tf_train_input_queue[0]
+        self.tf_train_depth_key = tf_train_input_queue[1]
+
+        tf_image_file = tf.read_file(tf_train_input_queue[0])
+        tf_depth_file = tf.read_file(tf_train_input_queue[1])
+
+        if dataset_name == 'apolloscape':
+            self.tf_train_image = tf.image.decode_jpeg(tf_image_file, channels=3)
+        else:
+            self.tf_train_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
+
+        if dataset_name.split('_')[0] == 'kittidiscrete' or \
+           dataset_name.split('_')[0] == 'kitticontinuous':
+            self.tf_train_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
+        else:
+            self.tf_train_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
+
+        # Retrieves shape
+        # tf_image.set_shape(self.image_size.getSize())
+        # tf_depth.set_shape(self.depth_size.getSize())
+
+        tf_image_shape = tf.shape(self.tf_train_image)
+        tf_depth_shape = tf.shape(self.tf_train_depth)
+
+        # Print Tensors
+        print("tf_image_key: \t", self.tf_train_image_key)
+        print("tf_depth_key: \t", self.tf_train_depth_key)
+        print("tf_image_file: \t", tf_image_file)
+        print("tf_depth_file: \t", tf_depth_file)
+        print("tf_image: \t", self.tf_train_image)
+        print("tf_depth: \t", self.tf_train_depth)
+        print("tf_image_shape: ", tf_image_shape)
+        print("tf_depth_shape: ", tf_depth_shape)
+
+        return self.tf_train_image_key, self.tf_train_image, self.tf_train_depth_key, self.tf_train_depth
 
     def trainCollection(self):
         tf.add_to_collection('batch_image', self.tf_batch_image)

@@ -258,8 +258,6 @@ def train(args):
             data.train_image_filenames = np.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = np.expand_dims(data.train_depth_filenames[0], axis=0)
 
-        data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
-
         # Build Network Model
         model = Model(args, data)
         model.collectSummaries(save_path, graph)
@@ -361,9 +359,9 @@ def train(args):
                 # [Valid] TODO: Implementar Leitura por Batches
 
                 # Detects the end of a epoch
-                # if True: # Only for testing the following condition!!!
+                if True: # Only for testing the following condition!!!
                 # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
-                if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
+                # if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):
