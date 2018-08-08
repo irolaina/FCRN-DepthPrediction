@@ -29,7 +29,7 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 class Train:
     def __init__(self, args, data, input_size, output_size, enableDataAug):
         # TODO: modificar função para que não seja preciso retornar os tensors, utilizar self. variables diretamente.
-        tf_image_key, tf_image, tf_depth_key, tf_depth = self.readImage(data.dataset.name, data.train_image_filenames, data.train_depth_filenames)
+        tf_image_key, tf_image, tf_depth_key, tf_depth = self.readImages(data.dataset.name, data.train_image_filenames, data.train_depth_filenames)
 
         with tf.name_scope('Input'):
             # Raw Input/Output
@@ -147,7 +147,7 @@ class Train:
         print()
         # input("train")
 
-    def readImage(self, dataset_name, image_filenames, depth_filenames): # Used only for train
+    def readImages(self, dataset_name, image_filenames, depth_filenames): # Used only for train
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may get misaligned the pair (image, depth)!!!
 
@@ -166,19 +166,7 @@ class Train:
         self.tf_train_image_key = tf_train_input_queue[0]
         self.tf_train_depth_key = tf_train_input_queue[1]
 
-        tf_image_file = tf.read_file(tf_train_input_queue[0])
-        tf_depth_file = tf.read_file(tf_train_input_queue[1])
-
-        if dataset_name == 'apolloscape':
-            self.tf_train_image = tf.image.decode_jpeg(tf_image_file, channels=3)
-        else:
-            self.tf_train_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
-
-        if dataset_name.split('_')[0] == 'kittidiscrete' or \
-           dataset_name.split('_')[0] == 'kitticontinuous':
-            self.tf_train_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
-        else:
-            self.tf_train_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
+        self.tf_train_image, self.tf_train_depth = Dataloader.decodeImages(self.tf_train_image_key, self.tf_train_depth_key, dataset_name)
 
         # Retrieves shape
         # tf_image.set_shape(self.image_size.getSize())
@@ -190,8 +178,6 @@ class Train:
         # Print Tensors
         print("tf_image_key: \t", self.tf_train_image_key)
         print("tf_depth_key: \t", self.tf_train_depth_key)
-        print("tf_image_file: \t", tf_image_file)
-        print("tf_depth_file: \t", tf_depth_file)
         print("tf_image: \t", self.tf_train_image)
         print("tf_depth: \t", self.tf_train_depth)
         print("tf_image_shape: ", tf_image_shape)

@@ -359,9 +359,9 @@ def train(args):
                 # [Valid] TODO: Implementar Leitura por Batches
 
                 # Detects the end of a epoch
-                if True: # Only for testing the following condition!!!
+                # if True: # Only for testing the following condition!!!
                 # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
-                # if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
+                if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
                     for i in range(data.numTestSamples):

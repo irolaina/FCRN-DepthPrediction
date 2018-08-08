@@ -27,19 +27,7 @@ class Test:
             self.tf_image_key = tf.placeholder(tf.string)
             self.tf_depth_key = tf.placeholder(tf.string)
 
-            tf_image_file = tf.read_file(self.tf_image_key)
-            tf_depth_file = tf.read_file(self.tf_depth_key)
-
-            if data.dataset.name == 'apolloscape':
-                tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
-            else:
-                tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
-
-            if data.dataset.name.split('_')[0] == 'kittidiscrete' or \
-                    data.dataset.name.split('_')[0] == 'kitticontinuous':
-                tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
-            else:
-                tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
+            tf_image, tf_depth = Dataloader.decodeImages(self.tf_image_key, self.tf_depth_key, data.dataset.name)
 
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = data.rawdepth2meters(tf_depth, data.dataset.name)

@@ -170,3 +170,25 @@ class Dataloader:
             tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
 
         return tf_image, tf_depth
+
+    @staticmethod
+    def decodeImages(tf_image_key, tf_depth_key, dataset_name):
+        tf_image_file = tf.read_file(tf_image_key)
+        tf_depth_file = tf.read_file(tf_depth_key)
+
+        if dataset_name == 'apolloscape':
+            tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
+        else:
+            tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
+
+        if dataset_name.split('_')[0] == 'kittidiscrete' or \
+           dataset_name.split('_')[0] == 'kitticontinuous':
+            tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
+        else:
+            tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
+
+        # Print Tensors
+        print("tf_image_file: \t", tf_image_file)
+        print("tf_depth_file: \t", tf_depth_file)
+
+        return tf_image, tf_depth
