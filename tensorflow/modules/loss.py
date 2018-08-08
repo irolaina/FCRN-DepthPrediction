@@ -73,7 +73,8 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
         tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
 
     # Loss
-    tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error, tf.div((tf.square(tf_abs_error) + tf.square(tf_c)), tf.multiply(tf.constant(2.0), tf_c)))
+    tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
+                             tf.div((tf.square(tf_abs_error) + tf.square(tf_c)), tf.multiply(tf.constant(2.0), tf_c)))
 
     tf_loss = tf.reduce_sum(tf_berHu_loss)
 
@@ -181,6 +182,7 @@ def tf_L_eigen_grads(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     tf_loss_d = mean_term - variance_term + grads_term
 
     return loss_name, tf_loss_d
+
 
 # ------------------------------------------------------------------------- #
 #  Adversarial Loss (L_gan) #

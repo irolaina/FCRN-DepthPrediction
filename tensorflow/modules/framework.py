@@ -11,6 +11,7 @@ from modules.size import Size
 from modules.train import Train
 from modules.validation import Validation
 
+
 # ==================
 #  Global Variables
 # ==================
@@ -61,10 +62,13 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name, self.args.data_aug)
+            self.train = Train(self.args, data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key,
+                               data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth,
+                               data.dataset_name, self.args.data_aug)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth, data.dataset_name)
+            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth,
+                                    data.dataset_name)
 
     def build_losses(self, selected_loss, selected_px):
         valid_pixels = True if selected_px == 'valid' else False
@@ -91,25 +95,25 @@ class Model(object):
 
             elif selected_loss == 'eigen':
                 self.loss_name, self.train.tf_loss = loss.tf_L_eigen(self.train.tf_pred,
-                                                                          self.train.tf_batch_depth,
-                                                                          valid_pixels,
-                                                                          gamma=0.5)
+                                                                     self.train.tf_batch_depth,
+                                                                     valid_pixels,
+                                                                     gamma=0.5)
 
                 _, self.valid.tf_loss = loss.tf_L_eigen(self.valid.tf_pred,
-                                                             self.valid.tf_depth_resized,
-                                                             valid_pixels,
-                                                             gamma=0.5)
+                                                        self.valid.tf_depth_resized,
+                                                        valid_pixels,
+                                                        gamma=0.5)
 
             elif selected_loss == 'eigen_grads':
                 self.loss_name, self.train.tf_loss = loss.tf_L_eigen_grads(self.train.tf_pred,
-                                                                          self.train.tf_batch_depth,
-                                                                          valid_pixels,
-                                                                          gamma=0.5)
+                                                                           self.train.tf_batch_depth,
+                                                                           valid_pixels,
+                                                                           gamma=0.5)
 
                 _, self.valid.tf_loss = loss.tf_L_eigen_grads(self.valid.tf_pred,
-                                                             self.valid.tf_depth_resized,
-                                                             valid_pixels,
-                                                             gamma=0.5)
+                                                              self.valid.tf_depth_resized,
+                                                              valid_pixels,
+                                                              gamma=0.5)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
                 sys.exit()
@@ -192,6 +196,7 @@ class Model(object):
 
         f = open(save_file_path, 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tepoch: %d/%d\t\tstep: %d/%d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
-            datetime, self.args.model_name, self.args.dataset, self.loss_name, epoch, max_epochs, step, max_steps, self.train.loss, self.valid.loss,
+            datetime, self.args.model_name, self.args.dataset, self.loss_name, epoch, max_epochs, step, max_steps,
+            self.train.loss, self.valid.loss,
             sim_train))
         f.close()

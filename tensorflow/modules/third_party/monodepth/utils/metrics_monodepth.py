@@ -144,7 +144,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             # print(im_sizes[t_id])
 
             try:
-                gt_depth_continuous = imageio.imread(gt_depth_continuous_path).astype(np.float32) / 3.0 # Convert uint8 to float, meters
+                gt_depth_continuous = imageio.imread(gt_depth_continuous_path).astype(np.float32) / 3.0  # Convert uint8 to float, meters
                 gt_depths_continuous.append(gt_depth_continuous)
             except FileNotFoundError:
                 gt_depths_continuous.append(np.zeros(shape=im_sizes[t_id]))

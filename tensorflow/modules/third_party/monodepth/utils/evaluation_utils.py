@@ -7,7 +7,7 @@ from scipy.interpolate import LinearNDInterpolator
 
 def compute_errors(gt, pred):
     thresh = np.maximum((gt / pred), (pred / gt))
-    a1 = (thresh < 1.25   ).mean()
+    a1 = (thresh < 1.25     ).mean()
     a2 = (thresh < 1.25 ** 2).mean()
     a3 = (thresh < 1.25 ** 3).mean()
 
@@ -66,6 +66,7 @@ def convert_disps_to_depths_kitti(gt_disparities, pred_disparities):
         pred_depths.append(pred_depth)
     return gt_depths, pred_depths, pred_disparities_resized
 
+
 # TODO: Acredito que esta função possa ser aprimorada
 def convert_gt_disps_to_depths_kitti(gt_disparities):
     gt_depths = []
@@ -84,6 +85,7 @@ def convert_gt_disps_to_depths_kitti(gt_disparities):
 
         gt_depths.append(gt_depth)
     return gt_depths
+
 
 # ------- #
 #  EIGEN  #
