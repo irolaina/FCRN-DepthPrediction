@@ -560,13 +560,13 @@ def test(args):
             print()
             print('args.test_split:', args.test_split)
             print('args.test_file_path:', args.test_file_path)
-            print('dataset_path:', data.datasetObj.dataset_path)
+            print('dataset_path:', data.dataset.dataset_path)
             print()
             # input("[Metrics] Press ENTER to start evaluation...") # TODO: Desativar?
 
             # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
             # myMetrics.evaluate(pred_array, gt_array) # FIXME:
-            MonodepthMetrics.evaluate(args, pred_array, gt_array, data.datasetObj.dataset_path)
+            MonodepthMetrics.evaluate(args, pred_array, gt_array, data.dataset.dataset_path)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")

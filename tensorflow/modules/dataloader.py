@@ -40,39 +40,33 @@ class Dataloader:
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
 
-        # Detects which dataset was selected and creates the 'datasetObj'.
+        # Detects which dataset was selected and creates the 'dataset'.
         # print(args.dataset)
 
         if args.dataset == 'apolloscape':
             dataset_path = dataset_root + "apolloscape/data/"
-            self.datasetObj = Apolloscape(dataset_path=dataset_path, name=args.dataset, height=2710, width=3384, max_depth=None)
+            self.dataset = Apolloscape(dataset_path=dataset_path, name=args.dataset, height=2710, width=3384, max_depth=None)
 
         elif args.dataset == 'kittidepth':
             dataset_path = dataset_root + "kitti/"
-            self.datasetObj = KittiDepth(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=80.0)
+            self.dataset = KittiDepth(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=80.0)
 
         elif args.dataset.split('_')[0] == 'kittidiscrete':
             dataset_path = dataset_root + "kitti/raw_data/"
-            self.datasetObj = KittiDiscrete(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=None)
+            self.dataset = KittiDiscrete(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=None)
 
         elif args.dataset.split('_')[0] == 'kitticontinuous':
             dataset_path = dataset_root + "kitti/raw_data/"
-            self.datasetObj = KittiContinuous(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=85.0)
+            self.dataset = KittiContinuous(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=85.0)
 
         elif args.dataset == 'nyudepth':
             dataset_path = dataset_root + "nyu-depth-v2/data/images/"
-            self.datasetObj = NyuDepth(dataset_path=dataset_path, name=args.dataset, height=480, width=640, max_depth=None)
+            self.dataset = NyuDepth(dataset_path=dataset_path, name=args.dataset, height=480, width=640, max_depth=None)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "
                   "Check the list of supported datasets." % args.dataset)
             sys.exit()
-
-        # Collects Dataset Info
-        self.dataset_name = self.datasetObj.name
-        self.dataset_path = self.datasetObj.dataset_path
-        self.image_size = self.datasetObj.image_size
-        self.depth_size = self.datasetObj.depth_size
 
         # Searches dataset image/depth filenames lists
         self.train_image_filenames, self.train_depth_filenames, self.numTrainSamples = None, None, -1
@@ -101,7 +95,7 @@ class Dataloader:
         print("\n[Dataloader] dataloader object created.")
 
     def getTrainData(self, mode='train'):
-        image_filenames, depth_filenames, _ = self.datasetObj.getFilenamesLists(mode)
+        image_filenames, depth_filenames, _ = self.dataset.getFilenamesLists(mode)
         tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
@@ -122,7 +116,7 @@ class Dataloader:
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTrainSamples
 
     def getTestData(self, mode='test', test_split='', test_file_path=''):
-        image_filenames, depth_filenames, file = self.datasetObj.getFilenamesLists(mode, test_split, test_file_path)
+        image_filenames, depth_filenames, file = self.dataset.getFilenamesLists(mode, test_split, test_file_path)
         tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
 
         try:
@@ -199,13 +193,13 @@ class Dataloader:
         tf_image_file = tf.read_file(tf_train_input_queue[0])
         tf_depth_file = tf.read_file(tf_train_input_queue[1])
 
-        if self.dataset_name == 'apolloscape':
+        if self.dataset.name == 'apolloscape':
             tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
         else:
             tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
-        if self.dataset_name.split('_')[0] == 'kittidiscrete' or \
-           self.dataset_name.split('_')[0] == 'kitticontinuous':
+        if self.dataset.name.split('_')[0] == 'kittidiscrete' or \
+           self.dataset.name.split('_')[0] == 'kitticontinuous':
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
