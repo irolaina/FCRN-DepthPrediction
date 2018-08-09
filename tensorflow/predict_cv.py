@@ -73,6 +73,116 @@ class CvTimer(object):
         return sum(self.l_fps_history) / float(self.fps_len)
 
 
+def processImages(frame, pred, timer):
+    # Change Data Scale from meters to uint8
+    pred_uint8 = cv2.convertScaleAbs(pred[0])
+    pred_scaled_uint8 = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+
+    # Apply Median Filter
+    pred_median = cv2.medianBlur(pred[0], 3)
+    pred_median_scaled_uint8 = cv2.convertScaleAbs(pred_median * (255 / np.max(pred_median)))
+    pred_jet = cv2.applyColorMap(255 - pred_median_scaled_uint8, cv2.COLORMAP_JET)
+    pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
+
+    # Change Colormap
+    pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
+    cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
+
+    pred_hsv_resized = cv2.resize(pred_hsv, (304, 228), interpolation=cv2.INTER_CUBIC)
+
+    # Apply the overlay
+    alpha = 0.5
+    background = frame.copy()
+    overlay = pred_jet_resized.copy()
+
+    overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
+
+    # Concatenates Images
+    conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
+    conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
+
+    # Debug
+    # print(pred.shape, pred.dtype)
+    # print(pred_uint8.shape, pred_uint8.dtype)
+    # print(pred_jet_resized.shape, pred_jet_resized.dtype)
+    # print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
+    # print(background.shape, background.dtype)
+    # print(overlay.shape, overlay.dtype)
+
+    # Display the resulting frame - OpenCV
+    # cv2.imshow('frame', frame)
+    # cv2.imshow('pred', pred_uint8)
+    # cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
+    # cv2.imshow('pred (scaled)', pred_scaled_uint8)
+    # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
+    # cv2.imshow('pred (scaled, median)', pred_median_scaled_uint8)
+    # cv2.imshow('overlay', overlay)
+    cv2.imshow('pred, pred(scaled), pred (scaled, median)', conc)
+    cv2.imshow('frame, pred_jet, pred_hsv, overlay', conc2)
+
+    return timer
+
+
+def processImages_removeSky(frame, pred, timer):
+    # Remove Sky
+    crop_height_perc = 0.3
+    frame_new_height = int(crop_height_perc * frame.shape[0])
+    pred_new_height = int(crop_height_perc * pred.shape[1])
+    frame = frame[frame_new_height:, :, :]
+    pred = pred[:, pred_new_height:, :, :]
+
+    # Change Data Scale from meters to uint8
+    pred_uint8 = cv2.convertScaleAbs(pred[0])
+    pred_scaled_uint8 = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+
+    # Apply Median Filter
+    pred_median = cv2.medianBlur(pred[0], 3)
+    pred_median_scaled_uint8 = cv2.convertScaleAbs(pred_median * (255 / np.max(pred_median)))
+    pred_jet = cv2.applyColorMap(255 - pred_median_scaled_uint8, cv2.COLORMAP_JET)
+    pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
+
+    # Change Colormap
+    # TODO: definir o valor de 160 em funcao de frame_new_height e frame.height
+    pred_jet_resized = cv2.resize(pred_jet, (304, 160), interpolation=cv2.INTER_CUBIC)
+    cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
+
+    pred_hsv_resized = cv2.resize(pred_hsv, (304, 160), interpolation=cv2.INTER_CUBIC)
+
+    # Apply the overlay
+    alpha = 0.5
+    background = frame.copy()
+    overlay = pred_jet_resized.copy()
+
+    overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
+
+    # Concatenates Images
+    conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
+    conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
+
+    # Debug
+    # print(pred.shape, pred.dtype)
+    # print(pred_uint8.shape, pred_uint8.dtype)
+    # print(pred_jet_resized.shape, pred_jet_resized.dtype)
+    # print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
+    # print(background.shape, background.dtype)
+    # print(overlay.shape, overlay.dtype)
+
+    # Display the resulting frame - OpenCV
+    # cv2.imshow('frame', frame)
+    # cv2.imshow('pred', pred_uint8)
+    # cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
+    # cv2.imshow('pred (scaled)', pred_scaled_uint8)
+    # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
+    # cv2.imshow('pred (scaled, median)', pred_median_scaled_uint8)
+    # cv2.imshow('overlay', overlay)
+    cv2.imshow('pred, pred(scaled), pred (scaled, median) (without sky)', conc)
+    cv2.imshow('frame, pred_jet, pred_hsv, overlay (without sky)', conc2)
+
+    return timer
+
+
 # ======
 #  Main
 # ======
@@ -110,7 +220,8 @@ def main():
 
     with tf.variable_scope('model'):  # Disable for running original models!!!
         # Construct the network
-        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1,
+                             is_training=False)
 
     tf_pred = net.get_output()
 
@@ -163,68 +274,8 @@ def main():
             #  Image Processing  #
             # ------------------ #
             # Convert Predicted Depth to uint8 Image
-            pred_uint8 = cv2.convertScaleAbs(pred[0])
-            pred_scaled_uint8 = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
-
-            # Apply Median Filter
-            pred_median = cv2.medianBlur(pred[0], 3)
-            pred_median_scaled_uint8 = cv2.convertScaleAbs(pred_median * (255 / np.max(pred_median)))
-            pred_jet = cv2.applyColorMap(255 - pred_median_scaled_uint8, cv2.COLORMAP_JET)
-            pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
-
-            # Change Colormap
-            pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
-            cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
-
-            pred_hsv_resized = cv2.resize(pred_hsv, (304, 228), interpolation=cv2.INTER_CUBIC)
-
-            # Apply the overlay
-            alpha = 0.5
-            background = frame.copy()
-            overlay = pred_jet_resized.copy()
-
-            overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
-
-            # Concatenates Images
-            conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
-            conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
-
-            # print(background.shape, background.dtype)
-            # print(overlay.shape, overlay.dtype)
-            # print(added_image.shape, added_image.dtype)
-
-            # print(pred)
-            # print("min:", np.min(pred))
-            # print("max:", np.max(pred))
-
-            # print(pred_uint8[0,:,:,0])
-            # print(np.min(pred_uint8))
-            # print(np.max(pred_uint8))
-            # print(pred_uint8.shape, pred_uint8.dtype)
-            # input("pred_uint8")
-
-            # print(pred_uint8.shape, pred_uint8.dtype)
-            # print(pred_jet_resized.shape, pred_jet_resized.dtype)
-            # print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
-
-            # Display the resulting frame - Matplotlib
-            # plt.figure(1)
-            # plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)) # OpenCV uses BGR, Matplotlib uses RGB
-            # plt.figure(2)
-            # plt.imshow(pred[0, :, :, 0])
-            # plt.pause(0.001)
-
-            # Display the resulting frame - OpenCV
-            # cv2.imshow('frame', frame)
-            # cv2.imshow('pred', pred_uint8)
-            # cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
-            # cv2.imshow('pred (scaled)', pred_scaled_uint8)
-            # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
-            # cv2.imshow('pred (scaled, median)', pred_median_scaled_uint8)
-            # cv2.imshow('overlay', overlay)
-            cv2.imshow('pred, pred(scaled), pred (scaled, median)', conc)
-            cv2.imshow('frame, pred_jet, pred_hsv, overlay', conc2)
+            timer = processImages(frame, pred, timer)
+            timer = processImages_removeSky(frame, pred, timer)
 
             # Save Images
             if SAVE_IMAGES:

@@ -163,11 +163,11 @@ class Dataloader:
             tf_depth_shape = tf.shape(tf_depth)
 
             crop_height_perc = tf.constant(0.3, tf.float32)
-            tf_image_new_height = crop_height_perc * tf.cast(tf_image_shape[0], tf.float32)
-            tf_depth_new_height = crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32)
+            tf_image_new_height = tf.cast(crop_height_perc * tf.cast(tf_image_shape[0], tf.float32), tf.int32)
+            tf_depth_new_height = tf.cast(crop_height_perc * tf.cast(tf_depth_shape[0], tf.float32), tf.int32)
 
-            tf_image = tf_image[tf.cast(tf_image_new_height, tf.int32):, :]
-            tf_depth = tf_depth[tf.cast(tf_depth_new_height, tf.int32):, :]
+            tf_image = tf_image[tf_image_new_height:, :]
+            tf_depth = tf_depth[tf_depth_new_height:, :]
 
         return tf_image, tf_depth
 
