@@ -11,6 +11,7 @@ tensorflow/htmlcov/*
 !catkin_ws/src/
 !misc/getDatasetInfo/
 !tensorflow/tmp/reproduce_random_shuffle_error.py
+!tensorflow/tmp/count_valid_pixels.py
 
 # Exclude Extensions
 */.DS_Store
