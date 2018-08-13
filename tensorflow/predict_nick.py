@@ -146,14 +146,16 @@ hookman.start()
 # ========= #
 #  Predict  #
 # ========= #
-def predict(model_data_path, image_path):
-    print('[%s] Selected mode: Predict' % appName)
+def predict(args):
+    args.model_path, args.image_path
+
+    args.model_path = detect_available_models(args)
 
     # Default input size
     batch_size, height, width = 1, 228, 304
 
     # Read image (uint8)
-    img = Image.open(image_path)
+    img = Image.open(args.image_path)
     img = np.array(img)
 
     # ------- #
@@ -195,7 +197,7 @@ def predict(model_data_path, image_path):
         # --------- #
         # Use to load from ckpt file
         saver = tf.train.Saver()
-        saver.restore(sess, model_data_path)
+        saver.restore(sess, args.model_path)
 
         # Use to load from npy file
         # net.load(model_data_path, sess)
@@ -581,7 +583,10 @@ def main(args):
     elif args.mode == 'test':
         test(args)
     elif args.mode == 'pred':
-        predict(args.model_path, args.image_path)
+        predict(args)
+    else:
+        print("[ModeError] Selected mode doesn't exist! Select one of the following: 'train', 'test', or 'pred'.")
+        raise SystemExit
 
     # Close the listener when we are done
     hookman.cancel()
