@@ -29,10 +29,10 @@ STEPS=300000
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete   --px all   --loss eigen       --max_steps ${STEPS} --ldecay --l2norm --data_aug
 #python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kittidiscrete   --px all   --loss eigen_grads --max_steps ${STEPS} --ldecay --l2norm --data_aug
 
-python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss mse         --max_steps ${STEPS}          --l2norm --data_aug
-python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss mse         --max_steps ${STEPS} --ldecay --l2norm --data_aug
-python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss berhu       --max_steps ${STEPS}          --l2norm --data_aug
-python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss berhu       --max_steps ${STEPS} --ldecay --l2norm --data_aug
+#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss mse         --max_steps ${STEPS}          --l2norm --data_aug
+#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss mse         --max_steps ${STEPS} --ldecay --l2norm --data_aug
+#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss berhu       --max_steps ${STEPS}          --l2norm --data_aug
+#python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss berhu       --max_steps ${STEPS} --ldecay --l2norm --data_aug
 python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss eigen       --max_steps ${STEPS}          --l2norm --data_aug
 python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss eigen       --max_steps ${STEPS} --ldecay --l2norm --data_aug
 python3 predict_nick.py -m train --machine ${USER} --gpu ${GPU} -s kitticontinuous --px valid --loss eigen_grads --max_steps ${STEPS}          --l2norm --data_aug  # Avoid! Does the Gradients calculation make sense for the 'valid' flag?
