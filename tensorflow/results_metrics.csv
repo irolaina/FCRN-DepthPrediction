@@ -28,6 +28,7 @@ output/fcrn/kittidepth/valid_px/berhu/2018-07-12_10-58-40/restore/model.fcrn,eig
 output/fcrn/kittidepth/valid_px/berhu/2018-07-12_10-58-40/restore/model.fcrn,eigen_continuous,0.22439688,1.5833726,4.37567,0.25824675,0.0,0.6697602,0.8219894,0.87403226
 output/fcrn/kitticontinuous/valid_px/mse/2018-08-08_10-12-59/restore/model.fcrn,eigen_continuous,0.24534844,1.770912,5.8524613,0.3140567,0.0,0.5618036,0.76033413,0.8467266
 output/fcrn/kittidepth/valid_px/berhu/2018-07-06_18-07-11/restore/model.fcrn,eigen_continuous,0.30813992,2.5687184,5.5913424,0.32930684,0.0,0.5595217,0.7449538,0.83284134
+output/fcrn/kitticontinuous/valid_px/eigen_grads/2018-08-20_04-06-01/restore/model.fcrn,eigen_continuous,0.37419823,4.2179112,10.666173,0.71558845,0.0,0.19975942,0.43593878,0.59450555
 output/fcrn/kittidepth/valid_px/berhu/2018-07-10_14-01-13/restore/model.fcrn,eigen_continuous,0.5642485,4.6768317,9.523428,1.0990262,0.0,0.021169985,0.08115382,0.19485553
 output/fcrn/kittidepth/valid_px/berhu/2018-08-13_19-03-23/restore/model.fcrn,eigen_continuous,0.61416173,5.4003673,10.292754,1.3422158,0.0,0.009291827,0.066394635,0.16643453
 output/fcrn/kittidepth/valid_px/berhu/2018-08-17_16-52-27/restore/model.fcrn,eigen_continuous,0.6241038,5.5026875,10.2897625,1.3968197,0.0,0.007945804,0.06547783,0.165643
