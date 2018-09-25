@@ -82,10 +82,31 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
 
 2.) Run the following ROS nodes:
 
-    $ roscore   
+    $ roscore
+    
+    $ cd ~/MEGA/workspace/kitti2bag
     $ rosbag play -l kitti_2011_09_26_drive_0001_synced.bag
+    
+    $ cd go_fcrn
     $ python2 ros_listener_image.py
+    
     $ rviz
+        [Global Options]
+            Fixed Frame: velo_link
+        [Grid]
+            Reference Frame: base_link
+        [PointCloud2]
+            Topic: /kitti/velo/pointcloud
+        [Image]
+            Image Topic: /kitti/camera_color_left/image_raw
+        [Image]
+            Image Topic: /kitti/camera_color_right/image_raw
+        [Image]
+            Image Topic: /kitti/camera_gray_left/image_raw
+        [Image]
+            Image Topic: /kitti/camera_gray_right/image_raw
+        [Image]
+            Image Topic: /pred/image
 
 Optional:     
     

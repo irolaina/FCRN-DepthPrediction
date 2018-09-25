@@ -45,6 +45,7 @@ import tensorflow as tf
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
+from sensor_msgs.msg import PointCloud2
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
 
@@ -67,60 +68,18 @@ print(args.video_path)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-
-class Network(object):
-    def __init__(self):
-        # ----------------
-        #  Building Graph
-        # ----------------
-        with tf.Graph().as_default() as self.graph:
-            self.sess = tf.InteractiveSession()
-
-            # Default input size
-            self.height, self.width, channels = 228, 304, 3
-            batch_size = 1
-
-            # Create a placeholder for the input image
-            self.input_node = tf.placeholder(tf.uint8, shape=(self.height, self.width, channels))
-            self.input_shape = tf.placeholder(tf.int32, shape=3)
-            # tf_image_float32 = tf.cast(input_node, tf.float32)
-            tf_image_float32 = tf.image.convert_image_dtype(self.input_node, tf.float32)
-
-            with tf.variable_scope('model'):  # Disable for running original models!!!
-                # Construct the network
-                net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1,
-                                     is_training=False)
-
-            self.tf_pred = net.get_output()
-            self.tf_pred_up = tf.image.resize_images(self.tf_pred, self.input_shape[:2], tf.image.ResizeMethod.BILINEAR,
-                                                     align_corners=True)
-
-            # --------------------------
-            #  Restore Graph Parameters
-            # --------------------------
-            # Load the converted parameters
-            print('\nLoading the model...')
-
-            # Use to load from ckpt file
-            saver = tf.train.Saver()
-            saver.restore(self.sess, args.model_path)
-
-            # Use to load from npy file
-            # net.load(args.model_path, self.sess)
-
-
-def talker(image_raw, pub_string, pub_pred, rate, net):
-    # Capture frame-by-frame
-    image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
-    _, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
-                                 feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
-
-    # Image Processing
-    # pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
-    # image_message = bridge.cv2_to_imgmsg(pred_uint8_scaled, encoding="passthrough")
-
-    pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
-    image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
+def talker(image_raw, pub_string, pub_predCloud, rate):
+    # # Capture frame-by-frame
+    # image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
+    # _, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
+    #                              feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
+    #
+    # # Image Processing
+    # # pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+    # # image_message = bridge.cv2_to_imgmsg(pred_uint8_scaled, encoding="passthrough")
+    #
+    # pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
+    # image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
 
     # cv2.imshow("image_raw", image_raw)
     # cv2.imshow('image', image)
@@ -130,7 +89,12 @@ def talker(image_raw, pub_string, pub_pred, rate, net):
     hello_str = "hello world %s" % rospy.get_time()
     rospy.loginfo(hello_str)
     pub_string.publish(hello_str)
-    pub_pred.publish(image_message)
+
+    # Compute world coordinates from the disparity image
+    # cv::Mat    XYZ(disparity32F.size(), CV_32FC3);
+    # reprojectImageTo3D(disparity32F, XYZ, Q, false, CV_32F);
+    # print_3D_points(disparity32F, XYZ);
+
     rate.sleep()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
@@ -142,7 +106,7 @@ def callback(received_image_msg, args):
     cv_image = bridge.imgmsg_to_cv2(received_image_msg, desired_encoding="passthrough")
 
     try:
-        talker(cv_image, pub_string=args[0], pub_pred=args[1], rate=args[2], net=args[3])
+        talker(cv_image, pub_string=args[0], pub_predCloud=args[1], rate=args[2])
     except rospy.ROSInterruptException:
         pass
 
@@ -159,14 +123,13 @@ def listener():
 
     rospy.init_node('listener', anonymous=True)
     # rospy.init_node('talker', anonymous=True)
-    pub_string = rospy.Publisher('pred/string', String, queue_size=10)
-    pub_pred = rospy.Publisher('pred/image', Image, queue_size=10)
+    pub_string = rospy.Publisher('/pred2cloud/string', String, queue_size=10)
+    pub_predCloud = rospy.Publisher('/pred2cloud/cloud', PointCloud2, queue_size=10)
     rate = rospy.Rate(10)  # 10hz
 
     # model = ImportGraph(args.model_path)
-    net = Network()
 
-    rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, callback, (pub_string, pub_pred, rate, net))
+    rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, callback, (pub_string, pub_predCloud, rate))
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
