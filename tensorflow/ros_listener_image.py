@@ -159,13 +159,20 @@ def listener():
 
     rospy.init_node('listener', anonymous=True)
     # rospy.init_node('talker', anonymous=True)
-    pub_string = rospy.Publisher('pred/string', String, queue_size=10)
-    pub_pred = rospy.Publisher('pred/image', Image, queue_size=10)
     rate = rospy.Rate(10)  # 10hz
 
     # model = ImportGraph(args.model_path)
     net = Network()
 
+    # ------------ #
+    #  Publishers  #
+    # ------------ #
+    pub_string = rospy.Publisher('pred/string', String, queue_size=10)
+    pub_pred = rospy.Publisher('pred/image', Image, queue_size=10)
+
+    # ------------- #
+    #  Subscribers  #
+    # ------------- #
     rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, callback, (pub_string, pub_pred, rate, net))
 
     # spin() simply keeps python from exiting until this node is stopped

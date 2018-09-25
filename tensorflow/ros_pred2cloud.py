@@ -41,8 +41,8 @@ import os
 import cv2
 import numpy as np
 import rospy
-import tensorflow as tf
 from cv_bridge import CvBridge
+import message_filters
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 from sensor_msgs.msg import PointCloud2
@@ -68,7 +68,7 @@ print(args.video_path)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-def talker(image_raw, pub_string, pub_predCloud, rate):
+def talker(cv_pred_image, pub_string, pub_predCloud, rate):
     # # Capture frame-by-frame
     # image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
     # _, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
@@ -81,7 +81,7 @@ def talker(image_raw, pub_string, pub_predCloud, rate):
     # pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
     # image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
 
-    # cv2.imshow("image_raw", image_raw)
+    cv2.imshow("/pred/image", cv_pred_image)
     # cv2.imshow('image', image)
     # cv2.imshow('pred', pred_uint8_scaled)
     # cv2.imshow('pred_up', pred_up_uint8_scaled)
@@ -91,9 +91,22 @@ def talker(image_raw, pub_string, pub_predCloud, rate):
     pub_string.publish(hello_str)
 
     # Compute world coordinates from the disparity image
-    # cv::Mat    XYZ(disparity32F.size(), CV_32FC3);
-    # reprojectImageTo3D(disparity32F, XYZ, Q, false, CV_32F);
-    # print_3D_points(disparity32F, XYZ);
+    depthmap_height, depthmap_width = cv_pred_image.shape[0], cv_pred_image.shape[1]
+
+    fx, fy = 100.0, 100.0  # TODO: Change Value
+    cx, cy = 1.0, 1.0  # TODO: Change Value
+
+    print("Depth map size = {}x{}".format(depthmap_width, depthmap_height))
+
+    camera_params = np.array([[fx, 0, cx],
+                              [0, fy, cy],
+                              [0, 0, 1]])
+
+    print("Camera intrinsic matrix:\n{}".format(camera_params))
+    print("Reconstructing...")
+
+    # threeDImage = cv2.rgbd.depthTo3d()(cv_pred_image, Q)
+    # print(threeDImage.shape)
 
     rate.sleep()
 
@@ -101,12 +114,12 @@ def talker(image_raw, pub_string, pub_predCloud, rate):
         return 0
 
 
-def callback(received_image_msg, args):
+def callback(received_pred_image_msg, args):
     # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
-    cv_image = bridge.imgmsg_to_cv2(received_image_msg, desired_encoding="passthrough")
+    cv_pred_image = bridge.imgmsg_to_cv2(received_pred_image_msg, desired_encoding="passthrough")
 
     try:
-        talker(cv_image, pub_string=args[0], pub_predCloud=args[1], rate=args[2])
+        talker(cv_pred_image, pub_string=args[0], pub_predCloud=args[1], rate=args[2])
     except rospy.ROSInterruptException:
         pass
 
@@ -123,13 +136,24 @@ def listener():
 
     rospy.init_node('listener', anonymous=True)
     # rospy.init_node('talker', anonymous=True)
-    pub_string = rospy.Publisher('/pred2cloud/string', String, queue_size=10)
-    pub_predCloud = rospy.Publisher('/pred2cloud/cloud', PointCloud2, queue_size=10)
     rate = rospy.Rate(10)  # 10hz
 
-    # model = ImportGraph(args.model_path)
+    # ------------ #
+    #  Publishers  #
+    # ------------ #
+    pub_string = rospy.Publisher('/pred2cloud/string', String, queue_size=10)
+    pub_predCloud = rospy.Publisher('/pred2cloud/cloud', PointCloud2, queue_size=10)
 
-    rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, callback, (pub_string, pub_predCloud, rate))
+    # ------------- #
+    #  Subscribers  #
+    # ------------- #
+    rospy.Subscriber('/pred/image', Image, callback, (pub_string, pub_predCloud, rate))
+
+    # Sync Topics
+    # image_raw_sub = message_filters.Subscriber('/kitti/camera_color_left/image_raw', Image)
+    # pred_image_sub = message_filters.Subscriber('/pred/image', Image)
+    # ts = message_filters.TimeSynchronizer([image_raw_sub, pred_image_sub], 10)
+    # ts.registerCallback(callback, (pub_string, pub_predCloud, rate))
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
