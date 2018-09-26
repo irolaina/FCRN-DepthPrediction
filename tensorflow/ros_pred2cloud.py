@@ -41,13 +41,11 @@ import os
 import cv2
 import numpy as np
 import rospy
-from cv_bridge import CvBridge
-import message_filters
 import image_geometry
+
+from cv_bridge import CvBridge
 from std_msgs.msg import String
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import PointCloud2
-from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import Image, CameraInfo, PointCloud2
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
 

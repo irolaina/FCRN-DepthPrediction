@@ -43,8 +43,8 @@ import numpy as np
 import rospy
 import tensorflow as tf
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image
 from std_msgs.msg import String
+from sensor_msgs.msg import Image
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
 
@@ -127,7 +127,7 @@ def talker(image_raw, pub_string, pub_pred, rate, net):
     # cv2.imshow('pred', pred_uint8_scaled)
     # cv2.imshow('pred_up', pred_up_uint8_scaled)
 
-    hello_str = "hello world %s" % rospy.get_time()
+    hello_str = "image2pred"
     rospy.loginfo(hello_str)
     pub_string.publish(hello_str)
     pub_pred.publish(image_message)

@@ -81,36 +81,46 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
     $ python2 kitti2bag.py -t 2011_09_26 -r 0001 raw_synced
 
 2.) Run the following ROS nodes:
+    
+    1.) Init ROS
+        $ roscore
 
-    $ roscore
+    2.) Init ROSBag node
+        $ cd ~/MEGA/workspace/kitti2bag
+        $ rosbag play -l kitti_2011_09_26_drive_0001_synced.bag
     
-    $ cd ~/MEGA/workspace/kitti2bag
-    $ rosbag play -l kitti_2011_09_26_drive_0001_synced.bag
+    3.) Init Network Prediction node (image2pred)
+        $ cd go_fcrn
+        $ python2 ros_image2pred.py
     
-    $ cd go_fcrn
-    $ python2 ros_listener_image.py
-    
-    $ rviz
-        [Global Options]
-            Fixed Frame: velo_link
-        [Grid]
-            Reference Frame: base_link
-        [PointCloud2]
-            Topic: /kitti/velo/pointcloud
-        [Image]
-            Image Topic: /kitti/camera_color_left/image_raw
-        [Image]
-            Image Topic: /kitti/camera_color_right/image_raw
-        [Image]
-            Image Topic: /kitti/camera_gray_left/image_raw
-        [Image]
-            Image Topic: /kitti/camera_gray_right/image_raw
-        [Image]
-            Image Topic: /pred/image
+    4) Init RViz: ROS 3D Robot Visualizer
+        $ rviz
+            [Global Options]
+                Fixed Frame: velo_link
+            [Grid]
+                Reference Frame: base_link
+            [PointCloud2]
+                Topic: /kitti/velo/pointcloud
+            [Image]
+                Image Topic: /kitti/camera_color_left/image_raw
+            [Image]
+                Image Topic: /kitti/camera_color_right/image_raw
+            [Image]
+                Image Topic: /kitti/camera_gray_left/image_raw
+            [Image]
+                Image Topic: /kitti/camera_gray_right/image_raw
+            [Image]
+                Image Topic: /pred/image
+
+    5) Init 'depth_image_proc' nodelet (depth2cloud)
+        $ rosrun nodelet nodelet manager __name:=nodelet_manager
+        $ rosrun nodelet nodelet load depth_image_proc/point_cloud_xyz nodelet_manager __name:=nodelet_depth camera_info:=/kitti/camera_color_left/camera_info image_rect:=/pred/image
 
 Optional:     
     
     $ rostopic list
+    $ rosnode list
+    $ rostopic echo <topic>
     $ rqt_graph
 
 # Run Coverage for Codacy Support 
