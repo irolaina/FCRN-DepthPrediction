@@ -1,40 +1,9 @@
-#!/usr/bin/env python
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2008, Willow Garage, Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of Willow Garage, Inc. nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-# Revision $Id$
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
 
-# Simple talker demo that listens to std_msgs/Strings published to the 'chatter' topic
-
+# ===========
+#  Libraries
+# ===========
 import argparse
 import os
 
@@ -46,8 +15,6 @@ import image_geometry
 from cv_bridge import CvBridge
 from std_msgs.msg import String
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2
-
-from modules.third_party.laina.fcrn import ResNet50UpProj
 
 
 def argumentHandler():
@@ -82,7 +49,7 @@ def talker(cv_pred_image, pub_string, pub_predCloud, rate):
     # pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
     # image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
 
-    def reconstruct(): # TODO: Move
+    def reconstruct():  # TODO: Move
         # Compute world coordinates from the disparity image
         depthmap_height, depthmap_width = cv_pred_image.shape[0], cv_pred_image.shape[1]
 
@@ -131,11 +98,14 @@ def callback(received_pred_image_msg, args):
     if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
         return 0
 
+
 camModel = image_geometry.PinholeCameraModel()
+
+
 def callback_camera_info(received_camera_info_msg):
     camModel.fromCameraInfo(received_camera_info_msg)
     # print(camModel)
-    print("K:\n{}".format( camModel.intrinsicMatrix()))
+    print("K:\n{}".format(camModel.intrinsicMatrix()))
     # input("oi")
 
 
@@ -149,8 +119,6 @@ def listener():
     rospy.init_node('listener', anonymous=True)
     # rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10)  # 10hz
-
-
 
     # ------------ #
     #  Publishers  #
