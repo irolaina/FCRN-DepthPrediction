@@ -82,37 +82,42 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
 
 2.) Run the following ROS nodes:
     
-    1.) Init ROS
-        $ roscore
-
-    2.) Init ROSBag node
-        $ cd ~/MEGA/workspace/kitti2bag
-        $ rosbag play -l kitti_2011_09_26_drive_0001_synced.bag
+2.1) Init ROS
     
-    3.) Init Network Prediction node (image2pred)
-        $ cd go_fcrn
-        $ python2 ros_image2pred.py
-    
-    4) Init RViz: ROS 3D Robot Visualizer
-        $ rviz
-            [Global Options]
-                Fixed Frame: velo_link
-            [Grid]
-                Reference Frame: base_link
-            [PointCloud2]
-                Topic: /kitti/velo/pointcloud
-            [Image]
-                Image Topic: /kitti/camera_color_left/image_raw
-            [Image]
-                Image Topic: /kitti/camera_color_right/image_raw
-            [Image]
-                Image Topic: /kitti/camera_gray_left/image_raw
-            [Image]
-                Image Topic: /kitti/camera_gray_right/image_raw
-            [Image]
-                Image Topic: /pred/image
+    $ roscore
 
-    5) Init '[depth_image_proc](http://wiki.ros.org/depth_image_proc#depth_image_proc.2BAC8-point_cloud_xyz)' nodelet (depth2cloud).
+2.2) Init ROSBag node
+
+    $ cd ~/MEGA/workspace/kitti2bag
+    $ rosbag play -l kitti_2011_09_26_drive_0001_synced.bag
+    
+2.3) Init Network Prediction node (image2pred)
+  
+    $ cd go_fcrn
+    $ python2 ros_image2pred.py
+    
+2.4) Init RViz: ROS 3D Robot Visualizer
+    
+    $ rviz
+        [Global Options]
+            Fixed Frame: velo_link
+        [Grid]
+            Reference Frame: base_link
+        [PointCloud2]
+            Topic: /kitti/velo/pointcloud
+        [Image]
+            Image Topic: /kitti/camera_color_left/image_raw
+        [Image]
+            Image Topic: /kitti/camera_color_right/image_raw
+        [Image]
+            Image Topic: /kitti/camera_gray_left/image_raw
+        [Image]
+            Image Topic: /kitti/camera_gray_right/image_raw
+        [Image]
+            Image Topic: /pred/image
+
+2.5) Init '[depth_image_proc](http://wiki.ros.org/depth_image_proc#depth_image_proc.2BAC8-point_cloud_xyz)' nodelet (depth2cloud).
+
         rosrun nodelet nodelet load <PKG_NAME>/<NODELETCLASS_NAME> <MANAGER_NAME>
 
         $ rosrun nodelet nodelet manager __name:=nodelet_manager
