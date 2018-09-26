@@ -43,9 +43,11 @@ import numpy as np
 import rospy
 from cv_bridge import CvBridge
 import message_filters
-from sensor_msgs.msg import Image
+import image_geometry
 from std_msgs.msg import String
+from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import CameraInfo
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
 
@@ -68,6 +70,7 @@ print(args.video_path)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
+
 def talker(cv_pred_image, pub_string, pub_predCloud, rate):
     # # Capture frame-by-frame
     # image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
@@ -81,33 +84,37 @@ def talker(cv_pred_image, pub_string, pub_predCloud, rate):
     # pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
     # image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
 
-    cv2.imshow("/pred/image", cv_pred_image)
-    # cv2.imshow('image', image)
-    # cv2.imshow('pred', pred_uint8_scaled)
-    # cv2.imshow('pred_up', pred_up_uint8_scaled)
+    def reconstruct(): # TODO: Move
+        # Compute world coordinates from the disparity image
+        depthmap_height, depthmap_width = cv_pred_image.shape[0], cv_pred_image.shape[1]
 
+        fx, fy = 100.0, 100.0  # TODO: Change Value
+        cx, cy = 1.0, 1.0  # TODO: Change Value
+
+        print("Depth map size = {}x{}".format(depthmap_width, depthmap_height))
+
+        camera_params = np.array([[fx, 0, cx],
+                                  [0, fy, cy],
+                                  [0, 0, 1]])
+
+        print("Camera intrinsic matrix:\n{}".format(camera_params))
+        print("Reconstructing...")
+        # print(image_geometry.intrinsicMatrix())
+
+        # threeDImage = cv2.rgbd.depthTo3d()(cv_pred_image, Q)
+        # print(threeDImage.shape)
+
+    # reconstruct()
+
+    # Display Images using OpenCV
+    cv2.imshow("/pred/image", cv_pred_image)
+
+    # Publish!
     hello_str = "hello world %s" % rospy.get_time()
     rospy.loginfo(hello_str)
     pub_string.publish(hello_str)
 
-    # Compute world coordinates from the disparity image
-    depthmap_height, depthmap_width = cv_pred_image.shape[0], cv_pred_image.shape[1]
-
-    fx, fy = 100.0, 100.0  # TODO: Change Value
-    cx, cy = 1.0, 1.0  # TODO: Change Value
-
-    print("Depth map size = {}x{}".format(depthmap_width, depthmap_height))
-
-    camera_params = np.array([[fx, 0, cx],
-                              [0, fy, cy],
-                              [0, 0, 1]])
-
-    print("Camera intrinsic matrix:\n{}".format(camera_params))
-    print("Reconstructing...")
-
-    # threeDImage = cv2.rgbd.depthTo3d()(cv_pred_image, Q)
-    # print(threeDImage.shape)
-
+    # Mandatory code for the ROS node and OpenCV structures.
     rate.sleep()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
@@ -126,6 +133,13 @@ def callback(received_pred_image_msg, args):
     if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
         return 0
 
+camModel = image_geometry.PinholeCameraModel()
+def callback_camera_info(received_camera_info_msg):
+    camModel.fromCameraInfo(received_camera_info_msg)
+    # print(camModel)
+    print("K:\n{}".format( camModel.intrinsicMatrix()))
+    # input("oi")
+
 
 def listener():
     # In ROS, nodes are uniquely named. If two nodes with the same
@@ -138,6 +152,8 @@ def listener():
     # rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10)  # 10hz
 
+
+
     # ------------ #
     #  Publishers  #
     # ------------ #
@@ -148,6 +164,7 @@ def listener():
     #  Subscribers  #
     # ------------- #
     rospy.Subscriber('/pred/image', Image, callback, (pub_string, pub_predCloud, rate))
+    rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, callback_camera_info)
 
     # Sync Topics
     # image_raw_sub = message_filters.Subscriber('/kitti/camera_color_left/image_raw', Image)
