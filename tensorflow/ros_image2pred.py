@@ -42,6 +42,7 @@ import cv2
 import numpy as np
 import rospy
 import tensorflow as tf
+
 from cv_bridge import CvBridge
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
@@ -109,75 +110,84 @@ class Network(object):
             # net.load(args.model_path, self.sess)
 
 
-def talker(image_raw, pub_string, pub_pred, rate, net):
-    # Capture frame-by-frame
-    image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
-    _, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
-                                 feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
+# In ROS, nodes are uniquely named. If two nodes with the same
+# name are launched, the previous one is kicked off. The
+# anonymous=True flag means that rospy will choose a unique
+# name for our 'listener' node so that multiple listeners can
+# run simultaneously.
+class Listener:
+    def __init__(self):
+        self.rate = rospy.Rate(10)  # 10hz
+        self.net = Network()
 
-    # Image Processing
-    # pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
-    # image_message = bridge.cv2_to_imgmsg(pred_uint8_scaled, encoding="passthrough")
+        # ------------ #
+        #  Publishers  #
+        # ------------ #
+        self.pub_string = rospy.Publisher('pred/string', String, queue_size=10)
+        self.pub_pred = rospy.Publisher('pred/image', Image, queue_size=10)
 
-    pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
-    image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
+        # ------------- #
+        #  Subscribers  #
+        # ------------- #
+        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback,
+                         (self.pub_string, self.pub_pred, self.rate, self.net))
 
-    # cv2.imshow("image_raw", image_raw)
-    # cv2.imshow('image', image)
-    # cv2.imshow('pred', pred_uint8_scaled)
-    # cv2.imshow('pred_up', pred_up_uint8_scaled)
+        # spin() simply keeps python from exiting until this node is stopped
+        rospy.spin()
 
-    hello_str = "image2pred"
-    rospy.loginfo(hello_str)
-    pub_string.publish(hello_str)
-    pub_pred.publish(image_message)
-    rate.sleep()
+    @staticmethod
+    def callback(received_image_msg, args):
+        # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+        cv_image = bridge.imgmsg_to_cv2(received_image_msg, desired_encoding="passthrough")
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
-        return 0
+        try:
+            Talker.image2pred(cv_image, pub_string=args[0], pub_pred=args[1], rate=args[2], net=args[3])
+        except rospy.ROSInterruptException:
+            pass
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
+            return 0
 
 
-def callback(received_image_msg, args):
-    # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
-    cv_image = bridge.imgmsg_to_cv2(received_image_msg, desired_encoding="passthrough")
-
-    try:
-        talker(cv_image, pub_string=args[0], pub_pred=args[1], rate=args[2], net=args[3])
-    except rospy.ROSInterruptException:
+class Talker:
+    def __init__(self):
         pass
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
-        return 0
+    @staticmethod
+    def image2pred(image_raw, pub_string, pub_pred, rate, net):
+        # Capture frame-by-frame
+        image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
+        _, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
+                                  feed_dict={net.input_node: image, net.input_shape: image_raw.shape})
 
+        # Image Processing
+        # pred_uint8_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+        # image_message = bridge.cv2_to_imgmsg(pred_uint8_scaled, encoding="passthrough")
 
-def listener():
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
+        pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
+        image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
 
-    rospy.init_node('listener', anonymous=True)
-    # rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(10)  # 10hz
+        # cv2.imshow("image_raw", image_raw)
+        # cv2.imshow('image', image)
+        # cv2.imshow('pred', pred_uint8_scaled)
+        # cv2.imshow('pred_up', pred_up_uint8_scaled)
 
-    # model = ImportGraph(args.model_path)
-    net = Network()
+        hello_str = "image2pred"
+        rospy.loginfo(hello_str)
+        pub_string.publish(hello_str)
+        pub_pred.publish(image_message)
+        rate.sleep()
 
-    # ------------ #
-    #  Publishers  #
-    # ------------ #
-    pub_string = rospy.Publisher('pred/string', String, queue_size=10)
-    pub_pred = rospy.Publisher('pred/image', Image, queue_size=10)
-
-    # ------------- #
-    #  Subscribers  #
-    # ------------- #
-    rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, callback, (pub_string, pub_pred, rate, net))
-
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+        if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
+            return 0
 
 
 if __name__ == '__main__':
-    listener()
+    # Initialize the node and name it.
+    rospy.init_node('listener', anonymous=True)
+
+    try:
+        listener = Listener()
+
+    except rospy.ROSInterruptException:
+        pass
