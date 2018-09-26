@@ -112,7 +112,9 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
             [Image]
                 Image Topic: /pred/image
 
-    5) Init 'depth_image_proc' nodelet (depth2cloud)
+    5) Init '[depth_image_proc](http://wiki.ros.org/depth_image_proc#depth_image_proc.2BAC8-point_cloud_xyz)' nodelet (depth2cloud).
+        rosrun nodelet nodelet load <PKG_NAME>/<NODELETCLASS_NAME> <MANAGER_NAME>
+
         $ rosrun nodelet nodelet manager __name:=nodelet_manager
         $ rosrun nodelet nodelet load depth_image_proc/point_cloud_xyz nodelet_manager __name:=nodelet_depth camera_info:=/kitti/camera_color_left/camera_info image_rect:=/pred/image
 
