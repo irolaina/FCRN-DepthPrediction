@@ -35,6 +35,8 @@ print(args.video_path)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
+camModel = image_geometry.PinholeCameraModel()
+
 
 def talker(cv_pred_image, pub_string, pub_predCloud, rate):
     # # Capture frame-by-frame
@@ -86,61 +88,60 @@ def talker(cv_pred_image, pub_string, pub_predCloud, rate):
         return 0
 
 
-def callback(received_pred_image_msg, args):
-    # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
-    cv_pred_image = bridge.imgmsg_to_cv2(received_pred_image_msg, desired_encoding="passthrough")
+# In ROS, nodes are uniquely named. If two nodes with the same name are launched, the previous one is kicked off. The
+# anonymous=True flag means that rospy will choose a unique name for our 'listener' node so that multiple listeners can
+# run simultaneously.
+class Listener:
+    def __init__(self):
+        self.rate = rospy.Rate(10)  # 10hz
 
-    try:
-        talker(cv_pred_image, pub_string=args[0], pub_predCloud=args[1], rate=args[2])
-    except rospy.ROSInterruptException:
-        pass
+        # ------------ #
+        #  Publishers  #
+        # ------------ #
+        pub_string = rospy.Publisher('/pred2cloud/string', String, queue_size=10)
+        pub_predCloud = rospy.Publisher('/pred2cloud/cloud', PointCloud2, queue_size=10)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
-        return 0
+        # ------------- #
+        #  Subscribers  #
+        # ------------- #
+        rospy.Subscriber('/pred/image', Image, self.callback_pred_image, (pub_string, pub_predCloud, self.rate))
+        rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, self.callback_camera_info)
 
+        # Sync Topics
+        # image_raw_sub = message_filters.Subscriber('/kitti/camera_color_left/image_raw', Image)
+        # pred_image_sub = message_filters.Subscriber('/pred/image', Image)
+        # ts = message_filters.TimeSynchronizer([image_raw_sub, pred_image_sub], 10)
+        # ts.registerCallback(callback, (pub_string, pub_predCloud, rate))
 
-camModel = image_geometry.PinholeCameraModel()
+        # spin() simply keeps python from exiting until this node is stopped
+        rospy.spin()
 
+    @staticmethod
+    def callback_pred_image(received_pred_image_msg, args):
+        # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+        cv_pred_image = bridge.imgmsg_to_cv2(received_pred_image_msg, desired_encoding="passthrough")
 
-def callback_camera_info(received_camera_info_msg):
-    camModel.fromCameraInfo(received_camera_info_msg)
-    # print(camModel)
-    print("K:\n{}".format(camModel.intrinsicMatrix()))
-    # input("oi")
+        try:
+            talker(cv_pred_image, pub_string=args[0], pub_predCloud=args[1], rate=args[2])
+        except rospy.ROSInterruptException:
+            pass
 
+        if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
+            return 0
 
-def listener():
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
-
-    rospy.init_node('listener', anonymous=True)
-    # rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(10)  # 10hz
-
-    # ------------ #
-    #  Publishers  #
-    # ------------ #
-    pub_string = rospy.Publisher('/pred2cloud/string', String, queue_size=10)
-    pub_predCloud = rospy.Publisher('/pred2cloud/cloud', PointCloud2, queue_size=10)
-
-    # ------------- #
-    #  Subscribers  #
-    # ------------- #
-    rospy.Subscriber('/pred/image', Image, callback, (pub_string, pub_predCloud, rate))
-    rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, callback_camera_info)
-
-    # Sync Topics
-    # image_raw_sub = message_filters.Subscriber('/kitti/camera_color_left/image_raw', Image)
-    # pred_image_sub = message_filters.Subscriber('/pred/image', Image)
-    # ts = message_filters.TimeSynchronizer([image_raw_sub, pred_image_sub], 10)
-    # ts.registerCallback(callback, (pub_string, pub_predCloud, rate))
-
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
-
+    @staticmethod
+    def callback_camera_info(received_camera_info_msg):
+        camModel.fromCameraInfo(received_camera_info_msg)
+        # print(camModel)
+        print("K:\n{}".format(camModel.intrinsicMatrix()))
+        # input("oi")
 
 if __name__ == '__main__':
-    listener()
+    # Initialize the node and name it.
+    rospy.init_node('pred2cloud', anonymous=True)
+
+    try:
+        listener = Listener()
+
+    except rospy.ROSInterruptException:
+        pass

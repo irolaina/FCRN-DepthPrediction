@@ -131,7 +131,7 @@ class Listener:
         camModel.fromCameraInfo(received_camera_info_msg)
         # print(camModel)
         print("K:\n{}".format(camModel.intrinsicMatrix()))
-        input("oi")
+        # input("oi")
 
 
 class Talker:
@@ -169,7 +169,7 @@ class Talker:
 
 if __name__ == '__main__':
     # Initialize the node and name it.
-    rospy.init_node('listener', anonymous=True)
+    rospy.init_node('image2pred', anonymous=True)
 
     try:
         listener = Listener()
