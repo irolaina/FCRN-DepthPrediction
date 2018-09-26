@@ -15,7 +15,6 @@ import tensorflow as tf
 import image_geometry
 
 from cv_bridge import CvBridge
-from std_msgs.msg import String
 from sensor_msgs.msg import Image, CameraInfo
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
@@ -92,21 +91,14 @@ class Network(object):
 # anonymous=True flag means that rospy will choose a unique name for our 'listener' node so that multiple listeners can
 # run simultaneously.
 class Listener:
-    def __init__(self):
+    def __init__(self, pub_pred):
         self.rate = rospy.Rate(10)  # 10hz
         self.net = Network()
-
-        # ------------ #
-        #  Publishers  #
-        # ------------ #
-        self.pub_string = rospy.Publisher('pred/string', String, queue_size=10)
-        self.pub_pred = rospy.Publisher('pred/image', Image, queue_size=10)
 
         # ------------- #
         #  Subscribers  #
         # ------------- #
-        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback_image_raw,
-                         (self.net, self.pub_pred, self.rate))
+        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback_image_raw, (self.net, pub_pred, self.rate))
         rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, self.callback_camera_info)
 
         # spin() simply keeps python from exiting until this node is stopped
@@ -136,7 +128,10 @@ class Listener:
 
 class Talker:
     def __init__(self):
-        pass
+        # ------------ #
+        #  Publishers  #
+        # ------------ #
+        self.pub_pred = rospy.Publisher('pred/image', Image, queue_size=10)
 
     @staticmethod
     def image2pred(image_raw, net, pub_pred, rate):
@@ -152,14 +147,18 @@ class Talker:
         pred_up_uint8_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
         image_message = bridge.cv2_to_imgmsg(pred_up_uint8_scaled, encoding="passthrough")
 
+        # Display Images using OpenCV
         # cv2.imshow("image_raw", image_raw)
         # cv2.imshow('image', image)
         # cv2.imshow('pred', pred_uint8_scaled)
         # cv2.imshow('pred_up', pred_up_uint8_scaled)
 
+        # Publish!
         hello_str = "image2pred"
         rospy.loginfo(hello_str)
         pub_pred.publish(image_message)
+
+        # Mandatory code for the ROS node and OpenCV structures.
         rate.sleep()
 
         # FIXME:
@@ -172,7 +171,8 @@ if __name__ == '__main__':
     rospy.init_node('image2pred', anonymous=True)
 
     try:
-        listener = Listener()
+        talker = Talker()
+        listener = Listener(talker.pub_pred)
 
     except rospy.ROSInterruptException:
         pass
