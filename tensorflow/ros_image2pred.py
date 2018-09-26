@@ -12,10 +12,11 @@ import cv2
 import numpy as np
 import rospy
 import tensorflow as tf
+import image_geometry
 
 from cv_bridge import CvBridge
 from std_msgs.msg import String
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CameraInfo
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
 
@@ -44,6 +45,7 @@ print(args.video_path)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
+camModel = image_geometry.PinholeCameraModel()
 
 class Network(object):
     def __init__(self):
@@ -103,24 +105,33 @@ class Listener:
         # ------------- #
         #  Subscribers  #
         # ------------- #
-        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback,
-                         (self.pub_string, self.pub_pred, self.rate, self.net))
+        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback_image_raw,
+                         (self.net, self.pub_pred, self.rate))
+        rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, self.callback_camera_info)
 
         # spin() simply keeps python from exiting until this node is stopped
         rospy.spin()
 
     @staticmethod
-    def callback(received_image_msg, args):
+    def callback_image_raw(image_raw_msg, args):
         # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
-        cv_image = bridge.imgmsg_to_cv2(received_image_msg, desired_encoding="passthrough")
+        cv_image = bridge.imgmsg_to_cv2(image_raw_msg, desired_encoding="passthrough")
 
         try:
-            Talker.image2pred(cv_image, pub_string=args[0], pub_pred=args[1], rate=args[2], net=args[3])
+            Talker.image2pred(cv_image, net=args[0], pub_pred=args[1], rate=args[2])
         except rospy.ROSInterruptException:
             pass
 
+        # FIXME:
         if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
             return 0
+
+    @staticmethod
+    def callback_camera_info(received_camera_info_msg):
+        camModel.fromCameraInfo(received_camera_info_msg)
+        # print(camModel)
+        print("K:\n{}".format(camModel.intrinsicMatrix()))
+        input("oi")
 
 
 class Talker:
@@ -128,7 +139,7 @@ class Talker:
         pass
 
     @staticmethod
-    def image2pred(image_raw, pub_string, pub_pred, rate, net):
+    def image2pred(image_raw, net, pub_pred, rate):
         # Capture frame-by-frame
         image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
         _, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
@@ -148,10 +159,10 @@ class Talker:
 
         hello_str = "image2pred"
         rospy.loginfo(hello_str)
-        pub_string.publish(hello_str)
         pub_pred.publish(image_message)
         rate.sleep()
 
+        # FIXME:
         if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
             return 0
 
