@@ -163,7 +163,7 @@ class Talker:
 
         # CV2 Image -> ROS Image Message
         pred_up_8UC1_msg = bridge.cv2_to_imgmsg(pred_up_8UC1_scaled, encoding="passthrough")
-        pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up, encoding="passthrough")
+        pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up[0], encoding="passthrough")
 
         print(pred_up_8UC1_msg.encoding)
         print(pred_up_32FC1_msg.encoding)
