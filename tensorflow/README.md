@@ -121,13 +121,14 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
         rosrun nodelet nodelet load <PKG_NAME>/<NODELETCLASS_NAME> <MANAGER_NAME>
 
         $ rosrun nodelet nodelet manager __name:=nodelet_manager
-        $ rosrun nodelet nodelet load depth_image_proc/point_cloud_xyz nodelet_manager __name:=nodelet_depth camera_info:=/kitti/camera_color_left/camera_info image_rect:=/pred_depth/image_8UC1
+        $ rosrun nodelet nodelet load depth_image_proc/point_cloud_xyz nodelet_manager __name:=nodelet_depth camera_info:=/pred_depth/camera_info image_rect:=/pred_depth/image_32FC1 points:=/pred_depth/cloud
 
 Optional:     
     
     $ rostopic list
     $ rosnode list
     $ rostopic echo <topic>
+    $ rostopic type <topic>
     $ rqt_graph
 
 # Run Coverage for Codacy Support 
