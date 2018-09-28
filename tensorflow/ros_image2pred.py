@@ -13,7 +13,6 @@ import numpy as np
 import rospy
 import tensorflow as tf
 import image_geometry
-import sensor_msgs
 
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image, CameraInfo
