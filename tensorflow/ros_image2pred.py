@@ -34,6 +34,10 @@ def argumentHandler():
     return parser.parse_args()
 
 
+def convert2uint8(src):
+    return cv2.convertScaleAbs(src * (255 / np.max(src)))
+
+
 # ==================
 #  Global Variables
 # ==================
@@ -74,7 +78,6 @@ class Network(object):
             self.tf_pred = net.get_output()
             self.tf_pred_up = tf.image.resize_images(self.tf_pred, self.input_shape[:2], tf.image.ResizeMethod.BILINEAR,
                                                      align_corners=True)
-            self.tf_pred_up_16UC1 = tf.image.convert_image_dtype(self.tf_pred_up, tf.uint16)
 
             # --------------------------
             #  Restore Graph Parameters
@@ -153,30 +156,19 @@ class Talker:
         # Capture/Predict frame-by-frame
         image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
         feed_pred = {net.input_node: image, net.input_shape: image_raw.shape}
-        pred, pred_up, pred_up_16UC1 = net.sess.run([net.tf_pred, net.tf_pred_up, net.tf_pred_up_16UC1],
-                                                 feed_dict=feed_pred)  # pred_up: ((1, 375, 1242, 1), dtype('float32'))
+        pred, pred_up = net.sess.run([net.tf_pred, net.tf_pred_up],
+                                     feed_dict=feed_pred)  # pred_up: ((1, 375, 1242, 1), dtype('float32'))
 
         # Image Processing
-        pred_8UC1_scaled = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
-        pred_up_8UC1_scaled = cv2.convertScaleAbs(pred_up[0] * (255 / np.max(pred_up[0])))
+        pred_8UC1_scaled = convert2uint8(pred[0])
+        pred_up_8UC1_scaled = convert2uint8(pred_up[0])
 
         # CV2 Image -> ROS Image Message
-        # pred_8UC1_msg = bridge.cv2_to_imgmsg(pred_8UC1_scaled, encoding="passthrough")
         pred_up_8UC1_msg = bridge.cv2_to_imgmsg(pred_up_8UC1_scaled, encoding="passthrough")
-        # pred_up_8UC1_msg = bridge.cv2_to_imgmsg(pred_up_8UC1_scaled, encoding="bgr8")
-        # pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up, encoding="passthrough")
-        # pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up_16UC1, encoding="passthrough")
-        # pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up_16UC1, encoding="mono8")
-        pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up_16UC1)
+        pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up, encoding="passthrough")
 
         print(pred_up_8UC1_msg.encoding)
         print(pred_up_32FC1_msg.encoding)
-
-        # Display Images using OpenCV
-        cv2.imshow("image_raw", image_raw)
-        cv2.imshow('image', image)
-        cv2.imshow('pred', pred_8UC1_scaled)
-        cv2.imshow('pred_up', pred_up_8UC1_scaled)
 
         # Publish!
         pred_up_8UC1_msg.header = received_camera_info_msg.header
@@ -188,6 +180,12 @@ class Talker:
 
         rospy.loginfo("image2pred")
         print('---')
+
+        # Display Images using OpenCV
+        cv2.imshow("image_raw", image_raw)
+        cv2.imshow('image', image)
+        cv2.imshow('pred', pred_8UC1_scaled)
+        cv2.imshow('pred_up', pred_up_8UC1_scaled)
 
         # Mandatory code for the ROS node and OpenCV structures.
         rate.sleep()
