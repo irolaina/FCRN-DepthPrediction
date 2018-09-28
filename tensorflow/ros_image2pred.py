@@ -123,7 +123,7 @@ class Listener:
         try:
             Talker.image2pred(cv_image_raw, net=args[0], pub_pred_up_8UC1=args[1], pub_pred_up_32FC1=args[2],
                               pub_pred_camera_info=args[3], rate=args[4],
-                              received_camera_info_msg=self.received_camera_info_msg)
+                              rec_camera_info_msg=self.rec_camera_info_msg)
         except rospy.ROSInterruptException:
             pass
 
@@ -132,11 +132,11 @@ class Listener:
             # rospy.shutdown()
             return 0
 
-    def callback_camera_info(self, received_camera_info_msg):
+    def callback_camera_info(self, rec_camera_info_msg):
         rospy.loginfo("'camera_info' message received!")
 
-        self.received_camera_info_msg = received_camera_info_msg
-        camModel.fromCameraInfo(received_camera_info_msg)
+        self.rec_camera_info_msg = rec_camera_info_msg
+        camModel.fromCameraInfo(rec_camera_info_msg)
         # print(camModel)
         # print("K:\n{}".format(camModel.intrinsicMatrix()))
 
@@ -146,13 +146,12 @@ class Talker:
         # ------------ #
         #  Publishers  #
         # ------------ #
-        self.pub_pred_up_8UC1 = rospy.Publisher('/pred/image_8UC1', Image, queue_size=10)
-        self.pub_pred_up_32FC1 = rospy.Publisher('/pred/image_32FC1', Image, queue_size=10)
-        self.pub_pred_camera_info = rospy.Publisher('/pred/camera_info', CameraInfo, queue_size=10)
+        self.pub_pred_up_8UC1 = rospy.Publisher('/pred_depth/image_8UC1', Image, queue_size=10)
+        self.pub_pred_up_32FC1 = rospy.Publisher('/pred_depth/image_32FC1', Image, queue_size=10)
+        self.pub_pred_camera_info = rospy.Publisher('/pred_depth/camera_info', CameraInfo, queue_size=10)
 
     @staticmethod
-    def image2pred(image_raw, net, pub_pred_up_8UC1, pub_pred_up_32FC1, pub_pred_camera_info, rate,
-                   received_camera_info_msg):
+    def image2pred(image_raw, net, pub_pred_up_8UC1, pub_pred_up_32FC1, pub_pred_camera_info, rate, rec_camera_info_msg):
         # Capture/Predict frame-by-frame
         image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
         feed_pred = {net.input_node: image, net.input_shape: image_raw.shape}
@@ -171,12 +170,12 @@ class Talker:
         print(pred_up_32FC1_msg.encoding)
 
         # Publish!
-        pred_up_8UC1_msg.header = received_camera_info_msg.header
-        pred_up_32FC1_msg.header = received_camera_info_msg.header
+        pred_up_8UC1_msg.header = rec_camera_info_msg.header
+        pred_up_32FC1_msg.header = rec_camera_info_msg.header
 
         pub_pred_up_8UC1.publish(pred_up_8UC1_msg)
         pub_pred_up_32FC1.publish(pred_up_32FC1_msg)
-        pub_pred_camera_info.publish(received_camera_info_msg)
+        pub_pred_camera_info.publish(rec_camera_info_msg)
 
         rospy.loginfo("image2pred")
         print('---')
