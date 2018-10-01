@@ -146,6 +146,7 @@ Terminal:
     # -------------------------------------------------- #
     
 Helpful Links:
+
 [Display Image - Code Walkthrough - sdk-wiki](http://sdk.rethinkrobotics.com/wiki/Display_Image_-_Code_Walkthrough)
 
 [nodelet/Tutorials/Running a nodelet - ROS Wiki](http://wiki.ros.org/nodelet/Tutorials/Running%20a%20nodelet)
@@ -157,6 +158,10 @@ Helpful Links:
 [cv_bridgeTutorialsConvertingBetweenROSImagesAndOpenCVImagesPython - ROS Wiki](http://wiki.ros.org/cv_bridge/Tutorials/ConvertingBetweenROSImagesAndOpenCVImagesPython)
 
 [point_cloud_xyz.cpp at ros-perception/image_pipeline](https://github.com/ros-perception/image_pipeline/blob/indigo/depth_image_proc/src/nodelets/point_cloud_xyz.cpp)
+
+[visualizing LiDAR point cloud in RViz](https://www.youtube.com/watch?v=e0r4uKK1zkk&t=0s&list=FLF_zvh-uhZH4D8PMzipB8wA&index=2)
+
+[image_geometry](http://docs.ros.org/api/image_geometry/html/python/)
 
 # Run Coverage for Codacy Support 
 
