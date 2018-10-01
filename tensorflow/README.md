@@ -115,13 +115,15 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
             Image Topic: /kitti/camera_gray_right/image_raw
         [Image]
             Image Topic: /pred_depth/image_8UC1
+        [PointCloud2]
+            Topic: /pred_depth/cloud
 
 2.5) Init '[depth_image_proc](http://wiki.ros.org/depth_image_proc#depth_image_proc.2BAC8-point_cloud_xyz)' nodelet (depth2cloud).
 
-        rosrun nodelet nodelet load <PKG_NAME>/<NODELETCLASS_NAME> <MANAGER_NAME>
+    rosrun nodelet nodelet load <PKG_NAME>/<NODELETCLASS_NAME> <MANAGER_NAME>
 
-        $ rosrun nodelet nodelet manager __name:=nodelet_manager
-        $ rosrun nodelet nodelet load depth_image_proc/point_cloud_xyz nodelet_manager __name:=nodelet_depth camera_info:=/pred_depth/camera_info image_rect:=/pred_depth/image_32FC1 points:=/pred_depth/cloud
+    $ rosrun nodelet nodelet manager __name:=nodelet_manager
+    $ rosrun nodelet nodelet load depth_image_proc/point_cloud_xyz nodelet_manager __name:=nodelet_depth camera_info:=/pred_depth/camera_info image_rect:=/pred_depth/image_32FC1 points:=/pred_depth/cloud
 
 Optional:     
     
@@ -130,6 +132,31 @@ Optional:
     $ rostopic echo <topic>
     $ rostopic type <topic>
     $ rqt_graph
+
+Terminal:
+    
+    # -------------------------------------------------- #
+    |      roscore    |        ros_image2pred.py         |
+    # -------------------------------------------------- #
+    |      rosbag     |            empty                 |
+    # -------------------------------------------------- #
+    |       rviz      | depth_image_proc/point_cloud_xyz |
+    # -------------------------------------------------- #
+    | nodelet_manager |      rostopic echo <topic>       |
+    # -------------------------------------------------- #
+    
+Helpful Links:
+[Display Image - Code Walkthrough - sdk-wiki](http://sdk.rethinkrobotics.com/wiki/Display_Image_-_Code_Walkthrough)
+
+[nodelet/Tutorials/Running a nodelet - ROS Wiki](http://wiki.ros.org/nodelet/Tutorials/Running%20a%20nodelet)
+
+[depth_image_proc - ROS Wiki](http://wiki.ros.org/depth_image_proc#depth_image_proc.2BAC8-point_cloud_xyzrgb)
+
+[cv_bridgeTutorialsUsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages - ROS Wiki](http://wiki.ros.org/cv_bridge/Tutorials/UsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages)
+
+[cv_bridgeTutorialsConvertingBetweenROSImagesAndOpenCVImagesPython - ROS Wiki](http://wiki.ros.org/cv_bridge/Tutorials/ConvertingBetweenROSImagesAndOpenCVImagesPython)
+
+[point_cloud_xyz.cpp at ros-perception/image_pipeline](https://github.com/ros-perception/image_pipeline/blob/indigo/depth_image_proc/src/nodelets/point_cloud_xyz.cpp)
 
 # Run Coverage for Codacy Support 
 
