@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/nicolas/go_fcrn/ros_catkin_ws/install/setup.sh
