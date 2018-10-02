@@ -287,6 +287,21 @@ _gtest_SOURCES:FILEPATH=/usr/src/gtest/src/gtest.cc
 //The directory containing a CMake configuration file for catkin.
 catkin_DIR:PATH=/opt/ros/melodic/share/catkin/cmake
 
+//The directory containing a CMake configuration file for cpp_common.
+cpp_common_DIR:PATH=/opt/ros/melodic/share/cpp_common/cmake
+
+//The directory containing a CMake configuration file for cv_brigde.
+cv_brigde_DIR:PATH=cv_brigde_DIR-NOTFOUND
+
+//Value Computed by CMake
+fcrn_BINARY_DIR:STATIC=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/ros_catkin_ws/build/fcrn
+
+//Value Computed by CMake
+fcrn_SOURCE_DIR:STATIC=/home/nicolas/go_fcrn/ros_catkin_ws/src/fcrn
+
+//The directory containing a CMake configuration file for geometry_msgs.
+geometry_msgs_DIR:PATH=/opt/ros/melodic/share/geometry_msgs/cmake
+
 //Value Computed by CMake
 gmock_BINARY_DIR:STATIC=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/ros_catkin_ws/build/gtest/googlemock
 
@@ -335,6 +350,33 @@ gtest_hide_internal_symbols:BOOL=OFF
 
 //Dependencies for the target
 gtest_main_LIB_DEPENDS:STATIC=general;-lpthread;general;gtest;
+
+//The directory containing a CMake configuration file for image_geometry.
+image_geometry_DIR:PATH=/opt/ros/melodic/share/image_geometry/cmake
+
+//Path to a library.
+lib:FILEPATH=/opt/ros/melodic/lib/librostime.so
+
+//The directory containing a CMake configuration file for message_runtime.
+message_runtime_DIR:PATH=/opt/ros/melodic/share/message_runtime/cmake
+
+//The directory containing a CMake configuration file for roscpp_serialization.
+roscpp_serialization_DIR:PATH=/opt/ros/melodic/share/roscpp_serialization/cmake
+
+//The directory containing a CMake configuration file for roscpp_traits.
+roscpp_traits_DIR:PATH=/opt/ros/melodic/share/roscpp_traits/cmake
+
+//The directory containing a CMake configuration file for rospy.
+rospy_DIR:PATH=/opt/ros/melodic/share/rospy/cmake
+
+//The directory containing a CMake configuration file for rostime.
+rostime_DIR:PATH=/opt/ros/melodic/share/rostime/cmake
+
+//The directory containing a CMake configuration file for sensor_msgs.
+sensor_msgs_DIR:PATH=/opt/ros/melodic/share/sensor_msgs/cmake
+
+//The directory containing a CMake configuration file for std_msgs.
+std_msgs_DIR:PATH=/opt/ros/melodic/share/std_msgs/cmake
 
 
 ########################
@@ -448,7 +490,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=4
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=5
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

@@ -82,6 +82,9 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
 
 2.) Run the following ROS nodes:
     
+Recommended: Use the .launch file:   roslaunch fcrn image2pred.launch
+
+        
 2.1) Init ROS
     
     $ roscore
@@ -120,7 +123,7 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
 
 2.5) Init '[depth_image_proc](http://wiki.ros.org/depth_image_proc#depth_image_proc.2BAC8-point_cloud_xyz)' nodelet (depth2cloud).
 
-    rosrun nodelet nodelet load <PKG_NAME>/<NODELETCLASS_NAME> <MANAGER_NAME>
+    rosrun nodelet nodelet load <pkg_name>/<nodeletclass_name> <manager_name>
 
     $ rosrun nodelet nodelet manager __name:=nodelet_manager
     $ rosrun nodelet nodelet load depth_image_proc/point_cloud_xyz nodelet_manager __name:=nodelet_depth camera_info:=/pred_depth/camera_info image_rect:=/pred_depth/image_32FC1 points:=/pred_depth/cloud
@@ -132,6 +135,8 @@ Optional:
     $ rostopic echo <topic>
     $ rostopic type <topic>
     $ rqt_graph
+    $ roslaunch <package_name> <file.launch>
+    
 
 Terminal:
     
@@ -146,6 +151,10 @@ Terminal:
     # -------------------------------------------------- #
     
 Helpful Links:
+
+[Creating a ROS Package](http://wiki.ros.org/catkin/Tutorials/CreatingPackage)
+
+[Writing a .launch file](http://www.clearpathrobotics.com/assets/guides/ros/Launch%20Files.html#writing-a-launch-file)
 
 [Display Image - Code Walkthrough - sdk-wiki](http://sdk.rethinkrobotics.com/wiki/Display_Image_-_Code_Walkthrough)
 
