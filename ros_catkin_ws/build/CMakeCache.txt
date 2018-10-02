@@ -357,6 +357,12 @@ gtest_main_LIB_DEPENDS:STATIC=general;-lpthread;general;gtest;
 //The directory containing a CMake configuration file for image_geometry.
 image_geometry_DIR:PATH=/opt/ros/melodic/share/image_geometry/cmake
 
+//Value Computed by CMake
+lena_BINARY_DIR:STATIC=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/lena
+
+//Value Computed by CMake
+lena_SOURCE_DIR:STATIC=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/src/lena
+
 //Path to a library.
 lib:FILEPATH=/opt/ros/melodic/lib/librostime.so
 
@@ -493,7 +499,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=6
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=7
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

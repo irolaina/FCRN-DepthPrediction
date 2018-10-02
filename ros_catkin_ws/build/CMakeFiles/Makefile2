@@ -455,6 +455,24 @@ clean: examples/CMakeFiles/_catkin_empty_exported_target.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory lena
+
+# Convenience name for "all" pass in the directory.
+lena/all:
+
+.PHONY : lena/all
+
+# Convenience name for "clean" pass in the directory.
+lena/clean:
+
+.PHONY : lena/clean
+
+# Convenience name for "preinstall" pass in the directory.
+lena/preinstall:
+
+.PHONY : lena/preinstall
+
+#=============================================================================
 # Directory level rules for directory fcrn
 
 # Convenience name for "all" pass in the directory.

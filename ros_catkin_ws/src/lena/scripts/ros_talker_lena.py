@@ -43,18 +43,18 @@ from cv_bridge import CvBridge
 
 
 def talker():
-    pub = rospy.Publisher('chatter', String, queue_size=10)
-    pub2 = rospy.Publisher('chatter_lena', Image, queue_size=10)
-    rospy.init_node('talker', anonymous=True)
+    pub = rospy.Publisher('/lena/string', String, queue_size=10)
+    pub2 = rospy.Publisher('/lena/image', Image, queue_size=10)
+    rospy.init_node('talker_lena', anonymous=True)
     rate = rospy.Rate(10)  # 10hz
 
     bridge = CvBridge()
 
-    img = cv2.imread('../misc/lena.jpg')
+    img = cv2.imread('../../../../misc/lena.jpg')
     image_message = bridge.cv2_to_imgmsg(img, encoding="passthrough")
 
     while not rospy.is_shutdown():
-        cv2.imshow('img', img)
+        cv2.imshow('/lena/image', img)
 
         hello_str = "hello world %s" % rospy.get_time()
         rospy.loginfo(hello_str)
