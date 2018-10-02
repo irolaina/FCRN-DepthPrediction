@@ -7,6 +7,7 @@
 # ===========
 import argparse
 import os
+import sys
 
 import cv2
 import numpy as np
@@ -26,6 +27,8 @@ from modules.third_party.laina.fcrn import ResNet50UpProj
 def argumentHandler():
     # Parse arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('__name', type=str, help="ROS Node Name", default='')
+    parser.add_argument('__log', type=str, help="ROS Node Log path", default='')
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
     parser.add_argument('-r', '--model_path', help='Converted parameters for the model',
                         default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn')

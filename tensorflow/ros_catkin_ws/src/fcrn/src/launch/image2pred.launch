@@ -10,14 +10,17 @@
     <node pkg="rosbag" type="play" name="kitti_rosbag" output="screen" args="--l /home/nicolas/MEGA/workspace/kitti2bag/kitti_2011_09_26_drive_0001_synced.bag"/>
 
     <!-- Init image2pred Node -->
-    <!-- TODO: Fiz module import -->
-    <node pkg="fcrn" name="image2pred" type="ros_image2pred.py"/>
+    <node pkg="fcrn" name="image2pred" type="ros_image2pred.py" args=""/>
+    <!--<node pkg="fcrn" name="image2pred" type="ros_image2pred.py" args="" output="screen"/>-->
+
+    <!-- Init Nodelet Manager-->
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager"/>
 
     <!-- Init XYZ point cloud Nodelet -->
     <node pkg="nodelet" type="nodelet" name="nodelet_depth" args="load depth_image_proc/point_cloud_xyz $(arg manager) $(arg bond)" respawn="$(arg respawn)">
-        <remap from="camera_info" to="/pred_depth/camera_info"/>  <!-- Use raw image for efficiency -->
-        <remap from="image_rect" to="/pred_depth/image_32FC1"/>  <!-- Use raw image for efficiency -->
-        <remap from="points" to="/pred_depth/cloud"/>  <!-- Use raw image for efficiency -->
+        <remap from="camera_info" to="pred_depth/camera_info"/>  <!-- Use raw image for efficiency -->
+        <remap from="image_rect" to="pred_depth/image_32FC1"/>  <!-- Use raw image for efficiency -->
+        <remap from="points" to="pred_depth/cloud"/>  <!-- Use raw image for efficiency -->
     </node>
 
     <!-- Init RViz: ROS 3D Robot Visualizer -->
