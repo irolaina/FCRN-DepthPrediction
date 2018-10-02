@@ -291,6 +291,12 @@ catkin_DIR:PATH=/opt/ros/melodic/share/catkin/cmake
 cpp_common_DIR:PATH=/opt/ros/melodic/share/cpp_common/cmake
 
 //Value Computed by CMake
+examples_BINARY_DIR:STATIC=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/examples
+
+//Value Computed by CMake
+examples_SOURCE_DIR:STATIC=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/src/examples
+
+//Value Computed by CMake
 fcrn_BINARY_DIR:STATIC=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/fcrn
 
 //Value Computed by CMake
@@ -487,7 +493,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=5
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=6
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

@@ -405,6 +405,56 @@ clean: gtest/googlemock/gtest/CMakeFiles/gtest.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory examples
+
+# Convenience name for "all" pass in the directory.
+examples/all:
+
+.PHONY : examples/all
+
+# Convenience name for "clean" pass in the directory.
+examples/clean: examples/CMakeFiles/_catkin_empty_exported_target.dir/clean
+
+.PHONY : examples/clean
+
+# Convenience name for "preinstall" pass in the directory.
+examples/preinstall:
+
+.PHONY : examples/preinstall
+
+#=============================================================================
+# Target rules for target examples/CMakeFiles/_catkin_empty_exported_target.dir
+
+# All Build rule for target.
+examples/CMakeFiles/_catkin_empty_exported_target.dir/all:
+	$(MAKE) -f examples/CMakeFiles/_catkin_empty_exported_target.dir/build.make examples/CMakeFiles/_catkin_empty_exported_target.dir/depend
+	$(MAKE) -f examples/CMakeFiles/_catkin_empty_exported_target.dir/build.make examples/CMakeFiles/_catkin_empty_exported_target.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/CMakeFiles --progress-num= "Built target _catkin_empty_exported_target"
+.PHONY : examples/CMakeFiles/_catkin_empty_exported_target.dir/all
+
+# Build rule for subdir invocation for target.
+examples/CMakeFiles/_catkin_empty_exported_target.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 examples/CMakeFiles/_catkin_empty_exported_target.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/CMakeFiles 0
+.PHONY : examples/CMakeFiles/_catkin_empty_exported_target.dir/rule
+
+# Convenience name for target.
+_catkin_empty_exported_target: examples/CMakeFiles/_catkin_empty_exported_target.dir/rule
+
+.PHONY : _catkin_empty_exported_target
+
+# clean rule for target.
+examples/CMakeFiles/_catkin_empty_exported_target.dir/clean:
+	$(MAKE) -f examples/CMakeFiles/_catkin_empty_exported_target.dir/build.make examples/CMakeFiles/_catkin_empty_exported_target.dir/clean
+.PHONY : examples/CMakeFiles/_catkin_empty_exported_target.dir/clean
+
+# clean rule for target.
+clean: examples/CMakeFiles/_catkin_empty_exported_target.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
 # Directory level rules for directory fcrn
 
 # Convenience name for "all" pass in the directory.

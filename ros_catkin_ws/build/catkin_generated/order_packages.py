@@ -2,4 +2,4 @@
 source_root_dir = "/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/src"
 whitelisted_packages = "".split(';') if "" != "" else []
 blacklisted_packages = "".split(';') if "" != "" else []
-underlay_workspaces = "/opt/ros/melodic".split(';') if "/opt/ros/melodic" != "" else []
+underlay_workspaces = "/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/devel;/opt/ros/melodic".split(';') if "/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/devel;/opt/ros/melodic" != "" else []
