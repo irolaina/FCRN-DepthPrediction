@@ -1,8 +1,0 @@
-prefix=/home/nicolas/go_fcrn/ros_catkin_ws/install
-
-Name: fcrn
-Description: Description of fcrn
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/nicolas/go_fcrn/ros_catkin_ws/install/lib 
-Requires: 

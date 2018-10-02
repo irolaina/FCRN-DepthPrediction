@@ -82,8 +82,9 @@ URL: https://github.com/tensorflow/tensorflow/issues/6720
 
 2.) Run the following ROS nodes:
     
-Recommended: Use the .launch file:   roslaunch fcrn image2pred.launch
+Recommended:
 
+    roslaunch fcrn image2pred.launch manager:=nodelet_manager
         
 2.1) Init ROS
     
