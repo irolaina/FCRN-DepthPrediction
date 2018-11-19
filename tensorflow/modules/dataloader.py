@@ -10,6 +10,7 @@ from modules.datasets.kitticontinuous import KittiContinuous
 from modules.datasets.kittidepth import KittiDepth
 from modules.datasets.kittidiscrete import KittiDiscrete
 from modules.datasets.nyudepth import NyuDepth
+from modules.datasets.lrmjose import LRMJose
 
 
 # ==================
@@ -36,7 +37,10 @@ class Dataloader:
         dataset_root = None
 
         if args.machine == 'nicolas':
-            dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
+            if args.dataset == 'lrmjose':
+                dataset_root = "/home/nicolas/Downloads/" #TODO: Mudar de Folder
+            else:
+                dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
 
@@ -62,6 +66,10 @@ class Dataloader:
         elif args.dataset == 'nyudepth':
             dataset_path = dataset_root + "nyu-depth-v2/data/images/"
             self.dataset = NyuDepth(dataset_path=dataset_path, name=args.dataset, height=480, width=640, max_depth=None)
+
+        elif args.dataset == 'lrmjose':
+            dataset_path = dataset_root + "lrmjose/"
+            self.dataset = LRMJose(dataset_path=dataset_path, name=args.dataset, height=256, width=455, max_depth=None)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "
@@ -153,6 +161,8 @@ class Dataloader:
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 3.0
         elif dataset_name == 'nyudepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
+        elif dataset_name == 'lrmjose':
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 1.0 # TODO: Correto?
         return tf_depth
 
     @staticmethod
@@ -182,7 +192,8 @@ class Dataloader:
             tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
 
         if dataset_name.split('_')[0] == 'kittidiscrete' or \
-           dataset_name.split('_')[0] == 'kitticontinuous':
+           dataset_name.split('_')[0] == 'kitticontinuous' or \
+           dataset_name.split('_')[0] == 'lrmjose':
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
         else:
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)

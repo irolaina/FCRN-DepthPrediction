@@ -9,8 +9,9 @@ from collections import deque
 
 from .dataloader import Dataloader
 from .third_party.laina.fcrn import ResNet50UpProj
-from .third_party.inception_preprocessing import apply_with_random_selector
-from .third_party.inception_preprocessing import distort_color
+from .third_party.tensorflow.inception_preprocessing import apply_with_random_selector
+from .third_party.tensorflow.inception_preprocessing import distort_color
+
 from .plot import Plot
 
 # ==================
