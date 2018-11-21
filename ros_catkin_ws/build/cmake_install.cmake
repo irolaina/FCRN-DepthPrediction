@@ -121,7 +121,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/gtest/cmake_install.cmake")
   include("/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/examples/cmake_install.cmake")
   include("/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/lena/cmake_install.cmake")
   include("/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/build/fcrn/cmake_install.cmake")
