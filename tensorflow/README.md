@@ -97,7 +97,7 @@ Recommended:
     
 2.3) Init Network Prediction node (image2pred)
   
-    $ cd go_fcrn
+    $ cd ~/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/src/fcrn/src/scripts
     $ python2 ros_image2pred.py
     
 2.4) Init RViz: ROS 3D Robot Visualizer
