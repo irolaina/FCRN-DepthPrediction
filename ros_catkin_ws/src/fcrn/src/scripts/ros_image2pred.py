@@ -95,7 +95,6 @@ class Network(object):
             # net.load(args.model_path, self.sess)
 
 
-
 class Talker(object):
     def __init__(self, *args, **kwargs):
         super(Talker, self).__init__(*args, **kwargs)
@@ -150,6 +149,7 @@ class Talker(object):
             # return 0
             rospy.shutdown()
 
+
 # In ROS, nodes are uniquely named. If two nodes with the same name are launched, the previous one is kicked off. The
 # anonymous=True flag means that rospy will choose a unique name for our 'listener' node so that multiple listeners can
 # run simultaneously.
@@ -163,7 +163,7 @@ class Listener(Talker):
         # ------------- #
         #  Subscribers  #
         # ------------- #
-        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback_image_raw, (self.net))
+        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback_image_raw, self.net)
         rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, self.callback_camera_info)
 
         # spin() simply keeps python from exiting until this node is stopped
