@@ -27,9 +27,8 @@ def argumentHandler():
     # Parse arguments
     parser = argparse.ArgumentParser()
     # Enable if will be run through .launch file
-    parser.add_argument('__name', type=str, help="ROS Node Name", default='')
-    parser.add_argument('__log', type=str, help="ROS Node Log path", default='')
-
+    # parser.add_argument('__name', type=str, help="ROS Node Name", default='')
+    # parser.add_argument('__log', type=str, help="ROS Node Log path", default='')
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
     parser.add_argument('-r', '--model_path', help='Converted parameters for the model',
                         default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn')
@@ -96,56 +95,11 @@ class Network(object):
             # net.load(args.model_path, self.sess)
 
 
-# In ROS, nodes are uniquely named. If two nodes with the same name are launched, the previous one is kicked off. The
-# anonymous=True flag means that rospy will choose a unique name for our 'listener' node so that multiple listeners can
-# run simultaneously.
-class Listener:
-    def __init__(self, pub_pred_up_8UC1, pub_pred_up_32FC1, pub_pred_camera_info):
-        self.rate = rospy.Rate(10)  # 10hz
-        self.net = Network()
 
-        # ------------- #
-        #  Subscribers  #
-        # ------------- #
-        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback_image_raw,
-                         (self.net, pub_pred_up_8UC1, pub_pred_up_32FC1, pub_pred_camera_info, self.rate))
-        rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, self.callback_camera_info)
+class Talker(object):
+    def __init__(self, *args, **kwargs):
+        super(Talker, self).__init__(*args, **kwargs)
 
-        # spin() simply keeps python from exiting until this node is stopped
-        rospy.spin()
-
-    def callback_image_raw(self, image_raw_msg, args):
-        rospy.loginfo("'image_raw' message received!")
-
-        # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
-        cv_image_raw = bridge.imgmsg_to_cv2(image_raw_msg, desired_encoding="passthrough")
-
-        print('image_raw_msg.encoding:', image_raw_msg.encoding)
-        print('cv_image_raw:', cv_image_raw.shape, cv_image_raw.dtype)
-
-        try:
-            Talker.image2pred(cv_image_raw, net=args[0], pub_pred_up_8UC1=args[1], pub_pred_up_32FC1=args[2],
-                              pub_pred_camera_info=args[3], rate=args[4],
-                              rec_camera_info_msg=self.rec_camera_info_msg)
-        except rospy.ROSInterruptException:
-            pass
-
-        # FIXME:
-        if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
-            # rospy.shutdown()
-            return 0
-
-    def callback_camera_info(self, rec_camera_info_msg):
-        rospy.loginfo("'camera_info' message received!")
-
-        self.rec_camera_info_msg = rec_camera_info_msg
-        camModel.fromCameraInfo(rec_camera_info_msg)
-        # print(camModel)
-        # print("K:\n{}".format(camModel.intrinsicMatrix()))
-
-
-class Talker:
-    def __init__(self):
         # ------------ #
         #  Publishers  #
         # ------------ #
@@ -153,8 +107,7 @@ class Talker:
         self.pub_pred_up_32FC1 = rospy.Publisher('/pred_depth/image_32FC1', Image, queue_size=10)
         self.pub_pred_camera_info = rospy.Publisher('/pred_depth/camera_info', CameraInfo, queue_size=10)
 
-    @staticmethod
-    def image2pred(image_raw, net, pub_pred_up_8UC1, pub_pred_up_32FC1, pub_pred_camera_info, rate, rec_camera_info_msg):
+    def image2pred(self, image_raw, net):
         # Capture/Predict frame-by-frame
         image = cv2.resize(image_raw, (net.width, net.height), interpolation=cv2.INTER_AREA)
         feed_pred = {net.input_node: image, net.input_shape: image_raw.shape}
@@ -173,12 +126,12 @@ class Talker:
         print(pred_up_32FC1_msg.encoding)
 
         # Publish!
-        pred_up_8UC1_msg.header = rec_camera_info_msg.header
-        pred_up_32FC1_msg.header = rec_camera_info_msg.header
+        pred_up_8UC1_msg.header = self.rec_camera_info_msg.header
+        pred_up_32FC1_msg.header = self.rec_camera_info_msg.header
 
-        pub_pred_up_8UC1.publish(pred_up_8UC1_msg)
-        pub_pred_up_32FC1.publish(pred_up_32FC1_msg)
-        pub_pred_camera_info.publish(rec_camera_info_msg)
+        self.pub_pred_up_8UC1.publish(pred_up_8UC1_msg)
+        self.pub_pred_up_32FC1.publish(pred_up_32FC1_msg)
+        self.pub_pred_camera_info.publish(self.rec_camera_info_msg)
 
         rospy.loginfo("image2pred")
         print('---')
@@ -190,12 +143,58 @@ class Talker:
         cv2.imshow('pred_up', pred_up_8UC1_scaled)
 
         # Mandatory code for the ROS node and OpenCV structures.
-        rate.sleep()
+        self.rate.sleep()
 
         # FIXME:
         if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
             # return 0
             rospy.shutdown()
+
+# In ROS, nodes are uniquely named. If two nodes with the same name are launched, the previous one is kicked off. The
+# anonymous=True flag means that rospy will choose a unique name for our 'listener' node so that multiple listeners can
+# run simultaneously.
+class Listener(Talker):
+    def __init__(self, *args, **kwargs):
+        super(Listener, self).__init__(*args, **kwargs)
+
+        self.rate = rospy.Rate(10)  # 10hz
+        self.net = Network()
+
+        # ------------- #
+        #  Subscribers  #
+        # ------------- #
+        rospy.Subscriber('/kitti/camera_color_left/image_raw', Image, self.callback_image_raw, (self.net))
+        rospy.Subscriber('/kitti/camera_color_left/camera_info', CameraInfo, self.callback_camera_info)
+
+        # spin() simply keeps python from exiting until this node is stopped
+        rospy.spin()
+
+    def callback_image_raw(self, image_raw_msg, args):
+        rospy.loginfo("'image_raw' message received!")
+
+        # rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+        cv_image_raw = bridge.imgmsg_to_cv2(image_raw_msg, desired_encoding="passthrough")
+
+        print('image_raw_msg.encoding:', image_raw_msg.encoding)
+        print('cv_image_raw:', cv_image_raw.shape, cv_image_raw.dtype)
+
+        try:
+            self.image2pred(cv_image_raw, net=args)
+        except rospy.ROSInterruptException:
+            pass
+
+        # FIXME:
+        if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
+            # rospy.shutdown()
+            return 0
+
+    def callback_camera_info(self, rec_camera_info_msg):
+        rospy.loginfo("'camera_info' message received!")
+
+        self.rec_camera_info_msg = rec_camera_info_msg
+        camModel.fromCameraInfo(rec_camera_info_msg)
+        # print(camModel)
+        # print("K:\n{}".format(camModel.intrinsicMatrix()))
 
 
 if __name__ == '__main__':
@@ -203,8 +202,7 @@ if __name__ == '__main__':
     rospy.init_node('image2pred', anonymous=True)
 
     try:
-        talker = Talker()
-        listener = Listener(talker.pub_pred_up_8UC1, talker.pub_pred_up_32FC1, talker.pub_pred_camera_info)
+        listener = Listener()
 
     except rospy.ROSInterruptException:
         pass

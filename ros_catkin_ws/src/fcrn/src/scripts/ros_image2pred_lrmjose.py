@@ -123,8 +123,8 @@ class Talker(object):
 
         # CV2 Image -> ROS Image Message
         pred_up_8UC1_msg = bridge.cv2_to_imgmsg(pred_up_8UC1_scaled, encoding="passthrough")
-        pred_up_8UC3_66x200_msg = bridge.cv2_to_imgmsg(pred_8UC1_66x100, encoding="passthrough")
         pred_up_32FC1_msg = bridge.cv2_to_imgmsg(pred_up[0], encoding="passthrough")
+        pred_up_8UC3_66x200_msg = bridge.cv2_to_imgmsg(pred_8UC1_66x100, encoding="passthrough")
 
         print(pred_up_8UC1_msg.encoding)
         print(pred_up_32FC1_msg.encoding)
@@ -134,9 +134,9 @@ class Talker(object):
         pred_up_32FC1_msg.header = self.rec_camera_info_msg.header
 
         self.pub_pred_up_8UC1.publish(pred_up_8UC1_msg)
-        self.pub_pred_up_8UC3_66x200.publish(pred_up_8UC3_66x200_msg)
         self.pub_pred_up_32FC1.publish(pred_up_32FC1_msg)
         self.pub_pred_camera_info.publish(self.rec_camera_info_msg)
+        self.pub_pred_up_8UC3_66x200.publish(pred_up_8UC3_66x200_msg)
 
         rospy.loginfo("image2pred")
         print('---')
@@ -204,12 +204,12 @@ class Listener(Talker):
         # print(camModel)
         # print("K:\n{}".format(camModel.intrinsicMatrix()))
 
+
 if __name__ == '__main__':
     # Initialize the node and name it.
     rospy.init_node('image2pred', anonymous=True)
 
     try:
-        # talker = Talker()
         listener = Listener()
 
     except rospy.ROSInterruptException:
