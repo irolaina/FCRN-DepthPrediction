@@ -254,5 +254,5 @@ $ python-codacy-coverage -r coverage.xml
 Use `coverage report` to report on the results:
 
 ```shell
-coverage report -m
+$ coverage report -m
 ```
