@@ -127,9 +127,12 @@ class Model(object):
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
-            # optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.train.tf_loss,
-            #                                                global_step=self.global_step)
+            # Select Optimizer
+            # optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.train.tf_loss, global_step=self.global_step)
             optimizer = tf.train.AdamOptimizer(self.train.tf_learning_rate)
+            # optimizer = tf.train.MomentumOptimizer(self.train.tf_learning_rate, momentum=0.9, use_nesterov=True)
+            # optimizer = tf.train.AdadeltaOptimizer(self.train.tf_learning_rate)
+
             self.train_step = optimizer.minimize(self.train.tf_loss, global_step=self.train.tf_global_step)
             tf.add_to_collection("train_step", self.train_step)
 
