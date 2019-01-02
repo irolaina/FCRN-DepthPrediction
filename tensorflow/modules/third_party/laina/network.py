@@ -130,6 +130,7 @@ class Network(object):
         return tf.get_variable(name, shape, initializer=tf.glorot_normal_initializer(), dtype='float32', trainable=self.trainable)
         # return tf.get_variable(name, shape, initializer= tf.random_uniform_initializer(),dtype='float32', trainable=self.trainable)
         # return tf.get_variable(name, shape, initializer= tf.random_normal_initializer(),dtype='float32', trainable=self.trainable)
+        # return tf.get_variable(name, shape, initializer=tf.variance_scaling_initializer(), dtype='float32', trainable=self.trainable)
 
     @staticmethod
     def validate_padding(padding):
