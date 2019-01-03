@@ -6,9 +6,9 @@ import sys
 import tensorflow as tf
 
 from modules.datasets.apolloscape import Apolloscape
-from modules.datasets.kitticontinuous import KittiContinuous
-from modules.datasets.kittidepth import KittiDepth
-from modules.datasets.kittidiscrete import KittiDiscrete
+from modules.datasets.kitti_continuous import KittiContinuous
+from modules.datasets.kitti_depth import KittiDepth
+from modules.datasets.kitti_discrete import KittiDiscrete
 from modules.datasets.nyudepth import NyuDepth
 from modules.datasets.lrmjose import LRMJose
 
