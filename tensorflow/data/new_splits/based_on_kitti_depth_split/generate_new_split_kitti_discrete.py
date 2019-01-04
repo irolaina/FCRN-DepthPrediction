@@ -5,74 +5,99 @@ import collections
 # TODO: Existem entradas duplicadas entre as listas de treinamento e teste do KITTI discrete
 # TODO: Ao mesmo tem, existem entradas das duas listas que não existem na lista do KITTI Depth
 
+class Split():
+    def __init__(self, path):
+        self.path = path
+        self.filenames = []
+        self.pair = []
+
+        self.file = open(self.path, 'r')
+
+class KittiDepth():
+    train = Split("../../kitti_depth/kitti_depth_train.txt")
+    test = Split("../../kitti_depth/kitti_depth_val.txt")
+
+class KittiDiscrete():
+    train = Split("../../unreliable_splits/kitti_discrete/kitti_discrete_train.txt")
+    test = Split("../../unreliable_splits/kitti_discrete/kitti_discrete_test.txt")
+
+
 # ======= #
 #  Train  #
 # ======= #
 # Read Kitti Depth File
-kitti_depth_train_file = open("../../kitti_depth/kitti_depth_train.txt", "r")
-kitti_depth_train_filenames = []
+kitti_discrete = KittiDiscrete()
+kitti_depth = KittiDepth()
 
-kitti_depth_test_file = open("../../kitti_depth/kitti_depth_val.txt", "r")
-kitti_depth_test_filenames = []
+# print(kitti_depth.train.path)
+# print(kitti_depth.train.filenames)
+# print(kitti_depth.train.file)
+# print(kitti_depth.test.path)
+# print(kitti_depth.test.filenames)
+# print(kitti_depth.test.file)
 
-kitti_discrete_train_file = open("../../unreliable_splits/kitti_discrete/kitti_discrete_train.txt") # Old
-kitti_discrete_train_filenames = []
-kitti_discrete_train_pair = []
+# print(kitti_discrete.train.path)
+# print(kitti_discrete.train.filenames)
+# print(kitti_discrete.train.file)
+# print(kitti_discrete.test.path)
+# print(kitti_discrete.test.filenames)
+# print(kitti_discrete.test.file)
 
-kitti_discrete_test_file = open("../../unreliable_splits/kitti_discrete/kitti_discrete_test.txt") # Old
-kitti_discrete_test_filenames = []
-kitti_discrete_test_pair = []
+input('oi')
 
 # Generating filenames for later comparison
-for i, line in enumerate(kitti_depth_train_file):
+for i, line in enumerate(kitti_depth.train.file):
     splitted = line.split()[0].split('/')
 
     kitti_depth_train_filename = '_'.join([splitted[2], splitted[-1]])
 
     # The Hilbert Maps generated depth maps only for left images (image_02)
     if splitted[3] == 'image_02':
-        kitti_depth_train_filenames.append(kitti_depth_train_filename)
+        kitti_depth.train.filenames.append(kitti_depth_train_filename)
 
     # print(kitti_depth_train_filename)
     # print(i, splitted) # (85897, ['raw_data', '2011_09_30', '2011_09_30_drive_0028_sync', 'image_03', 'data', '0000001350.png'])
 
-for i, line in enumerate(kitti_depth_test_file):
+# Generating filenames for later comparison
+for i, line in enumerate(kitti_depth.test.file):
     splitted = line.split()[0].split('/')
 
     kitti_depth_test_filename = '_'.join([splitted[2], splitted[-1]])
 
     # The Hilbert Maps generated depth maps only for left images (image_02)
     if splitted[3] == 'image_02':
-        kitti_depth_test_filenames.append(kitti_depth_test_filename)
+        kitti_depth.test.filenames.append(kitti_depth_test_filename)
 
     # print(kitti_depth_test_filename)
     # print(i, splitted) # 6851 ['raw_data', '2011_09_26', '2011_09_26_drive_0036_sync', 'image_02', 'data', '0000000697.png']
 
-for i, line in enumerate(kitti_discrete_train_file):
-    kitti_discrete_train_pair.append(line)
+# Generating filenames for later comparison
+for i, line in enumerate(kitti_discrete.train.file):
+    kitti_discrete.train.pair.append(line)
     splitted = line.split()[0].split('/')
 
-    kitti_discrete_train_filenames.append(splitted[-1])
+    kitti_discrete.train.filenames.append(splitted[-1])
     # print(splitted[-1])
     # print(i, splitted) # (25741, ['2011_09_30', '2011_09_30_drive_0020_sync', 'proc_kitti_nick', 'imgs', '2011_09_30_drive_0020_sync_0000000206.png'])
 
-for i, line in enumerate(kitti_discrete_test_file):
-    kitti_discrete_test_pair.append(line)
+# Generating filenames for later comparison
+for i, line in enumerate(kitti_discrete.test.file):
+    kitti_discrete.test.pair.append(line)
     splitted = line.split()[0].split('/')
 
-    kitti_discrete_test_filenames.append(splitted[-1])
+    kitti_discrete.test.filenames.append(splitted[-1])
     # print(splitted[-1])
     # print(i, splitted) # 6435 ['2011_09_26', '2011_09_26_drive_0061_sync', 'proc_kitti_nick', 'imgs', '2011_09_26_drive_0061_sync_0000000619.png']
 
 print()
-print('kitti_depth_train_filenames:', len(kitti_depth_train_filenames))
+print('kitti_depth_train_filenames:', len(kitti_depth.train.filenames))
 print()
-print('kitti_discrete_train_filenames:', len(kitti_discrete_train_filenames))
-print('kitti_discrete_test_filenames:', len(kitti_discrete_test_filenames))
+print('kitti_discrete_train_filenames:', len(kitti_discrete.train.filenames))
+print('kitti_discrete_test_filenames:', len(kitti_discrete.test.filenames))
 print()
 
-kitti_depth_filenames = kitti_depth_train_filenames + kitti_depth_test_filenames
-kitti_discrete_filenames = kitti_discrete_train_filenames + kitti_discrete_test_filenames
+kitti_depth_filenames = kitti_depth.train.filenames + kitti_depth.test.filenames
+kitti_discrete_filenames = kitti_discrete.train.filenames + kitti_discrete.test.filenames
 
 # Search for duplicates
 np.savetxt('kitti_discrete_train_sorted.txt', np.array(sorted(kitti_discrete_train_filenames)), fmt='%s', delimiter='\t')
@@ -99,7 +124,7 @@ kitti_discrete_train_new = []
 kitti_discrete_test_new = []
 
 for i, item in enumerate(set(kitti_discrete_filenames)):
-    if item in kitti_depth_train_filenames:
+    if item in kitti_depth.train.filenames:
         isIn.append(True)
         kitti_discrete_train_new.append(kitti_discrete_train_pair[i]) # FIXME: Recuperar os paths do par
     elif item in kitti_depth_test_filenames:
