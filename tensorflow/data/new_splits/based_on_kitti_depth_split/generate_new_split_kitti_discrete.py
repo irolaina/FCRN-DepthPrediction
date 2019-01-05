@@ -61,7 +61,7 @@ class KittiDiscrete:
 
     def get_train_filenames(self):
         for i, line in enumerate(self.train.file):
-            self.train.pair.append(line)
+            self.train.pair.append(line.rstrip())
             splitted = line.split()[0].split('/')
 
             self.train.filenames.append(splitted[-1])
@@ -70,7 +70,7 @@ class KittiDiscrete:
 
     def get_test_filenames(self):
         for i, line in enumerate(self.test.file):
-            self.test.pair.append(line)
+            self.test.pair.append(line.rstrip())
             splitted = line.split()[0].split('/')
 
             self.test.filenames.append(splitted[-1])
@@ -120,8 +120,7 @@ def main():
     # TODO: Melhorar isto
     kitti_depth.filenames = kitti_depth.train.filenames + kitti_depth.test.filenames
     kitti_discrete.filenames = kitti_discrete.train.filenames + kitti_discrete.test.filenames
-
-    # FIXME: Searches for duplicates
+    kitti_discrete.pairs = kitti_discrete.train.pair + kitti_discrete.test.pair
 
     # np.savetxt('kitti_discrete_train_sorted.txt', np.array(sorted(kitti_discrete.train.filenames)), fmt='%s', delimiter='\t')
     # np.savetxt('kitti_discrete_test_sorted.txt', np.array(sorted(kitti_discrete.test.filenames)), fmt='%s', delimiter='\t')
@@ -149,20 +148,30 @@ def main():
 
     # Check which discrete entries are in the kitti depth split.
     # set() removes duplicated filenames.
-    print("[Main] Checking which discrete entries are in the kitti depth split.")
+    print("[Main] Checking which KITTI Discrete entries are in the KITTI Depth split.")
     isIn = []
     isNotIn = []
     for item in set(kitti_discrete.filenames):
         if item in kitti_depth.train.filenames:
             # print(kitti_discrete.filenames.index(item), item)
             # print(kitti_depth.train.filenames.index(item), kitti_depth.train.filenames[kitti_depth.train.filenames.index(item)])
-            kitti_discrete.train.new_split.append(kitti_discrete.train.pair)
+
+            # Find correspondent pair for the queried item.
+            pair = [s for s in kitti_discrete.pairs if item in s][0]
+            # print(pair)
+
+            kitti_discrete.train.new_split.append(pair)
             isIn.append(True)
 
         elif item in kitti_depth.test.filenames:
             # print(kitti_discrete.filenames.index(item), item)
             # print(kitti_depth.test.filenames.index(item), kitti_depth.test.filenames[kitti_depth.test.filenames.index(item)])
-            kitti_discrete.test.new_split.append(kitti_discrete.test.pair)
+
+            # Find correspondent pair for the queried item.
+            pair = [s for s in kitti_discrete.pairs if item in s][0]
+            # print(pair)
+
+            kitti_discrete.test.new_split.append(pair)
             isIn.append(True)
 
         else:
@@ -192,6 +201,7 @@ def main():
     # Save
     # FIXME: MemoryError
     print("[Main] Saving new split train/test files...")
+
     np.savetxt('kitti_discrete_train_new_split.txt', np.array(kitti_discrete.train.new_split), fmt='%s', delimiter='')
     np.savetxt('kitti_discrete_test_new_split.txt', np.array(kitti_discrete.test.new_split), fmt='%s', delimiter='')
 
