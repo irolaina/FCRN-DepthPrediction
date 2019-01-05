@@ -1,16 +1,15 @@
 import collections
 import numpy as np
 
-
 # pylint: disable=line-too-long
 
 # Incoerências
 # TODO: Existem entradas duplicadas entre as listas de treinamento e teste do KITTI continuous
 # TODO: Ao mesmo tem, existem entradas das duas listas que não existem na lista do KITTI Depth
-# TODO: Número de imagens encontradas no KITTI Continuous do KITTI Discrete é diferente!!!
+# TODO: Número de imagens encontradas no KITTI Continuous do KITTI Continuous é diferente!!!
 
 
-class Split(object):
+class Split:
     """Create Properties variables"""
 
     def __init__(self, path):
@@ -26,6 +25,8 @@ class KittiDepth:
     def __init__(self):
         self.train = Split("../../kitti_depth/kitti_depth_train.txt")
         self.test = Split("../../kitti_depth/kitti_depth_val.txt")
+
+        self.filenames = []
 
     def get_train_filenames(self):
         for i, line in enumerate(self.train.file):
@@ -59,9 +60,11 @@ class KittiContinuous:
         self.train = Split("../../unreliable_splits/kitti_continuous/kitti_continuous_train.txt")
         self.test = Split("../../unreliable_splits/kitti_continuous/kitti_continuous_test.txt")
 
+        self.filenames = []
+
     def get_train_filenames(self):
         for i, line in enumerate(self.train.file):
-            self.train.pair.append(line)
+            self.train.pair.append(line.rstrip())
             splitted = line.split()[0].split('/')
 
             self.train.filenames.append(splitted[-1])
@@ -70,7 +73,7 @@ class KittiContinuous:
 
     def get_test_filenames(self):
         for i, line in enumerate(self.test.file):
-            self.test.pair.append(line)
+            self.test.pair.append(line.rstrip())
             splitted = line.split()[0].split('/')
 
             self.test.filenames.append(splitted[-1])
@@ -120,8 +123,7 @@ def main():
     # TODO: Melhorar isto
     kitti_depth.filenames = kitti_depth.train.filenames + kitti_depth.test.filenames
     kitti_continuous.filenames = kitti_continuous.train.filenames + kitti_continuous.test.filenames
-
-    # FIXME: Searches for duplicates
+    kitti_continuous.pairs = kitti_continuous.train.pair + kitti_continuous.test.pair
 
     # np.savetxt('kitti_continuous_train_sorted.txt', np.array(sorted(kitti_continuous.train.filenames)), fmt='%s', delimiter='\t')
     # np.savetxt('kitti_continuous_test_sorted.txt', np.array(sorted(kitti_continuous.test.filenames)), fmt='%s', delimiter='\t')
@@ -149,51 +151,61 @@ def main():
 
     # Check which continuous entries are in the kitti depth split.
     # set() removes duplicated filenames.
-    print("[Main] Checking which continuous entries are in the kitti depth split.")
-    isIn = []
-    isNotIn = []
+    print("[Main] Checking which KITTI Continuous entries are in the KITTI Depth split.")
+    is_in = []
+    is_not_in = []
     for item in set(kitti_continuous.filenames):
         if item in kitti_depth.train.filenames:
             # print(kitti_continuous.filenames.index(item), item)
             # print(kitti_depth.train.filenames.index(item), kitti_depth.train.filenames[kitti_depth.train.filenames.index(item)])
-            kitti_continuous.train.new_split.append(kitti_continuous.train.pair)
-            isIn.append(True)
+
+            # Find correspondent pair for the queried item.
+            pair = [s for s in kitti_continuous.pairs if item in s][0]
+            # print(pair)
+
+            kitti_continuous.train.new_split.append(pair)
+            is_in.append(True)
 
         elif item in kitti_depth.test.filenames:
             # print(kitti_continuous.filenames.index(item), item)
             # print(kitti_depth.test.filenames.index(item), kitti_depth.test.filenames[kitti_depth.test.filenames.index(item)])
-            kitti_continuous.test.new_split.append(kitti_continuous.test.pair)
-            isIn.append(True)
+
+            # Find correspondent pair for the queried item.
+            pair = [s for s in kitti_continuous.pairs if item in s][0]
+            # print(pair)
+
+            kitti_continuous.test.new_split.append(pair)
+            is_in.append(True)
 
         else:
-            isNotIn.append(item)
-            isIn.append(False)
+            is_not_in.append(item)
+            is_in.append(False)
 
     try:
         # Devem ser iguais !!!
-        if sum(isIn) != len(isIn):
+        if sum(is_in) != len(is_in):
             raise AssertionError
     except AssertionError:
         print(
             "[AssertionError] Existem {} entradas nas listas de treinamento e test do KITTI Continuous que NÃO existem nas listas do KITTI Depth!!!".format(
-                len(isNotIn)))
-        print('{} != {}\n'.format(sum(isIn), len(isIn)))
+                len(is_not_in)))
+        print('{} != {}\n'.format(sum(is_in), len(is_in)))
 
-    print('isNotIn:', isNotIn)
+    print('is_not_in:', is_not_in)
     print()
 
     # Save New KITTI Continuous lists
-    print('# -- KITTI Continuous -- #')
+    print('# --- KITTI Continuous --- #')
     print("| Old Split\t|\tNew Split|")
     print('| {:9}\t|\t{:9}|'.format(len(kitti_continuous.train.filenames), len(kitti_continuous.train.new_split)))
     print('| {:9}\t|\t{:9}|'.format(len(kitti_continuous.test.filenames), len(kitti_continuous.test.new_split)))
     print('# ---------------------- #\n')
 
     # Save
-    # FIXME: MemoryError
     print("[Main] Saving new split train/test files...")
-    np.savetxt('kitti_continuous_train_new_split.txt', np.array(kitti_continuous.train.new_split), fmt='%s', delimiter='')
-    np.savetxt('kitti_continuous_test_new_split.txt', np.array(kitti_continuous.test.new_split), fmt='%s', delimiter='')
+
+    np.savetxt('kitti_continuous_train_new_split.txt', kitti_continuous.train.new_split, fmt='%s', delimiter='')
+    np.savetxt('kitti_continuous_test_new_split.txt', kitti_continuous.test.new_split, fmt='%s', delimiter='')
 
     kitti_depth.train.file.close()
     kitti_continuous.train.file.close()

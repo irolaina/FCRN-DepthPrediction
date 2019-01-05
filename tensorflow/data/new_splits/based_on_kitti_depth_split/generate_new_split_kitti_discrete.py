@@ -1,7 +1,6 @@
 import collections
 import numpy as np
 
-
 # pylint: disable=line-too-long
 
 # Incoerências
@@ -10,7 +9,7 @@ import numpy as np
 # TODO: Número de imagens encontradas no KITTI Continuous do KITTI Discrete é diferente!!!
 
 
-class Split(object):
+class Split:
     """Create Properties variables"""
 
     def __init__(self, path):
@@ -26,6 +25,8 @@ class KittiDepth:
     def __init__(self):
         self.train = Split("../../kitti_depth/kitti_depth_train.txt")
         self.test = Split("../../kitti_depth/kitti_depth_val.txt")
+
+        self.filenames = []
 
     def get_train_filenames(self):
         for i, line in enumerate(self.train.file):
@@ -58,6 +59,8 @@ class KittiDiscrete:
     def __init__(self):
         self.train = Split("../../unreliable_splits/kitti_discrete/kitti_discrete_train.txt")
         self.test = Split("../../unreliable_splits/kitti_discrete/kitti_discrete_test.txt")
+
+        self.filenames = []
 
     def get_train_filenames(self):
         for i, line in enumerate(self.train.file):
@@ -149,8 +152,8 @@ def main():
     # Check which discrete entries are in the kitti depth split.
     # set() removes duplicated filenames.
     print("[Main] Checking which KITTI Discrete entries are in the KITTI Depth split.")
-    isIn = []
-    isNotIn = []
+    is_in = []
+    is_not_in = []
     for item in set(kitti_discrete.filenames):
         if item in kitti_depth.train.filenames:
             # print(kitti_discrete.filenames.index(item), item)
@@ -161,7 +164,7 @@ def main():
             # print(pair)
 
             kitti_discrete.train.new_split.append(pair)
-            isIn.append(True)
+            is_in.append(True)
 
         elif item in kitti_depth.test.filenames:
             # print(kitti_discrete.filenames.index(item), item)
@@ -172,23 +175,23 @@ def main():
             # print(pair)
 
             kitti_discrete.test.new_split.append(pair)
-            isIn.append(True)
+            is_in.append(True)
 
         else:
-            isNotIn.append(item)
-            isIn.append(False)
+            is_not_in.append(item)
+            is_in.append(False)
 
     try:
         # Devem ser iguais !!!
-        if sum(isIn) != len(isIn):
+        if sum(is_in) != len(is_in):
             raise AssertionError
     except AssertionError:
         print(
             "[AssertionError] Existem {} entradas nas listas de treinamento e test do KITTI Discrete que NÃO existem nas listas do KITTI Depth!!!".format(
-                len(isNotIn)))
-        print('{} != {}\n'.format(sum(isIn), len(isIn)))
+                len(is_not_in)))
+        print('{} != {}\n'.format(sum(is_in), len(is_in)))
 
-    print('isNotIn:', isNotIn)
+    print('is_not_in:', is_not_in)
     print()
 
     # Save New KITTI Discrete lists
@@ -199,11 +202,10 @@ def main():
     print('# ---------------------- #\n')
 
     # Save
-    # FIXME: MemoryError
     print("[Main] Saving new split train/test files...")
 
-    np.savetxt('kitti_discrete_train_new_split.txt', np.array(kitti_discrete.train.new_split), fmt='%s', delimiter='')
-    np.savetxt('kitti_discrete_test_new_split.txt', np.array(kitti_discrete.test.new_split), fmt='%s', delimiter='')
+    np.savetxt('kitti_discrete_train_new_split.txt', kitti_discrete.train.new_split, fmt='%s', delimiter='')
+    np.savetxt('kitti_discrete_test_new_split.txt', kitti_discrete.test.new_split, fmt='%s', delimiter='')
 
     kitti_depth.train.file.close()
     kitti_discrete.train.file.close()
