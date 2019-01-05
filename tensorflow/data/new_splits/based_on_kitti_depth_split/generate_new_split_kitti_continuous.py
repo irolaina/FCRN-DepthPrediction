@@ -128,7 +128,9 @@ def main():
 
     print("[Main] Searching for duplicates...")
     try:
-        assert len(kitti_continuous.filenames) == len(set(kitti_continuous.filenames))  # Deveriam ser iguais !!!
+        # Devem ser iguais !!!
+        if len(kitti_continuous.filenames) != len(set(kitti_continuous.filenames)):
+            raise AssertionError
 
     except AssertionError:
         duplicates = [item for item, count in collections.Counter(kitti_continuous.filenames).items() if count > 1]
@@ -168,7 +170,9 @@ def main():
             isIn.append(False)
 
     try:
-        assert sum(isIn) == len(isIn)
+        # Devem ser iguais !!!
+        if sum(isIn) != len(isIn):
+            raise AssertionError
     except AssertionError:
         print(
             "[AssertionError] Existem {} entradas nas listas de treinamento e test do KITTI Continuous que NÃO existem nas listas do KITTI Depth!!!".format(

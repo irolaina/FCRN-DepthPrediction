@@ -9,6 +9,7 @@ import numpy as np
 # TODO: Ao mesmo tem, existem entradas das duas listas que não existem na lista do KITTI Depth
 # TODO: Número de imagens encontradas no KITTI Continuous do KITTI Discrete é diferente!!!
 
+
 class Split(object):
     """Create Properties variables"""
 
@@ -127,7 +128,9 @@ def main():
 
     print("[Main] Searching for duplicates...")
     try:
-        assert len(kitti_discrete.filenames) == len(set(kitti_discrete.filenames))  # Deveriam ser iguais !!!
+        # Devem ser iguais !!!
+        if len(kitti_discrete.filenames) != len(set(kitti_discrete.filenames)):
+            raise AssertionError
 
     except AssertionError:
         duplicates = [item for item, count in collections.Counter(kitti_discrete.filenames).items() if count > 1]
@@ -167,7 +170,9 @@ def main():
             isIn.append(False)
 
     try:
-        assert sum(isIn) == len(isIn)
+        # Devem ser iguais !!!
+        if sum(isIn) != len(isIn):
+            raise AssertionError
     except AssertionError:
         print(
             "[AssertionError] Existem {} entradas nas listas de treinamento e test do KITTI Discrete que NÃO existem nas listas do KITTI Depth!!!".format(
