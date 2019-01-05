@@ -1,14 +1,17 @@
 import collections
 import numpy as np
 
+
 # pylint: disable=line-too-long
 
 # Incoerências
 # TODO: Existem entradas duplicadas entre as listas de treinamento e teste do KITTI discrete
 # TODO: Ao mesmo tem, existem entradas das duas listas que não existem na lista do KITTI Depth
+# TODO: Número de imagens encontradas no KITTI Continuous do KITTI Discrete é diferente!!!
 
 class Split(object):
     """Create Properties variables"""
+
     def __init__(self, path):
         self.path = path
         self.filenames = []
@@ -17,7 +20,8 @@ class Split(object):
 
         self.file = open(self.path, 'r')
 
-class KittiDepth():
+
+class KittiDepth:
     def __init__(self):
         self.train = Split("../../kitti_depth/kitti_depth_train.txt")
         self.test = Split("../../kitti_depth/kitti_depth_val.txt")
@@ -48,7 +52,8 @@ class KittiDepth():
             # print(self.test.filename)
             # print(i, splitted) # 6851 ['raw_data', '2011_09_26', '2011_09_26_drive_0036_sync', 'image_02', 'data', '0000000697.png']
 
-class KittiDiscrete():
+
+class KittiDiscrete:
     def __init__(self):
         self.train = Split("../../unreliable_splits/kitti_discrete/kitti_discrete_train.txt")
         self.test = Split("../../unreliable_splits/kitti_discrete/kitti_discrete_test.txt")
@@ -70,6 +75,7 @@ class KittiDiscrete():
             self.test.filenames.append(splitted[-1])
             # print(splitted[-1])
             # print(i, splitted) # 6435 ['2011_09_26', '2011_09_26_drive_0061_sync', 'proc_kitti_nick', 'imgs', '2011_09_26_drive_0061_sync_0000000619.png']
+
 
 # ====== #
 #  Main  #
@@ -110,6 +116,7 @@ def main():
     print('kitti_discrete_test_filenames:', len(kitti_discrete.test.filenames))
     print()
 
+    # TODO: Melhorar isto
     kitti_depth.filenames = kitti_depth.train.filenames + kitti_depth.test.filenames
     kitti_discrete.filenames = kitti_discrete.train.filenames + kitti_discrete.test.filenames
 
@@ -120,12 +127,14 @@ def main():
 
     print("[Main] Searching for duplicates...")
     try:
-        assert len(kitti_discrete.filenames) == len(set(kitti_discrete.filenames)) # Deveriam ser iguais !!!
+        assert len(kitti_discrete.filenames) == len(set(kitti_discrete.filenames))  # Deveriam ser iguais !!!
 
     except AssertionError:
         duplicates = [item for item, count in collections.Counter(kitti_discrete.filenames).items() if count > 1]
 
-        print("[AssertionError] Existem {} entradas duplicadas nas listas de treinamento e teste do KITTI Discrete!!!".format(len(duplicates)))
+        print(
+            "[AssertionError] Existem {} entradas duplicadas nas listas de treinamento e teste do KITTI Discrete!!!".format(
+                len(duplicates)))
         print('{} != {}\n'.format(len(kitti_discrete.filenames), len(set(kitti_discrete.filenames))))
 
         # Show Duplicates
@@ -135,13 +144,12 @@ def main():
     # for pair in kitti_discrete.train.pair:
     #     print(pair)
 
-
     # Check which discrete entries are in the kitti depth split.
     # set() removes duplicated filenames.
     print("[Main] Checking which discrete entries are in the kitti depth split.")
     isIn = []
     isNotIn = []
-    for i, item in enumerate(set(kitti_discrete.filenames)):
+    for item in set(kitti_discrete.filenames):
         if item in kitti_depth.train.filenames:
             # print(kitti_discrete.filenames.index(item), item)
             # print(kitti_depth.train.filenames.index(item), kitti_depth.train.filenames[kitti_depth.train.filenames.index(item)])
@@ -161,7 +169,9 @@ def main():
     try:
         assert sum(isIn) == len(isIn)
     except AssertionError:
-        print("[AssertionError] Existem {} entradas nas listas de treinamento e test do KITTI Discrete que NÃO existem nas listas do KITTI Depth!!!".format(len(isNotIn)))
+        print(
+            "[AssertionError] Existem {} entradas nas listas de treinamento e test do KITTI Discrete que NÃO existem nas listas do KITTI Depth!!!".format(
+                len(isNotIn)))
         print('{} != {}\n'.format(sum(isIn), len(isIn)))
 
     print('isNotIn:', isNotIn)
@@ -184,6 +194,7 @@ def main():
     kitti_discrete.train.file.close()
 
     print("Done.")
+
 
 if __name__ == '__main__':
     main()
