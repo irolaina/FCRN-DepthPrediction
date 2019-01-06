@@ -39,6 +39,9 @@ class KittiDiscrete(Dataset):
         if os.path.exists(file):
             image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
         else:
+            # TODO: Este trecho deverá estar de acordo com o que foi desenvolvido em generate_new_split_kitti_discrete.py
+            raise SystemError
+
             print("[Dataloader] '%s' doesn't exist..." % file)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 

@@ -55,11 +55,11 @@ class Dataloader:
             dataset_path = dataset_root + "kitti/"
             self.dataset = KittiDepth(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=80.0)
 
-        elif args.dataset.split('_')[0] == 'kitti_discrete':
+        elif '_'.join(args.dataset.split('_')[:2]) == 'kitti_discrete':
             dataset_path = dataset_root + "kitti/raw_data/"
             self.dataset = KittiDiscrete(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=None)
 
-        elif args.dataset.split('_')[0] == 'kitti_continuous':
+        elif '_'.join(args.dataset.split('_')[:2]) == 'kitti_continuous':
             dataset_path = dataset_root + "kitti/raw_data/"
             self.dataset = KittiContinuous(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=85.0)
 
