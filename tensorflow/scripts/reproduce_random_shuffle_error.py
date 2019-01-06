@@ -54,8 +54,8 @@ capacity = min_after_dequeue + num_threads * batch_size
 # =================
 # Select Dataset:
 # dataset_name = 'apolloscape'
-# dataset_name = 'kitticontinuous'
-# dataset_name = 'kitticontinuous_residential'
+# dataset_name = 'kitti_continuous'
+# dataset_name = 'kitti_continuous_residential'
 # dataset_name = 'nyudepth'
 dataset_name = 'kittidepth'
 
@@ -70,13 +70,13 @@ if dataset_name == 'apolloscape':
     image_shape = (2710, 3384, 3)
     depth_shape = (2710, 3384, 1)
 
-elif dataset_name == 'kitticontinuous':
-    data = np.genfromtxt('data/kitticontinuous_train.txt', dtype='str', delimiter='\t')
+elif dataset_name == 'kitti_continuous':
+    data = np.genfromtxt('data/kitti_continuous_train.txt', dtype='str', delimiter='\t')
     image_shape = (375, 1242, 3)
     depth_shape = (375, 1242, 1)
 
-elif dataset_name == 'kitticontinuous_residential':
-    data = np.genfromtxt('data/kitticontinuous_residential_train.txt', dtype='str', delimiter='\t')
+elif dataset_name == 'kitti_continuous_residential':
+    data = np.genfromtxt('data/kitti_continuous_residential_train.txt', dtype='str', delimiter='\t')
     image_shape = (375, 1242, 3)
     depth_shape = (375, 1242, 1)
 
@@ -121,10 +121,10 @@ tf_depth_file = tf.read_file(tf_depth_key)
 if dataset_name == 'apolloscape':
     tf_image = tf.image.decode_jpeg(tf_image_file)
     tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
-elif dataset_name == 'kitticontinuous':
+elif dataset_name == 'kitti_continuous':
     tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
     tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
-elif dataset_name == 'kitticontinuous_residential':
+elif dataset_name == 'kitti_continuous_residential':
     tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
     tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
 elif dataset_name == 'nyudepth':

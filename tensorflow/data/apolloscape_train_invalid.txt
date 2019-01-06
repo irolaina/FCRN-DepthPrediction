@@ -1,1 +1,0 @@
-/media/nicolas/nicolas_seagate/datasets/apolloscape/data/ColorImage/Record011/Camera 5/171206_055536605_Camera_5.jpg	/media/nicolas/nicolas_seagate/datasets/apolloscape/data/Depth/Record011/Camera 5/171206_055536605_Camera_5.png

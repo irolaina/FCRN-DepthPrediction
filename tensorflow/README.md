@@ -8,19 +8,19 @@ $ python predict.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/nyu_exam
 Train on XPS:
 
 ```shell
-$ python3 predict_nick.py -m train --machine nicolas --gpu 0 -s kitticontinuous --px all --loss berhu --max_steps 75000 --ldecay --l2norm --remove_sky -t -v
+$ python3 predict_nick.py -m train --machine nicolas --gpu 0 -s kitti_continuous --px all --loss berhu --max_steps 75000 --ldecay --l2norm --remove_sky -t -v
 ```
 
 Train on Olorin:
 
 ```shell
-$ python3 predict_nick.py -m train --machine olorin --gpu 0 -s kittidiscrete --px all --loss berhu --max_steps 10 --ldecay --l2norm --remove_sky 
+$ python3 predict_nick.py -m train --machine olorin --gpu 0 -s kitti_discrete --px all --loss berhu --max_steps 10 --ldecay --l2norm --remove_sky 
 ```
 
 Test:
 
 ```shell
-$ python3 predict_nick.py -m test -s kitticontinuous_residential -r output/fcrn/2018-02-26_17-08-45/restore/model.fcrn --gpu 1 --remove_sky -u
+$ python3 predict_nick.py -m test -s kitti_continuous_residential -r output/fcrn/2018-02-26_17-08-45/restore/model.fcrn --gpu 1 --remove_sky -u
 ```
 
 Predict:
@@ -35,13 +35,13 @@ $ python3 predict_nick.py -m pred -r ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt
 $ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/apolloscape
 ```
 ```shell
-$ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kittidepth
+$ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitti_depth
 ```
 ```shell
-$ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kittidiscrete
+$ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitti_discrete
 ```
 ```shell
-$ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitticontinuous
+$ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitti_continuous
 ```
 ```shell
 $ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/nyudepth
@@ -69,7 +69,7 @@ $ python3 predict_cv.py -r ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt -i ../mis
 ```
 
 ```shell
-$ python3 predict_cv.py -r output/fcrn/kitticontinuous/all_px/berhu/2018-06-29_17-59-58/restore/model.fcrn ../misc/outdoor_dubai_city.mp4
+$ python3 predict_cv.py -r output/fcrn/kitti_continuous/all_px/berhu/2018-06-29_17-59-58/restore/model.fcrn ../misc/outdoor_dubai_city.mp4
 ```
 
 Detects and lists the available models:
@@ -246,7 +246,7 @@ $ export CODACY_PROJECT_TOKEN=%Project_Token%
 Updating Codacy:
 
 ```shell
-$ coverage run predict_nick.py -m train --machine nicolas -s kittidiscrete --px all --loss mse --max_steps 150000 --ldecay --l2norm --data_aug -t
+$ coverage run predict_nick.py -m train --machine nicolas -s kitti_discrete --px all --loss mse --max_steps 150000 --ldecay --l2norm --data_aug -t
 $ coverage xml
 $ python-codacy-coverage -r coverage.xml
 ```

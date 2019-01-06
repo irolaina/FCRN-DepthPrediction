@@ -31,7 +31,7 @@ def read_text_file(filename, dataset_path):
     return image_filenames, depth_filenames
 
 image_filenames, depth_filenames = read_text_file('tmp/kittidepth_train.txt'     , '/media/nicolas/nicolas_seagate/datasets/kitti/'         )  # KittiDepth
-# image_filenames, depth_filenames = read_text_file('tmp/kittidiscrete_train.txt'  , '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/')  # KittiDiscrete
+# image_filenames, depth_filenames = read_text_file('tmp/kitti_discrete_train.txt'  , '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/')  # KittiDiscrete
 # image_filenames, depth_filenames = read_text_file('tmp/kitticontinuous_train.txt', '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/')  # KittiContinuous
 
 # Print Arrays Content
