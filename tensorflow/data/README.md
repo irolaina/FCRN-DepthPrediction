@@ -1,20 +1,20 @@
 # Datasets Info
 
 ## Number of Available Images/Depths for each dataset
-
-| Dataset                     | Train  | Test  |
-| --------------------------- | -----: | ----: |
-| apolloscape                 | 102686 | 25672 |
-| nyudepth                    |    795 |   654 |
-| kittidepth                  |  85898 |  6852 |*
-| --------------------------- | ------ | ----- |
-| kitticontinuous             |  25742 |  6436 |
-| kitticontinuous_city        |   6618 |  1655 |
-| kitticontinuous_residential |  10529 |  2633 |
-| kitticontinuous_road        |   4188 |  1048 |
-| kitticontinuous_campus      |    999 |   250 |
-| kitticontinuous_person      |   3406 |   852 |
-| --------------------------- | ------ | ----- |
+# TODO: Provavelmente após eu atualizar os Splits do KITTI Continuous e KITTI Discrete, esta tabela não está mais correta!
+| Dataset                      | Train  | Test  |
+| ---------------------------- | -----: | ----: |
+| apolloscape                  | 102686 | 25672 |
+| nyudepth                     |    795 |   654 |
+| kittidepth                   |  85898 |  6852 |*
+| ---------------------------- | ------ | ----- |
+| kitticontinuous              |  25742 |  6436 |
+| kitticontinuous_city         |   6618 |  1655 |
+| kitticontinuous_residential  |  10529 |  2633 |
+| kitticontinuous_road         |   4188 |  1048 |
+| kitticontinuous_campus       |    999 |   250 |
+| kitticontinuous_person       |   3406 |   852 |
+| ---------------------------- | ------ | ----- |
 | kitti_discrete               |  25742 |  6436 |
 | kitti_discrete_city          |   6618 |  1655 |
 | kitti_discrete_residential   |  10529 |  2633 |

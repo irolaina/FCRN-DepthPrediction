@@ -25,7 +25,7 @@
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [All] TODO: Devo continuar usando tf.image.resize_images()? Há relatos desta função ser bugada
 
-# [Train] FIXME: KittiDepth e KittDiscrete indo melhor que o KittiContinuous:
+# [Train] FIXME: KittiDepth e KittiDiscrete indo melhor que o KittiContinuous:
 # Especulações:
 # @nicolas: Acredito que as superfícies contínuas ao interpolar os pontos da nuvem nem sempre garantem que o valor de profundidade do ponto original, isto é, talvez o ponto original não seja um ponto âncora para a superfície.
 # @vitor: Visto que as imagens de avaliação utilizadas são esparsas, o vitor acha que elas deveriam ser contínuas.
