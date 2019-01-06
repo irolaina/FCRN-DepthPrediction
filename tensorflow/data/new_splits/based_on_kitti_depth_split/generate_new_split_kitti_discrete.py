@@ -8,7 +8,6 @@ import sys
 # pylint: disable=line-too-long
 
 # Incoerências
-# TODO: Existem entradas duplicadas entre as listas de treinamento e teste do KITTI Discrete
 # TODO: Ao mesmo tem, existem entradas das duas listas que não existem na lista do KITTI Depth
 # TODO: Número de imagens encontradas no KITTI Continuous do KITTI Discrete é diferente!!!
 
@@ -206,8 +205,8 @@ def main():
     print('kitti_depth_train_filenames:', len(kitti_depth.train.filenames))
     print('kitti_depth_test_filenames:', len(kitti_depth.test.filenames))
     print()
-    print('kitti_discrete_pairs', len(kitti_discrete.pairs))
-    print('kitti_discrete_filenames', len(kitti_discrete.filenames))
+    print('kitti_discrete_pairs:', len(kitti_discrete.pairs))
+    print('kitti_discrete_filenames:', len(kitti_discrete.filenames))
     print()
 
     # TODO: Melhorar isto
@@ -234,14 +233,6 @@ def main():
         # Show Duplicates
         print('duplicates:', duplicates)
         print()
-
-    # TODO: Remover
-    print(kitti_depth.train.filenames[0])
-    print(kitti_depth.test.filenames[0])
-    print(kitti_discrete.pairs[0])
-    print(kitti_discrete.filenames[0])
-    print()
-    # input("oi")
 
     # Check which discrete entries are in the kitti depth split.
     # set() removes duplicated filenames.
@@ -294,7 +285,7 @@ def main():
 
     # Save New KITTI Discrete lists
     print('# --- KITTI Discrete --- #')
-    print("| Pairs\t|\tNew Split|")
+    print("| \tPairs\t|\tNew Split|")
     print('| {:9}\t|\t{:9}|'.format(len(kitti_discrete.filenames), len(kitti_discrete.train.new_split)))
     print('| {:9}\t|\t{:9}|'.format('', len(kitti_discrete.test.new_split)))
     print('# ---------------------- #\n')
