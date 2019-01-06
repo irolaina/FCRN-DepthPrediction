@@ -15,9 +15,9 @@
 
 # [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'eigen_grads'
 
-# [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
+# [Test] TODO: Realizar Tests comparando KITTI Depth x KITTI Discrete (disp1) x KITTI Continuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
-# [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/eigen_grads/2018-06-27_11-14-21/restore/model.fcrn -u
+# [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitti_continuous --px all -r output/fcrn/kitti_continuous/all_px/eigen_grads/2018-06-27_11-14-21/restore/model.fcrn -u
 # [Test] FIXME: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
@@ -25,7 +25,7 @@
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [All] TODO: Devo continuar usando tf.image.resize_images()? Há relatos desta função ser bugada
 
-# [Train] FIXME: KittiDepth e KittiDiscrete indo melhor que o KittiContinuous:
+# [Train] FIXME: KittiDepth e KittDiscrete indo melhor que o KittiContinuous:
 # Especulações:
 # @nicolas: Acredito que as superfícies contínuas ao interpolar os pontos da nuvem nem sempre garantem que o valor de profundidade do ponto original, isto é, talvez o ponto original não seja um ponto âncora para a superfície.
 # @vitor: Visto que as imagens de avaliação utilizadas são esparsas, o vitor acha que elas deveriam ser contínuas.

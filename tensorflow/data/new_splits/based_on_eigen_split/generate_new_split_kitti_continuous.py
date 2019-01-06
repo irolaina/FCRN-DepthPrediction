@@ -36,7 +36,7 @@ for i, pair in enumerate(eigen_train):
      print(i, pair)
 
 # Save
-np.savetxt('kitticontinuous/eigen_train_files.txt', np.array(eigen_train), fmt='%s', delimiter='\t')
+np.savetxt('kitti_continuous/eigen_train_files.txt', np.array(eigen_train), fmt='%s', delimiter='\t')
 eigen_train_file.close()
 
 # ====== #
@@ -75,5 +75,5 @@ for i, pair in enumerate(eigen_test):
      print(i, pair)
 
 # Save
-np.savetxt('kitticontinuous/eigen_test_files.txt', np.array(eigen_test), fmt='%s', delimiter='\t')
+np.savetxt('kitti_continuous/eigen_test_files.txt', np.array(eigen_test), fmt='%s', delimiter='\t')
 eigen_test_file.close()

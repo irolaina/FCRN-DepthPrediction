@@ -26,7 +26,7 @@ def argumentHandler():
                         default='fcrn')
 
     parser.add_argument('-s', '--dataset', action='store',
-                        help="Selects the dataset ['apolloscape', 'kittidepth', 'kittidiscrete', 'kitticontinuous', 'kitticontinuous_residential', 'nyudepth']",
+                        help="Selects the dataset ['apolloscape', 'kittidepth', 'kitti_discrete', 'kitti_continuous', 'kitti_continuous_residential', 'nyudepth']",
                         default='')
 
     parser.add_argument('--px', action='store',
