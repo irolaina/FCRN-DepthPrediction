@@ -38,7 +38,7 @@ class Dataloader:
 
         if args.machine == 'nicolas':
             if args.dataset == 'lrmjose':
-                dataset_root = "/home/nicolas/Downloads/" #TODO: Mudar de Folder
+                dataset_root = "/home/nicolas/Downloads/"  # TODO: Mudar de Folder
             else:
                 dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
@@ -162,7 +162,7 @@ class Dataloader:
         elif dataset_name == 'nyudepth':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 1000.0
         elif dataset_name == 'lrmjose':
-            tf_depth = (tf.cast(tf_depth, tf.float32)) / 1.0 # TODO: Correto?
+            tf_depth = (tf.cast(tf_depth, tf.float32)) / 1.0  # TODO: Correto?
         return tf_depth
 
     @staticmethod

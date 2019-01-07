@@ -5,6 +5,7 @@ import time
 import numpy as np
 import sys
 
+
 # pylint: disable=line-too-long
 
 # Incoerências
@@ -116,7 +117,9 @@ class KittiContinuous:
                                                                          image_filenames_aux, depth_filenames_aux)
 
             # Removes the prefix '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/'
-            self.pairs = [(image_filename.replace('/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/', ''), depth_filename.replace('/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/', '')) for (image_filename, depth_filename) in zip(image_filenames, depth_filenames)]
+            self.pairs = [(image_filename.replace('/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/', ''),
+                           depth_filename.replace('/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/', '')) for
+                          (image_filename, depth_filename) in zip(image_filenames, depth_filenames)]
             # for i in filenames:
             #     print(i)
             # input("enter")
@@ -169,6 +172,7 @@ class KittiContinuous:
         depth_filenames = list(np.array(depth_filenames)[s])
 
         return image_filenames, depth_filenames, n2, m2
+
 
 # ====== #
 #  Main  #
@@ -241,7 +245,7 @@ def main():
     is_not_in = []
 
     # Transforms list of np.array of strings, to list of strings.
-    kitti_continuous.pairs = [pair[0]+'\t'+pair[1] for pair in kitti_continuous.pairs]
+    kitti_continuous.pairs = [pair[0] + '\t' + pair[1] for pair in kitti_continuous.pairs]
 
     for item in set(kitti_continuous.filenames):
         if item in kitti_depth.train.filenames:

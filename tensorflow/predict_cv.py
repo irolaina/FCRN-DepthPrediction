@@ -46,7 +46,7 @@ def circular_counter(max_value):
         yield x
 
 
-class CvTimer(object):
+class CvTimer():
     def __init__(self):
         self.tick_frequency = cv2.getTickFrequency()
         self.tick_at_init = cv2.getTickCount()

@@ -31,7 +31,7 @@ for line in eigen_train_file:
 
 # Display
 for i, pair in enumerate(eigen_train):
-     print(i, pair)
+    print(i, pair)
 
 # Save
 np.savetxt('kittidepth/eigen_train_files.txt', np.array(eigen_train), fmt='%s', delimiter='\t')
@@ -53,7 +53,7 @@ for line in eigen_test_file:
 
     depth = splitted
     depth[0] = depth[0].replace('raw_data', 'depth')
-    depth[1] = 'depth_prediction/data/train' # TODO: Isto está certo?
+    depth[1] = 'depth_prediction/data/train'  # TODO: Isto está certo?
     depth.insert(3, 'proj_depth/groundtruth')
     depth.pop(-2)
     depth = '/'.join(depth)
@@ -65,11 +65,11 @@ for line in eigen_test_file:
     # print(newline)
     # print(splitted)
 
-    eigen_test.append(newline) # TODO: Descomentar
+    eigen_test.append(newline)  # TODO: Descomentar
 
 # Display
 for i, pair in enumerate(eigen_test):
-     print(i, pair)
+    print(i, pair)
 
 # Save
 np.savetxt('kittidepth/eigen_test_files.txt', np.array(eigen_test), fmt='%s', delimiter='\t')

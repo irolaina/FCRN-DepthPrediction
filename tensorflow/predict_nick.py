@@ -29,7 +29,7 @@
 # Especulações:
 # @nicolas: Acredito que as superfícies contínuas ao interpolar os pontos da nuvem nem sempre garantem que o valor de profundidade do ponto original, isto é, talvez o ponto original não seja um ponto âncora para a superfície.
 # @vitor: Visto que as imagens de avaliação utilizadas são esparsas, o vitor acha que elas deveriam ser contínuas.
-"Acho que isso é uma parte do problema, não existe comparação na imagem inteira, aí os benefícios do contínuo não ficam aparentes nos números obtidos."
+# Acho que isso é uma parte do problema, não existe comparação na imagem inteira, aí os benefícios do contínuo não ficam aparentes nos números obtidos.
 
 # SOLUÇÃO: TODO: Criar um novo split, Continuous Splits, o qual consiste das mesmas 697 imagens de avaliação propostas pelo Eigen, porém contínuas.
 # Isto é, utilizar as images contínuas como avaliação ao invés das esparsas, assim os métodos treinados no esparso errariam mais e os modelos treinados no dataset contínuo conseguiriam ir melhor.

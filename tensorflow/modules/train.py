@@ -148,7 +148,7 @@ class Train:
         print()
         # input("train")
 
-    def readImages(self, dataset_name, image_filenames, depth_filenames): # Used only for train
+    def readImages(self, dataset_name, image_filenames, depth_filenames):  # Used only for train
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may get misaligned the pair (image, depth)!!!
 

@@ -33,7 +33,7 @@ for line in eigen_train_file:
 
 # Display
 for i, pair in enumerate(eigen_train):
-     print(i, pair)
+    print(i, pair)
 
 # Save
 np.savetxt('kitti_continuous/eigen_train_files.txt', np.array(eigen_train), fmt='%s', delimiter='\t')
@@ -72,7 +72,7 @@ for line in eigen_test_file:
 
 # Display
 for i, pair in enumerate(eigen_test):
-     print(i, pair)
+    print(i, pair)
 
 # Save
 np.savetxt('kitti_continuous/eigen_test_files.txt', np.array(eigen_test), fmt='%s', delimiter='\t')
