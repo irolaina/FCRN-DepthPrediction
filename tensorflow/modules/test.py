@@ -27,22 +27,10 @@ class Test:
             self.tf_image_key = tf.placeholder(tf.string)
             self.tf_depth_key = tf.placeholder(tf.string)
 
-            tf_image_file = tf.read_file(self.tf_image_key)
-            tf_depth_file = tf.read_file(self.tf_depth_key)
-
-            if data.dataset_name == 'apolloscape':
-                tf_image = tf.image.decode_jpeg(tf_image_file, channels=3)
-            else:
-                tf_image = tf.image.decode_png(tf_image_file, channels=3, dtype=tf.uint8)
-
-            if data.dataset_name.split('_')[0] == 'kittidiscrete' or \
-                    data.dataset_name.split('_')[0] == 'kitticontinuous':
-                tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint8)
-            else:
-                tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
+            tf_image, tf_depth = Dataloader.decodeImages(self.tf_image_key, self.tf_depth_key, data.dataset.name)
 
             # True Depth Value Calculation. May vary from dataset to dataset.
-            tf_depth = data.rawdepth2meters(tf_depth, data.dataset_name)
+            tf_depth = data.rawdepth2meters(tf_depth, data.dataset.name)
 
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
@@ -69,7 +57,7 @@ class Test:
 
             tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)
 
-            if data.dataset_name[0:5] == 'kitti':
+            if data.dataset.name[0:5] == 'kitti':
                 tf_imask_50 = tf.where(tf_pred < 50.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
                 tf_imask_80 = tf.where(tf_pred < 80.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
 

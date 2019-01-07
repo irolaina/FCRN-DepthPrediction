@@ -62,13 +62,11 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key,
-                               data.tf_train_depth, self.input_size, self.output_size, data.datasetObj.max_depth,
-                               data.dataset_name, self.args.data_aug)
+            self.train = Train(self.args, data, self.input_size, self.output_size, self.args.data_aug)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, self.input_size, self.output_size, data.datasetObj.max_depth,
-                                    data.dataset_name)
+            self.valid = Validation(self.args, self.input_size, self.output_size, data.dataset.max_depth,
+                                    data.dataset.name)
 
     def build_losses(self, selected_loss, selected_px):
         valid_pixels = True if selected_px == 'valid' else False
@@ -129,9 +127,13 @@ class Model(object):
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
-            # optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.train.tf_loss,
-            #                                                global_step=self.global_step)
+            # Select Optimizer
+            # optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.train.tf_loss, global_step=self.global_step)
             optimizer = tf.train.AdamOptimizer(self.train.tf_learning_rate)
+            # optimizer = tf.train.MomentumOptimizer(self.train.tf_learning_rate, momentum=0.9, use_nesterov=True)
+            # optimizer = tf.train.AdadeltaOptimizer(self.train.tf_learning_rate)
+            # optimizer = tf.train.RMSPropOptimizer(self.train.tf_learning_rate)
+
             self.train_step = optimizer.minimize(self.train.tf_loss, global_step=self.train.tf_global_step)
             tf.add_to_collection("train_step", self.train_step)
 

@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/devel/setup.sh

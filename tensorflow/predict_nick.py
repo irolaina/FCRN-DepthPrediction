@@ -15,9 +15,9 @@
 
 # [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'eigen_grads'
 
-# [Test] TODO: Realizar Tests comparando KittiDepth x KittiDiscrete (disp1) x KittiContinuous (disp2)
+# [Test] TODO: Realizar Tests comparando KITTI Depth x KITTI Discrete (disp1) x KITTI Continuous (disp2)
 # [Test] TODO: Implementar Métricas em Batches
-# [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitticontinuous --px all -r output/fcrn/kitticontinuous/all_px/eigen_grads/2018-06-27_11-14-21/restore/model.fcrn -u
+# [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitti_continuous --px all -r output/fcrn/kitti_continuous/all_px/eigen_grads/2018-06-27_11-14-21/restore/model.fcrn -u
 # [Test] FIXME: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
@@ -29,7 +29,7 @@
 # Especulações:
 # @nicolas: Acredito que as superfícies contínuas ao interpolar os pontos da nuvem nem sempre garantem que o valor de profundidade do ponto original, isto é, talvez o ponto original não seja um ponto âncora para a superfície.
 # @vitor: Visto que as imagens de avaliação utilizadas são esparsas, o vitor acha que elas deveriam ser contínuas.
-"Acho que isso é uma parte do problema, não existe comparação na imagem inteira, aí os benefícios do contínuo não ficam aparentes nos números obtidos."
+# Acho que isso é uma parte do problema, não existe comparação na imagem inteira, aí os benefícios do contínuo não ficam aparentes nos números obtidos.
 
 # SOLUÇÃO: TODO: Criar um novo split, Continuous Splits, o qual consiste das mesmas 697 imagens de avaliação propostas pelo Eigen, porém contínuas.
 # Isto é, utilizar as images contínuas como avaliação ao invés das esparsas, assim os métodos treinados no esparso errariam mais e os modelos treinados no dataset contínuo conseguiriam ir melhor.
@@ -146,14 +146,16 @@ hookman.start()
 # ========= #
 #  Predict  #
 # ========= #
-def predict(model_data_path, image_path):
-    print('[%s] Selected mode: Predict' % appName)
+def predict(args):
+    args.model_path, args.image_path
+
+    args.model_path = detect_available_models(args)
 
     # Default input size
     batch_size, height, width = 1, 228, 304
 
     # Read image (uint8)
-    img = Image.open(image_path)
+    img = Image.open(args.image_path)
     img = np.array(img)
 
     # ------- #
@@ -195,7 +197,7 @@ def predict(model_data_path, image_path):
         # --------- #
         # Use to load from ckpt file
         saver = tf.train.Saver()
-        saver.restore(sess, model_data_path)
+        saver.restore(sess, args.model_path)
 
         # Use to load from npy file
         # net.load(model_data_path, sess)
@@ -257,8 +259,6 @@ def train(args):
         if TRAIN_ON_SINGLE_IMAGE:
             data.train_image_filenames = np.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = np.expand_dims(data.train_depth_filenames[0], axis=0)
-
-        data.tf_train_image_key, data.tf_train_image, data.tf_train_depth_key, data.tf_train_depth = data.readData(data.train_image_filenames, data.train_depth_filenames)
 
         # Build Network Model
         model = Model(args, data)
@@ -560,13 +560,13 @@ def test(args):
             print()
             print('args.test_split:', args.test_split)
             print('args.test_file_path:', args.test_file_path)
-            print('dataset_path:', data.datasetObj.dataset_path)
+            print('dataset_path:', data.dataset.dataset_path)
             print()
             # input("[Metrics] Press ENTER to start evaluation...") # TODO: Desativar?
 
             # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
             # myMetrics.evaluate(pred_array, gt_array) # FIXME:
-            MonodepthMetrics.evaluate(args, pred_array, gt_array, data.datasetObj.dataset_path)
+            MonodepthMetrics.evaluate(args, pred_array, gt_array, data.dataset.dataset_path)
 
         else:
             print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
@@ -583,7 +583,10 @@ def main(args):
     elif args.mode == 'test':
         test(args)
     elif args.mode == 'pred':
-        predict(args.model_path, args.image_path)
+        predict(args)
+    else:
+        print("[ModeError] Selected mode doesn't exist! Select one of the following: 'train', 'test', or 'pred'.")
+        raise SystemExit
 
     # Close the listener when we are done
     hookman.cancel()

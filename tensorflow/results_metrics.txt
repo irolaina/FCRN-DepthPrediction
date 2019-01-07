@@ -4,33 +4,25 @@
                                                              Eigen et al (NIPS 2014),              kitti,      0.190,        -  ,      7.156,	     -  ,	     -  ,      0.692,      0.899,      0.967
                                                                      Sparse-to-Dense,              kitti,      0.208,        -  ,      6.266,	     -  ,	     -  ,      0.591,	   0.900,      0.962
 
-   output/fcrn/kitticontinuous/valid_px/berhu/2018-07-27_20-32-56/restore/model.fcrn,*   eigen_continuous,     0.0219,     0.1056,      0.831,      0.040,      0.000,      0.230,      0.250,      0.254
-     output/fcrn/kitticontinuous/all_px/berhu/2018-07-11_13-16-54/restore/model.fcrn,*   eigen_continuous,     0.0255,     0.1805,      1.221,      0.191,      0.000,      0.226,      0.246,      0.251
-        output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,*   eigen_continuous,     0.0520,     0.3381,      1.174,      0.063,      0.000,      0.200,      0.237,      0.249
-     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,*   eigen_continuous,     0.0530,     0.3733,      1.246,      0.065,      0.000,      0.203,      0.237,      0.248
-     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-12_18-33-06/restore/model.fcrn,*   eigen_continuous,     0.0535,     0.3763,      1.252,      0.065,      0.000,      0.202,      0.237,      0.248
+    output/fcrn/kitti_discrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,               eigen,     0.1084,     0.7821,      4.537,      0.177,      0.000,      0.877,      0.963,      0.986
+        output/fcrn/kitti_depth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,               eigen,     0.1137,     0.8291,      4.517,      0.201,      0.000,      0.859,      0.946,      0.977
+       output/fcrn/kitti_continuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,               eigen,     0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
 
-     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,               eigen,     0.1084,     0.7821,      4.537,      0.177,      0.000,      0.877,      0.963,      0.986
-        output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,               eigen,     0.1137,     0.8291,      4.517,      0.201,      0.000,      0.859,      0.946,      0.977
-       output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,               eigen,     0.1491,     0.8567,      5.112,      0.272,      0.000,      0.822,      0.937,      0.970
-
-        output/fcrn/kittidepth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,               kitti,     0.1035,     0.9231,      4.587,      0.178,      0.000,      0.889,      0.959,      0.983
-     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,               kitti,     0.1225,     1.2004,      5.179,      0.197,      0.000,      0.868,      0.950,      0.978
-     output/fcrn/kittidiscrete/valid_px/berhu/2018-07-12_18-33-06/restore/model.fcrn,               kitti,     0.1253,     1.2447,      5.221,      0.200,      0.000,      0.866,      0.948,      0.977
-   output/fcrn/kitticontinuous/valid_px/berhu/2018-07-27_20-32-56/restore/model.fcrn,               kitti,     0.1330,     0.7484,      5.004,      0.211,      0.000,      0.875,      0.958,      0.980
-     output/fcrn/kitticontinuous/all_px/berhu/2018-07-11_13-16-54/restore/model.fcrn,               kitti,     0.1373,     0.9711,      5.946,      0.554,      0.000,      0.868,      0.950,      0.973
-     output/fcrn/kitticontinuous/all_px/berhu/2018-07-22_22-22-01/restore/model.fcrn,               kitti,     0.1379,     0.9093,      5.705,      0.459,      0.000,      0.869,      0.952,      0.976
-       output/fcrn/kitticontinuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,               kitti,     0.1416,     0.8654,      5.396,      0.288,      0.000,      0.850,      0.954,      0.979
-       output/fcrn/kitticontinuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn,               kitti,     0.1478,     0.9078,      5.491,      0.314,      0.000,      0.835,      0.952,      0.978
-     output/fcrn/kitticontinuous/all_px/berhu/2018-07-30_22-07-26/restore/model.fcrn,               kitti,     0.1528,     1.0425,      6.155,      0.465,      0.000,      0.824,      0.944,      0.973
-     output/fcrn/kitticontinuous/all_px/eigen/2018-07-27_20-43-59/restore/model.fcrn,               kitti,     0.1640,     1.3216,      7.192,      0.328,      0.000,      0.787,      0.929,      0.966
-output/fcrn/kitticontinuous_city/all_px/eigen/2018-08-02_19-54-56/restore/model.fcrn,               kitti,     0.1960,     1.7077,      7.960,      0.394,      0.000,      0.688,      0.894,      0.949
-  output/fcrn/kittidepth/valid_px/eigen_grads/2018-07-13_15-16-33/restore/model.fcrn,               kitti,     0.2279,     2.3579,      7.662,      0.390,      0.000,      0.668,      0.839,      0.916
-     output/fcrn/kitticontinuous/all_px/berhu/2018-07-02_20-00-32/restore/model.fcrn,               kitti,     0.3386,     4.1908,     12.318,      0.577,      0.000,      0.285,      0.597,      0.780
-          output/fcrn/kittidepth/all_px/berhu/2018-07-24_12-48-33/restore/model.fcrn,               kitti,     0.7304,     9.2535,     15.365,      3.442,      0.000,      0.002,      0.046,      0.145
+        output/fcrn/kitti_depth/valid_px/berhu/2018-07-13_15-06-16/restore/model.fcrn,               kitti,     0.1035,     0.9231,      4.587,      0.178,      0.000,      0.889,      0.959,      0.983
+    output/fcrn/kitti_discrete/valid_px/berhu/2018-07-16_15-53-40/restore/model.fcrn,               kitti,     0.1225,     1.2004,      5.179,      0.197,      0.000,      0.868,      0.950,      0.978
+    output/fcrn/kitti_discrete/valid_px/berhu/2018-07-12_18-33-06/restore/model.fcrn,               kitti,     0.1253,     1.2447,      5.221,      0.200,      0.000,      0.866,      0.948,      0.977
+   output/fcrn/kitti_continuous/valid_px/berhu/2018-07-27_20-32-56/restore/model.fcrn,               kitti,     0.1330,     0.7484,      5.004,      0.211,      0.000,      0.875,      0.958,      0.980
+     output/fcrn/kitti_continuous/all_px/berhu/2018-07-11_13-16-54/restore/model.fcrn,               kitti,     0.1373,     0.9711,      5.946,      0.554,      0.000,      0.868,      0.950,      0.973
+     output/fcrn/kitti_continuous/all_px/berhu/2018-07-22_22-22-01/restore/model.fcrn,               kitti,     0.1379,     0.9093,      5.705,      0.459,      0.000,      0.869,      0.952,      0.976
+       output/fcrn/kitti_continuous/all_px/mse/2018-07-20_20-00-26/restore/model.fcrn,               kitti,     0.1416,     0.8654,      5.396,      0.288,      0.000,      0.850,      0.954,      0.979
+       output/fcrn/kitti_continuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn,               kitti,     0.1478,     0.9078,      5.491,      0.314,      0.000,      0.835,      0.952,      0.978
+     output/fcrn/kitti_continuous/all_px/berhu/2018-07-30_22-07-26/restore/model.fcrn,               kitti,     0.1528,     1.0425,      6.155,      0.465,      0.000,      0.824,      0.944,      0.973
+     output/fcrn/kitti_continuous/all_px/eigen/2018-07-27_20-43-59/restore/model.fcrn,               kitti,     0.1640,     1.3216,      7.192,      0.328,      0.000,      0.787,      0.929,      0.966
+output/fcrn/kitti_continuous_city/all_px/eigen/2018-08-02_19-54-56/restore/model.fcrn,               kitti,     0.1960,     1.7077,      7.960,      0.394,      0.000,      0.688,      0.894,      0.949
+  output/fcrn/kitti_depth/valid_px/eigen_grads/2018-07-13_15-16-33/restore/model.fcrn,               kitti,     0.2279,     2.3579,      7.662,      0.390,      0.000,      0.668,      0.839,      0.916
+     output/fcrn/kitti_continuous/all_px/berhu/2018-07-02_20-00-32/restore/model.fcrn,               kitti,     0.3386,     4.1908,     12.318,      0.577,      0.000,      0.285,      0.597,      0.780
+          output/fcrn/kitti_depth/all_px/berhu/2018-07-24_12-48-33/restore/model.fcrn,               kitti,     0.7304,     9.2535,     15.365,      3.442,      0.000,      0.002,      0.046,      0.145
 
             output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn,            nyudepth,     0.2692,     0.3002,      0.820,      0.299,      0.000,      0.594,      0.845,      0.943
-
-* Faltam 59 imagens do KittiContinuous das 697 Imagens de Avaliação
 
 Organizar Simulações:

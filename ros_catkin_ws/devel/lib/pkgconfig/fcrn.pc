@@ -1,0 +1,8 @@
+prefix=/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/devel
+
+Name: fcrn
+Description: Description of fcrn
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/ros_catkin_ws/devel/lib 
+Requires: 

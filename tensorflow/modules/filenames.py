@@ -114,7 +114,7 @@ class FilenamesHandler(object):
 
 def join_dataset_path(filenames, dataset_path):
     timer = -time.time()
-    filenames = [dataset_path + depth for depth in filenames]
+    filenames = [dataset_path + filename for filename in filenames]
     timer += time.time()
     print('time:', timer, 's\n')
 
