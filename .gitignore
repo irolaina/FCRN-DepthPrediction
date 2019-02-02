@@ -6,6 +6,7 @@ catkin_ws/*
 tensorflow/output/*
 tensorflow/tmp/*
 tensorflow/htmlcov/*
+tensorflow_tmp/*
 
 # Exceptions
 !catkin_ws/src/
