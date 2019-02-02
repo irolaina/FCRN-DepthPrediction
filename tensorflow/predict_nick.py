@@ -70,6 +70,7 @@ from skimage import exposure, img_as_uint
 from tqdm import tqdm
 
 # Custom Libraries
+# import common import * # TODO: Descomentar
 import modules.args as argsLib
 import modules.third_party.monodepth.utils.metrics_monodepth as MonodepthMetrics
 from modules.dataloader import Dataloader
@@ -111,7 +112,7 @@ running = True
 # ===========
 #  Functions
 # ===========
-def getSaveFolderPaths():
+def get_save_folder_paths():
     """Defines folders paths for saving the model variables to disk."""
     px_str = args.px + '_px'
     relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'
@@ -163,11 +164,9 @@ def predict(args):
     # ------- #
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
-    # tf_image_float32 = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
     tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
     tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.AREA, align_corners=True)
 
-    # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
     tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
     with tf.variable_scope('model'):
@@ -246,7 +245,7 @@ def train(args):
     global running  # Create a loop to keep the application running
     running = True
 
-    save_path, save_restore_path = getSaveFolderPaths()
+    save_path, save_restore_path = get_save_folder_paths()
 
     # ----------------------------------------- #
     #  Network Training Model - Building Graph  #
@@ -400,9 +399,8 @@ def train(args):
                     model.valid.loss = valid_loss_sum / data.num_test_samples  # Updates 'Valid_loss' value
                     print("mean(valid_loss): %f\n" % model.valid.loss)
 
-                    if ENABLE_EARLY_STOP:
-                        if model.train.stop.check(step, model.valid.loss):  # TODO: Validar
-                            break
+                    if ENABLE_EARLY_STOP and model.train.stop.check(step, model.valid.loss):  # TODO: Validar
+                        break
 
                     # Write information to TensorBoard
                     if ENABLE_TENSORBOARD:
@@ -444,7 +442,7 @@ def test(args):
     print('[%s] Selected mode: Test' % appName)
 
     # Local Variables
-    numSamples = None
+    num_samples = None
 
     args.model_path = detect_available_models(args)
 
@@ -456,9 +454,9 @@ def test(args):
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, numSamples, args.test_file_path = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
+        _, _, _, _, num_samples, args.test_file_path = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, _, _, numSamples = data.get_train_data()
+        data.test_image_filenames, data.test_depth_filenames, _, _, num_samples = data.get_train_data()
 
     model = Test(args, data)
 
@@ -482,8 +480,8 @@ def test(args):
         pred_list, gt_list = [], []
 
         print("[Network/Testing] Generating Predictions...")
-        # numSamples = 5 # Only for testing!
-        for i in tqdm(range(numSamples)):
+        # num_samples = 5 # Only for testing!
+        for i in tqdm(range(num_samples)):
             timer2 = -time.time()
 
             # Evalute the network for the given image
@@ -526,7 +524,7 @@ def test(args):
 
             # Prints Testing Progress
             timer2 += time.time()
-            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, numSamples, timer2, total_size(pred_list)+total_size(gt_list)))
+            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, num_samples, timer2, total_size(pred_list)+total_size(gt_list)))
             # break # Test
 
             # Show Results

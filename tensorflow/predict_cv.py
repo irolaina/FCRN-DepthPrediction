@@ -30,10 +30,14 @@ SAVE_IMAGES = False
 def argument_handler():
     # Parse arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
     parser.add_argument('-r', '--model_path', help='Converted parameters for the model', default='')
     parser.add_argument('-i', '--video_path', help='Directory of images to predict')
+
     return parser.parse_args()
+
+args = argument_handler()
 
 
 def circular_counter(max_value):
@@ -73,7 +77,7 @@ class CvTimer():
         return sum(self.l_fps_history) / float(self.fps_len)
 
 
-def processImages(frame, pred, timer):
+def process_images(frame, pred, timer):
     # Change Data Scale from meters to uint8
     pred_uint8 = cv2.convertScaleAbs(pred[0])
     pred_scaled_uint8 = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
@@ -103,12 +107,13 @@ def processImages(frame, pred, timer):
     conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
 
     # Debug
-    # print(pred.shape, pred.dtype)
-    # print(pred_uint8.shape, pred_uint8.dtype)
-    # print(pred_jet_resized.shape, pred_jet_resized.dtype)
-    # print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
-    # print(background.shape, background.dtype)
-    # print(overlay.shape, overlay.dtype)
+    if args.debug:
+        print(pred.shape, pred.dtype)
+        print(pred_uint8.shape, pred_uint8.dtype)
+        print(pred_jet_resized.shape, pred_jet_resized.dtype)
+        print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
+        print(background.shape, background.dtype)
+        print(overlay.shape, overlay.dtype)
 
     # Display the resulting frame - OpenCV
     # cv2.imshow('frame', frame)
@@ -124,7 +129,7 @@ def processImages(frame, pred, timer):
     return timer
 
 
-def processImages_removeSky(frame, pred, timer):
+def process_images_remove_sky(frame, pred, timer):
     # Remove Sky
     crop_height_perc = 0.3
     frame_new_height = int(crop_height_perc * frame.shape[0])
@@ -162,12 +167,14 @@ def processImages_removeSky(frame, pred, timer):
     conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
 
     # Debug
-    # print(pred.shape, pred.dtype)
-    # print(pred_uint8.shape, pred_uint8.dtype)
-    # print(pred_jet_resized.shape, pred_jet_resized.dtype)
-    # print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
-    # print(background.shape, background.dtype)
-    # print(overlay.shape, overlay.dtype)
+    if args.debug:
+        print(pred.shape, pred.dtype)
+        print(pred_uint8.shape, pred_uint8.dtype)
+        print(pred_jet_resized.shape, pred_jet_resized.dtype)
+        print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
+        print(background.shape, background.dtype)
+        print(overlay.shape, overlay.dtype)
+        input("Continue...")
 
     # Display the resulting frame - OpenCV
     # cv2.imshow('frame', frame)
@@ -187,8 +194,6 @@ def processImages_removeSky(frame, pred, timer):
 #  Main
 # ======
 def main():
-    args = argument_handler()
-
     args.model_path = detect_available_models(args)
 
     timer = CvTimer()
@@ -215,7 +220,6 @@ def main():
 
     # Create a placeholder for the input image
     input_node = tf.placeholder(tf.uint8, shape=(height, width, channels))
-    # tf_image_float32 = tf.cast(input_node, tf.float32)
     tf_image_float32 = tf.image.convert_image_dtype(input_node, tf.float32)
 
     with tf.variable_scope('model'):  # Disable for running original models!!!
@@ -265,20 +269,22 @@ def main():
             except UnboundLocalError:
                 pred = sess.run(tf_pred, feed_dict={input_node: frame})
 
+
             # Debug
-            # print(frame)
-            # print(frame.shape, frame.dtype)
-            # print()
-            # print(pred)
-            # print(pred.shape, pred.dtype)
-            # input("Continue...")
+            if args.debug:
+                print(frame)
+                print(frame.shape, frame.dtype)
+                print()
+                print(pred)
+                print(pred.shape, pred.dtype)
+                input("Continue...")
 
             # ------------------ #
             #  Image Processing  #
             # ------------------ #
             # Convert Predicted Depth to uint8 Image
-            timer = processImages(frame, pred, timer)
-            timer = processImages_removeSky(frame, pred, timer)
+            timer = process_images(frame, pred, timer)
+            timer = process_images_remove_sky(frame, pred, timer)
 
             # Save Images
             if SAVE_IMAGES:

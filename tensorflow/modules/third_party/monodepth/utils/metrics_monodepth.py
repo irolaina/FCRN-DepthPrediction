@@ -308,6 +308,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             a3.mean()))
         f.close()
 
+    # FIXME: Use Pandas
     def saveMetricsResultsCSV():
         """Logs the obtained simulation results on a .csv file."""
         save_file_path = 'results_metrics.csv'
