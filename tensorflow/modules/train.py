@@ -5,7 +5,6 @@ import numpy as np
 import tensorflow as tf
 
 from collections import deque
-# from scipy.misc import imresize
 
 from .dataloader import Dataloader
 from .third_party.laina.fcrn import ResNet50UpProj
@@ -28,9 +27,9 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, data, input_size, output_size, enableDataAug):
+    def __init__(self, args, data, input_size, output_size, enable_dataaug):
         # TODO: modificar função para que não seja preciso retornar os tensors, utilizar self. variables diretamente.
-        tf_image_key, tf_image, tf_depth_key, tf_depth = self.readImages(data.dataset.name, data.train_image_filenames, data.train_depth_filenames)
+        tf_image_key, tf_image, tf_depth_key, tf_depth = self.read_images(data.dataset.name, data.train_image_filenames, data.train_depth_filenames)
 
         with tf.name_scope('Input'):
             # Raw Input/Output
@@ -39,7 +38,7 @@ class Train:
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
-            if enableDataAug:
+            if enable_dataaug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
             # True Depth Value Calculation. May vary from dataset to dataset.
@@ -98,7 +97,7 @@ class Train:
             # ===============
             # Select:
             self.tf_batch_image_key, self.tf_batch_depth_key = tf.train.batch([tf_image_key, tf_depth_key], batch_size, num_threads, capacity)
-            tf_batch_image_resized, tf_batch_image_resized_uint8, tf_batch_depth_resized = tf.train.batch([self.tf_image_resized, self.tf_image_resized_uint8, self.tf_depth_resized], batch_size, num_threads, capacity, shapes=[input_size.getSize(), input_size.getSize(), output_size.getSize()])
+            tf_batch_image_resized, tf_batch_image_resized_uint8, tf_batch_depth_resized = tf.train.batch([self.tf_image_resized, self.tf_image_resized_uint8, self.tf_depth_resized], batch_size, num_threads, capacity, shapes=[input_size.get_size(), input_size.get_size(), output_size.get_size()])
             # tf_batch_image, tf_batch_depth = tf.train.shuffle_batch([tf_image, tf_depth], batch_size, capacity, min_after_dequeue, num_threads, shapes=[image_size, depth_size])
 
             # Network Input/Output
@@ -130,7 +129,7 @@ class Train:
             self.loss = -1
             self.loss_hist = []
 
-        self.trainCollection()
+        self.train_collection()
         self.stop = EarlyStopping()
 
         if args.show_train_progress:
@@ -148,7 +147,7 @@ class Train:
         print()
         # input("train")
 
-    def readImages(self, dataset_name, image_filenames, depth_filenames):  # Used only for train
+    def read_images(self, dataset_name, image_filenames, depth_filenames):  # Used only for train
         # Creates Inputs Queue.
         # ATTENTION! Since these tensors operate on a FifoQueue, using .eval() may get misaligned the pair (image, depth)!!!
 
@@ -186,7 +185,7 @@ class Train:
 
         return self.tf_train_image_key, self.tf_train_image, self.tf_train_depth_key, self.tf_train_depth
 
-    def trainCollection(self):
+    def train_collection(self):
         tf.add_to_collection('batch_image', self.tf_batch_image)
         tf.add_to_collection('batch_depth', self.tf_batch_depth)
         tf.add_to_collection('pred', self.tf_pred)
@@ -211,27 +210,27 @@ class Train:
 class EarlyStopping(object):
     def __init__(self):
         # Local Variables
-        self.movMeanLast = 0
-        self.movMean = deque()
-        self.stabCounter = 0
+        self.mov_mean_last = 0
+        self.mov_mean = deque()
+        self.stab_counter = 0
 
     def check(self, step, valid_loss):
-        self.movMean.append(valid_loss)
+        self.mov_mean.append(valid_loss)
 
         if step > AVG_SIZE:
-            self.movMean.popleft()
+            self.mov_mean.popleft()
 
-        movMeanAvg = np.sum(self.movMean) / AVG_SIZE
-        movMeanAvgLast = np.sum(self.movMeanLast) / AVG_SIZE
+        mov_mean_avg = np.sum(self.mov_mean) / AVG_SIZE
+        mov_mean_avg_last = np.sum(self.mov_mean_last) / AVG_SIZE
 
-        if (movMeanAvg >= movMeanAvgLast) and step > MIN_EVALUATIONS:
+        if (mov_mean_avg >= mov_mean_avg_last) and step > MIN_EVALUATIONS:
             # print(step,stabCounter)
 
-            self.stabCounter += 1
-            if self.stabCounter > MAX_STEPS_AFTER_STABILIZATION:
+            self.stab_counter += 1
+            if self.stab_counter > MAX_STEPS_AFTER_STABILIZATION:
                 print("\nSTOP TRAINING! New samples may cause overfitting!!!")
                 return 1
         else:
-            self.stabCounter = 0
+            self.stab_counter = 0
 
-            self.movMeanLast = deque(self.movMean)
+            self.mov_mean_last = deque(self.mov_mean)

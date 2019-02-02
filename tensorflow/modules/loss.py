@@ -73,13 +73,13 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
         tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
 
     # Loss
-    tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
+    tf_berhu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
                              tf.div((tf.square(tf_abs_error) + tf.square(tf_c)), tf.multiply(tf.constant(2.0), tf_c)))
 
-    tf_loss = tf.reduce_sum(tf_berHu_loss)
+    tf_loss = tf.reduce_sum(tf_berhu_loss)
 
     # Debug
-    # c, abs_error, berHu_loss, loss = sess.run([tf_c, tf_abs_error, tf_berHu_loss, tf_loss])
+    # c, abs_error, berHu_loss, loss = sess.run([tf_c, tf_abs_error, tf_berhu_loss, tf_loss])
     # print()
     # print(tf_c)
     # print("c:", c)
@@ -88,7 +88,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     # print("abs_error:", abs_error)
     # print(len(abs_error))
     # print()
-    # print(tf_berHu_loss)
+    # print(tf_berhu_loss)
     # print("berHu_loss:", berHu_loss)
     # print()
     # print(tf_loss)
@@ -192,21 +192,21 @@ def tf_L_eigen_grads(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
 # ------------------ #
 #  L2 Normalization  #
 # ------------------ #
-def getGlobalVars(scope):
+def get_global_vars(scope):
     return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope)
 
 
-def getTrainableVars(scope):
+def get_trainable_vars(scope):
     return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
 
 
 def calculateL2norm():
     # Gets All Trainable Variables
-    var_list = getTrainableVars('')
+    var_list = get_trainable_vars('')
 
-    totalSum = 0
+    total_sum = 0
     for var in var_list:
         # print(var)
-        totalSum += tf.nn.l2_loss(var)
+        total_sum += tf.nn.l2_loss(var)
 
-    return TRAINING_L2NORM_BETA * totalSum
+    return TRAINING_L2NORM_BETA * total_sum

@@ -14,5 +14,5 @@ class Size:
 
         # print("Size object created.")
 
-    def getSize(self):
+    def get_size(self):
         return self.height, self.width, self.nchannels

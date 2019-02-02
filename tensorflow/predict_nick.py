@@ -335,9 +335,9 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
-                        model.train.plot.showTrainResults(raw=batch_image_uint8[0],
-                                                          label=batch_depth[0, :, :, 0],
-                                                          pred=batch_pred[0, :, :, 0])
+                        model.train.plot.show_train_results(raw=batch_image_uint8[0],
+                                                            label=batch_depth[0, :, :, 0],
+                                                            pred=batch_pred[0, :, :, 0])
 
                     timer2 += time.time()
 
@@ -385,9 +385,9 @@ def train(args):
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            model.valid.plot.showTrainResults(raw=valid_image_uint8,
-                                                              label=valid_depth[:, :, 0],
-                                                              pred=valid_pred[0, :, :, 0])
+                            model.valid.plot.show_train_results(raw=valid_image_uint8,
+                                                                label=valid_depth[:, :, 0],
+                                                                pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
 
@@ -474,7 +474,7 @@ def test(args):
         #  Testing Loop
         # ==============
         if args.show_test_results:
-            test_plotObj = Plot(args.mode, title='Test Predictions')
+            test_plot_obj = Plot(args.mode, title='Test Predictions') # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
 
         timer = -time.time()
         pred_list, gt_list = [], []
@@ -502,8 +502,8 @@ def test(args):
             try:
                 pred_50, pred_80 = sess.run([model.tf_pred_50, model.tf_pred_80], feed_test)
             except AttributeError:
-                pred_50 = np.zeros((model.batch_size,) + model.output_size.getSize())
-                pred_80 = np.zeros((model.batch_size,) + model.output_size.getSize())
+                pred_50 = np.zeros((model.batch_size,) + model.output_size.get_size())
+                pred_80 = np.zeros((model.batch_size,) + model.output_size.get_size())
 
             # Fill arrays for later on metrics evaluation
             pred_list.append(pred_up[0, :, :, 0])
@@ -529,15 +529,15 @@ def test(args):
 
             # Show Results
             if args.show_test_results:
-                test_plotObj.showTestResults(image=image,
-                                             depth=depth[:, :, 0],
-                                             image_resized=image_resized,
-                                             depth_resized=depth_resized[:, :, 0],
-                                             pred=pred[0, :, :, 0],
-                                             pred_up=pred_up[0, :, :, 0],
-                                             pred_50=pred_50[0, :, :, 0],
-                                             pred_80=pred_80[0, :, :, 0],
-                                             i=i + 1)
+                test_plot_obj.show_test_results(image=image,
+                                               depth=depth[:, :, 0],
+                                               image_resized=image_resized,
+                                               depth_resized=depth_resized[:, :, 0],
+                                               pred=pred[0, :, :, 0],
+                                               pred_up=pred_up[0, :, :, 0],
+                                               pred_50=pred_50[0, :, :, 0],
+                                               pred_80=pred_80[0, :, :, 0],
+                                               i=i + 1)
 
             # input("Continue...")
 

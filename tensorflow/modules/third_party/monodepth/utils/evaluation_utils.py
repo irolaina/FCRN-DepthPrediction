@@ -187,9 +187,9 @@ def get_focal_length_baseline(calib_dir, cam):
     return focal_length, baseline
 
 
-def sub2ind(matrixSize, rowSub, colSub):
-    m, n = matrixSize
-    return rowSub * (n - 1) + colSub - 1
+def sub2ind(matrix_size, row_sub, col_sub):
+    m, n = matrix_size
+    return row_sub * (n - 1) + col_sub - 1
 
 
 def generate_depth_map(calib_dir, velo_file_name, im_shape, cam=2, interp=False, vel_depth=False):

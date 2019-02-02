@@ -96,12 +96,12 @@ class Plot(object):
         # self.cax6_div = self.divider6.append_axes("right", size="5%", pad=0.15)
         # self.cax7_div = self.divider7.append_axes("right", size="5%", pad=0.15)
 
-        self.isFirstTime = True
+        self.is_first_time = True
 
-    def showTrainResults(self, raw, label, pred):
+    def show_train_results(self, raw, label, pred):
         predMSE = loss.np_MSE(y=pred, y_=label)
 
-        if self.isFirstTime:
+        if self.is_first_time:
             self.cax0 = self.axes[0].imshow(raw)
             self.cax1 = self.axes[1].imshow(label)
             self.cax2 = self.axes[2].imshow(pred)
@@ -112,7 +112,7 @@ class Plot(object):
             self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[2])
             self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[3])
 
-            self.isFirstTime = False
+            self.is_first_time = False
         else:
             # Updates Colorbars
             updateColorBar(self.cbar1, label)
@@ -128,10 +128,10 @@ class Plot(object):
 
         plt.pause(0.001)
 
-    def showTestResults(self, image, depth, image_resized, depth_resized, pred, pred_up, pred_50, pred_80, i):
+    def show_test_results(self, image, depth, image_resized, depth_resized, pred, pred_up, pred_50, pred_80, i):
         # predMSE = loss.np_MSE(y=pred, y_=log_label)
 
-        if self.isFirstTime:
+        if self.is_first_time:
             self.cax0 = self.axes[0].imshow(image)
             self.cax1 = self.axes[1].imshow(depth)
             self.cax2 = self.axes[2].imshow(image_resized)
@@ -162,7 +162,7 @@ class Plot(object):
             # self.cbar6 = self.fig.colorbar(self.cax6, ax=self.cax6_div)
             # self.cbar7 = self.fig.colorbar(self.cax7, ax=self.cax7_div)
 
-            self.isFirstTime = False
+            self.is_first_time = False
         else:
             # Updates Colorbars
             updateColorBar(self.cbar1, depth)
