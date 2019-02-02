@@ -39,14 +39,14 @@ class Plot(object):
             self.fig, self.axes = plt.subplots(7, 1, figsize=(10, 5))
             self.axes[0] = plt.subplot(221)
             self.axes[1] = plt.subplot(222)
-            self.axes[3] = plt.subplot(223)
-            self.axes[4] = plt.subplot(224)
+            self.axes[2] = plt.subplot(223)
+            self.axes[3] = plt.subplot(224)
 
             # Sets Titles
             self.axes[0].set_title("Image")
             self.axes[1].set_title("Label")
-            self.axes[3].set_title("Pred")
-            self.axes[4].set_title("MSE(Pred)")
+            self.axes[2].set_title("Pred")
+            self.axes[3].set_title("MSE(Pred)")
 
         elif mode == 'test':
             self.fig = plt.figure()
@@ -98,32 +98,32 @@ class Plot(object):
 
         self.isFirstTime = True
 
-    def showResults(self, raw, label, pred):
+    def showTrainResults(self, raw, label, pred):
         predMSE = loss.np_MSE(y=pred, y_=label)
 
         if self.isFirstTime:
-            self.cax1 = self.axes[0].imshow(raw)
-            self.cax2 = self.axes[1].imshow(label)
-            self.cax4 = self.axes[3].imshow(pred)
-            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
+            self.cax0 = self.axes[0].imshow(raw)
+            self.cax1 = self.axes[1].imshow(label)
+            self.cax2 = self.axes[2].imshow(pred)
+            self.cax3 = self.axes[3].imshow(predMSE, cmap='jet')
 
             # Creates ColorBars
-            self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
-            self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
-            self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
+            self.cbar1 = self.fig.colorbar(self.cax1, ax=self.axes[1])
+            self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[2])
+            self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[3])
 
             self.isFirstTime = False
         else:
             # Updates Colorbars
-            updateColorBar(self.cbar2, label)
-            updateColorBar(self.cbar4, pred)
-            updateColorBar(self.cbar5, predMSE)
+            updateColorBar(self.cbar1, label)
+            updateColorBar(self.cbar2, pred)
+            updateColorBar(self.cbar3, predMSE)
 
             # Updates Images
-            self.cax1.set_data(raw)
-            self.cax2.set_data(label)
-            self.cax4.set_data(pred)
-            self.cax5.set_data(predMSE)
+            self.cax0.set_data(raw)
+            self.cax1.set_data(label)
+            self.cax2.set_data(pred)
+            self.cax3.set_data(predMSE)
             plt.draw()
 
         plt.pause(0.001)
@@ -141,7 +141,7 @@ class Plot(object):
             self.cax6 = self.axes[6].imshow(pred_50)
             self.cax7 = self.axes[7].imshow(pred_80)
 
-            # self.cax7 = self.axes[6].imshow(predMSE, cmap='jet')
+            # self.cax6 = self.axes[6].imshow(predMSE, cmap='jet')
 
             # Creates ColorBars
             # self.cbar0 = self.fig.colorbar(self.cax0, ax=self.axes[0])
