@@ -112,7 +112,7 @@ running = True
 # ===========
 #  Functions
 # ===========
-def get_save_folder_paths():
+def get_save_folder_paths(): # TODO: Settings Class instead
     """Defines folders paths for saving the model variables to disk."""
     px_str = args.px + '_px'
     relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'  # TODO: use the settings.output_dir variable

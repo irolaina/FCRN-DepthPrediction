@@ -31,7 +31,7 @@ def tf_mask_out_invalid_pixels(tf_pred, tf_labels):
 # -------------------- #
 #  Mean Squared Error  #
 # -------------------- #
-def np_MSE(y, y_):
+def np_mse(y, y_):
     # numPixels = y_.size
 
     return np.square(y_ - y)

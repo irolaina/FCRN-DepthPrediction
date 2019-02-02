@@ -99,13 +99,13 @@ class Plot(object):
         self.is_first_time = True
 
     def show_train_results(self, raw, label, pred):
-        predMSE = loss.np_MSE(y=pred, y_=label)
+        pred_mse = loss.np_mse(y=pred, y_=label)
 
         if self.is_first_time:
             self.cax0 = self.axes[0].imshow(raw)
             self.cax1 = self.axes[1].imshow(label)
             self.cax2 = self.axes[2].imshow(pred)
-            self.cax3 = self.axes[3].imshow(predMSE, cmap='jet')
+            self.cax3 = self.axes[3].imshow(pred_mse, cmap='jet')
 
             # Creates ColorBars
             self.cbar1 = self.fig.colorbar(self.cax1, ax=self.axes[1])
@@ -117,13 +117,13 @@ class Plot(object):
             # Updates Colorbars
             updateColorBar(self.cbar1, label)
             updateColorBar(self.cbar2, pred)
-            updateColorBar(self.cbar3, predMSE)
+            updateColorBar(self.cbar3, pred_mse)
 
             # Updates Images
             self.cax0.set_data(raw)
             self.cax1.set_data(label)
             self.cax2.set_data(pred)
-            self.cax3.set_data(predMSE)
+            self.cax3.set_data(pred_mse)
             plt.draw()
 
         plt.pause(0.001)
