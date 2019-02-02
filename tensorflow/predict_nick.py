@@ -71,8 +71,8 @@ from tqdm import tqdm
 
 # Custom Libraries
 # import common import * # TODO: Descomentar
-import modules.args as argsLib
-import modules.third_party.monodepth.utils.metrics_monodepth as MonodepthMetrics
+from modules.args import argument_handler
+import modules.third_party.monodepth.utils.metrics_monodepth as monodepth_metrics
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.plot import Plot
@@ -83,10 +83,10 @@ from modules.utils import detect_available_models
 # ==========================
 #  [Train] Framework Config
 # ==========================
-TRAIN_ON_SINGLE_IMAGE = False   # Default: False
-ENABLE_EARLY_STOP = True        # Default: True
-ENABLE_TENSORBOARD = True       # Default: True
-SAVE_TRAINED_MODEL = True       # Default: True
+TRAIN_ON_SINGLE_IMAGE = False  # Default: False
+ENABLE_EARLY_STOP = True  # Default: True
+ENABLE_TENSORBOARD = True  # Default: True
+SAVE_TRAINED_MODEL = True  # Default: True
 
 # =========================
 #  [Test] Framework Config
@@ -96,7 +96,7 @@ SAVE_TRAINED_MODEL = True       # Default: True
 # 1 - TrainData
 TEST_EVALUATE_SUBSET = 0
 
-SAVE_TEST_DISPARITIES = True    # Default: True
+SAVE_TEST_DISPARITIES = True  # Default: True
 
 # ==================
 #  Global Variables
@@ -112,7 +112,7 @@ running = True
 # ===========
 #  Functions
 # ===========
-def get_save_folder_paths(): # TODO: Settings Class instead
+def get_save_folder_paths():  # TODO: Settings Class instead
     """Defines folders paths for saving the model variables to disk."""
     px_str = args.px + '_px'
     relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'  # TODO: use the settings.output_dir variable
@@ -148,8 +148,6 @@ hookman.start()
 #  Predict  #
 # ========= #
 def predict(args):
-    args.model_path, args.image_path
-
     args.model_path = detect_available_models(args)
 
     # Default input size
@@ -165,13 +163,15 @@ def predict(args):
     # Create a placeholder for the input image
     tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
     tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
-    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.AREA, align_corners=True)
+    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.AREA,
+                                              align_corners=True)
 
     tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
     with tf.variable_scope('model'):
         # Construct the network
-        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1, is_training=False)
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1,
+                             is_training=False)
         tf_pred = net.get_output()
         # for var in tf.trainable_variables():
         #     print(var)
@@ -217,8 +217,8 @@ def predict(args):
         for nrows, ncols, plot_number in X:
             axes.append(fig.add_subplot(nrows, ncols, plot_number))
 
-        img0 = axes[0].imshow(image)
-        img1 = axes[1].imshow(image_resized_uint8)
+        _ = axes[0].imshow(image)
+        _ = axes[1].imshow(image_resized_uint8)
         img2 = axes[2].imshow(pred[0, :, :, 0])
 
         axes[0].set_title('Image')
@@ -341,7 +341,8 @@ def train(args):
 
                     timer2 += time.time()
 
-                    print('epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
+                    print(
+                        'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
                             epoch,
                             max_epochs,
                             step,
@@ -454,7 +455,8 @@ def test(args):
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, num_samples, args.test_file_path = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
+        _, _, _, _, num_samples, args.test_file_path = data.get_test_data(test_split=args.test_split,
+                                                                          test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
         data.test_image_filenames, data.test_depth_filenames, _, _, num_samples = data.get_train_data()
 
@@ -474,7 +476,8 @@ def test(args):
         #  Testing Loop
         # ==============
         if args.show_test_results:
-            test_plot_obj = Plot(args.mode, title='Test Predictions') # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
+            test_plot_obj = Plot(args.mode,
+                                 title='Test Predictions')  # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
 
         timer = -time.time()
         pred_list, gt_list = [], []
@@ -519,8 +522,10 @@ def test(args):
                 depth_uint16 = img_as_uint(depth_uint16)
 
                 # Save PNG Images
-                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16) # TODO: use the settings.output_dir variable
-                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16) # TODO: use the settings.output_dir variable
+                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png",
+                               pred_up_uint16)  # TODO: use the settings.output_dir variable
+                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png",
+                               depth_uint16)  # TODO: use the settings.output_dir variable
 
             # Prints Testing Progress
             timer2 += time.time()
@@ -530,14 +535,14 @@ def test(args):
             # Show Results
             if args.show_test_results:
                 test_plot_obj.show_test_results(image=image,
-                                               depth=depth[:, :, 0],
-                                               image_resized=image_resized,
-                                               depth_resized=depth_resized[:, :, 0],
-                                               pred=pred[0, :, :, 0],
-                                               pred_up=pred_up[0, :, :, 0],
-                                               pred_50=pred_50[0, :, :, 0],
-                                               pred_80=pred_80[0, :, :, 0],
-                                               i=i + 1)
+                                                depth=depth[:, :, 0],
+                                                image_resized=image_resized,
+                                                depth_resized=depth_resized[:, :, 0],
+                                                pred=pred[0, :, :, 0],
+                                                pred_up=pred_up[0, :, :, 0],
+                                                pred_50=pred_50[0, :, :, 0],
+                                                pred_80=pred_80[0, :, :, 0],
+                                                i=i + 1)
 
             # input("Continue...")
 
@@ -564,10 +569,11 @@ def test(args):
 
             # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
             # myMetrics.evaluate(pred_array, gt_array) # FIXME:
-            MonodepthMetrics.evaluate(args, pred_array, gt_array, data.dataset.dataset_path)
+            monodepth_metrics.evaluate(args, pred_array, gt_array, data.dataset.dataset_path)
 
         else:
-            print("[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+            print(
+                "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
 
 
 # ======
@@ -594,7 +600,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = argsLib.argument_handler()
+    args = argument_handler()
 
     # Limits Tensorflow to see only the specified GPU.
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu

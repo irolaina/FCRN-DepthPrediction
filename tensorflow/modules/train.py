@@ -28,6 +28,9 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 # ===================
 class Train:
     def __init__(self, args, data, input_size, output_size, enable_dataaug):
+        self.tf_train_image_key, self.tf_train_depth_key = None, None
+        self.tf_train_image, self.tf_train_depth = None, None
+
         # TODO: modificar função para que não seja preciso retornar os tensors, utilizar self. variables diretamente.
         tf_image_key, tf_image, tf_depth_key, tf_depth = self.read_images(data.dataset.name, data.train_image_filenames, data.train_depth_filenames)
 

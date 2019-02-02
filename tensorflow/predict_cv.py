@@ -37,6 +37,7 @@ def argument_handler():
 
     return parser.parse_args()
 
+
 args = argument_handler()
 
 
@@ -50,13 +51,13 @@ def circular_counter(max_value):
         yield x
 
 
-class CvTimer():
+class CvTimer:
     def __init__(self):
         self.tick_frequency = cv2.getTickFrequency()
         self.tick_at_init = cv2.getTickCount()
         self.last_tick = self.tick_at_init
         self.fps_len = 100
-        self.l_fps_history = [10 for x in range(self.fps_len)]
+        self.l_fps_history = [10 for _ in range(self.fps_len)]
         self.fps_counter = circular_counter(self.fps_len)
 
     def reset(self):
@@ -268,7 +269,6 @@ def main():
                 cv2.imshow('pred_80 (scaled)', pred_80_uint8_scaled)
             except UnboundLocalError:
                 pred = sess.run(tf_pred, feed_dict={input_node: frame})
-
 
             # Debug
             if args.debug:

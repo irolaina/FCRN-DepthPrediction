@@ -218,7 +218,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
 
             if i in invalid_idx:
                 print("invalid")
-                continue # Skips the rest of the code
+                continue  # Skips the rest of the code
         else:
             gt_depth = gt_depths[i]
 

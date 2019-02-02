@@ -18,6 +18,7 @@ class Settings:
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
+
 settings = Settings('output/', 'log.txt')
 
 # Log config
