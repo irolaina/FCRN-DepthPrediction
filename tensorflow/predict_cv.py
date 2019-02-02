@@ -288,9 +288,9 @@ def main():
 
             # Save Images
             if SAVE_IMAGES:
-                cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame)
-                cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8)
-                cv2.imwrite("output/fcrn_cv/jet%06d.png" % count, pred_jet_resized)
+                cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame)  # TODO: settings.outputdir +
+                cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8)  # TODO: settings.outputdir +
+                cv2.imwrite("output/fcrn_cv/jet%06d.png" % count, pred_jet_resized)  # TODO: settings.outputdir +
                 count += 1
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.

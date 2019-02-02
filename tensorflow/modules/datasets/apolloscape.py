@@ -70,7 +70,7 @@ class Apolloscape(Dataset):
             print('%s_image_set: %d/%d' % (mode, n3, n2))
             print('%s_depth_set: %d/%d' % (mode, m3, m2))
 
-            # Debug
+            # Debug # TODO: use args.debug variable
             # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
             # for i in filenames:
             #     print(i)

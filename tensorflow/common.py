@@ -18,9 +18,9 @@ class Settings:
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
+settings = Settings('output/', 'log.txt')
 
 # Log config
-settings = Settings('output/', 'log.txt')
 logging.basicConfig(filename=settings.logger_output_file,
                     level=logging.DEBUG,
                     format='%(levelname)s %(asctime)s %(name)s %(funcName)s > %(message)s')

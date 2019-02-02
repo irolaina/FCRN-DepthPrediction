@@ -51,6 +51,7 @@ class FilenamesHandler(object):
         image_filenames = []
         depth_filenames = []
 
+        # TODO: use args.debug variable
         # print(image_filenames_tmp)
         # print(len(image_filenames_tmp))
         # input("image_filenames_tmp")

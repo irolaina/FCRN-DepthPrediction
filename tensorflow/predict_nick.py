@@ -115,7 +115,7 @@ running = True
 def get_save_folder_paths():
     """Defines folders paths for saving the model variables to disk."""
     px_str = args.px + '_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'
+    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'  # TODO: use the settings.output_dir variable
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -261,8 +261,8 @@ def train(args):
 
         # Build Network Model
         model = Model(args, data)
-        model.collectSummaries(save_path, graph)
-        model.createTrainSaver()
+        model.collect_summaries(save_path, graph)
+        model.create_train_saver()
 
     # ---------------------------------------- #
     #  Network Training Model - Running Graph  #
@@ -335,9 +335,9 @@ def train(args):
                 # Prints Training Progress
                 if step % 10 == 0:
                     if args.show_train_progress:
-                        model.train.plot.showResults(raw=batch_image_uint8[0],
-                                                     label=batch_depth[0, :, :, 0],
-                                                     pred=batch_pred[0, :, :, 0])
+                        model.train.plot.showTrainResults(raw=batch_image_uint8[0],
+                                                          label=batch_depth[0, :, :, 0],
+                                                          pred=batch_pred[0, :, :, 0])
 
                     timer2 += time.time()
 
@@ -385,9 +385,9 @@ def train(args):
                                                     feed_dict=feed_valid)
 
                         if args.show_valid_progress:
-                            model.valid.plot.showResults(raw=valid_image_uint8,
-                                                         label=valid_depth[:, :, 0],
-                                                         pred=valid_pred[0, :, :, 0])
+                            model.valid.plot.showTrainResults(raw=valid_image_uint8,
+                                                              label=valid_depth[:, :, 0],
+                                                              pred=valid_pred[0, :, :, 0])
 
                         valid_loss_sum += model.valid.loss
 
@@ -428,9 +428,9 @@ def train(args):
             if not os.path.exists(save_restore_path):
                 os.makedirs(save_restore_path)
 
-            model.saveTrainedModel(save_restore_path, sess, model.train_saver, args.model_name)
+            model.save_trained_model(save_restore_path, sess, model.train_saver, args.model_name)
 
-        model.saveResults(datetime, epoch, max_epochs, step, args.max_steps, timer)
+        model.save_results(datetime, epoch, max_epochs, step, args.max_steps, timer)
 
         sess.close()
 
@@ -519,8 +519,8 @@ def test(args):
                 depth_uint16 = img_as_uint(depth_uint16)
 
                 # Save PNG Images
-                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16)
-                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16)
+                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16) # TODO: use the settings.output_dir variable
+                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16) # TODO: use the settings.output_dir variable
 
             # Prints Testing Progress
             timer2 += time.time()

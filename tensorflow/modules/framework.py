@@ -52,7 +52,7 @@ class Model(object):
         self.build_losses(selected_loss, selected_px)
         self.build_optimizer()
         self.build_summaries()
-        self.countParams()
+        self.count_params()
 
     def build_model(self, data):
         print("\n[Network/Model] Build Network Model...")
@@ -128,6 +128,7 @@ class Model(object):
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
             # Select Optimizer
+            # TODO: create a switch case
             # optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.train.tf_loss, global_step=self.global_step)
             optimizer = tf.train.AdamOptimizer(self.train.tf_learning_rate)
             # optimizer = tf.train.MomentumOptimizer(self.train.tf_learning_rate, momentum=0.9, use_nesterov=True)
@@ -160,25 +161,25 @@ class Model(object):
             tf.summary.image('output/pred', self.valid.fcrn.get_output(), max_outputs=1, collections=self.model_collection)
 
     @staticmethod
-    def countParams():
+    def count_params():
         # Count Params
         total_num_parameters = 0
         for variable in tf.trainable_variables():
             total_num_parameters += np.array(variable.get_shape().as_list()).prod()
         print("[Network/Model] Number of trainable parameters: {}".format(total_num_parameters))
 
-    def collectSummaries(self, save_path, graph):
+    def collect_summaries(self, save_path, graph):
         with tf.name_scope("Summaries"):
             # Summary Objects
             self.summary_writer = tf.summary.FileWriter(save_path + self.args.log_directory, graph)
             self.summary_op = tf.summary.merge_all('model_0')
 
-    def createTrainSaver(self):
+    def create_train_saver(self):
         """Creates Saver Object."""
         self.train_saver = tf.train.Saver()
 
     @staticmethod
-    def saveTrainedModel(save_path, session, saver, model_name):
+    def save_trained_model(save_path, session, saver, model_name):
         """Creates saver obj which backups all the variables."""
         print("[Network/Training] List of Saved Variables:")
         for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
@@ -188,7 +189,7 @@ class Model(object):
         print("\n[Results] Model saved in file: %s" % file_path)
 
     # TODO: Acho que não preciso das variaveis root_path blabla
-    def saveResults(self, datetime, epoch, max_epochs, step, max_steps, sim_train):
+    def save_results(self, datetime, epoch, max_epochs, step, max_steps, sim_train):
         """Logs the obtained simulation results."""
         root_path = os.path.abspath(os.path.join(__file__, "../.."))
         relative_path = 'results.txt'

@@ -62,7 +62,7 @@ def total_size(o, handlers=None, verbose=False):
 
 def detect_available_models(args):
     if args.model_path == '':
-        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")
+        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")  # TODO: use the settings.output_dir variable
         found_models.sort()
 
         for i, model in enumerate(found_models):

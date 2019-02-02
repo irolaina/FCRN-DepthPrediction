@@ -65,7 +65,8 @@ def main():
     # Predict the image
     pred = predict(args.model_path, args.image_paths)
 
-    os._exit(0)
+    # noinspection PyProtectedMember
+    os._exit(1)
 
 
 if __name__ == '__main__':

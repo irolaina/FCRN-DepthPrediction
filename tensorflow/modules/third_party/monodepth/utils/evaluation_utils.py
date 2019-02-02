@@ -160,7 +160,6 @@ def read_calib_file(path):
             if float_chars.issuperset(value):
                 # try to cast to float array
                 try:
-                    # data[key] = np.array(map(float, value.split(' '))) # Python2
                     data[key] = np.array([float(elem) for elem in value.split(' ')])  # Python3
                 except ValueError:
                     # casting error: data[key] already eq. value, so pass
@@ -234,6 +233,7 @@ def generate_depth_map(calib_dir, velo_file_name, im_shape, cam=2, interp=False,
     inds = sub2ind(depth.shape, velo_pts_im[:, 1], velo_pts_im[:, 0])
     dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
 
+    # TODO: use args.debug variable
     # print(cam2cam)
     # print(velo2cam)
     # print('inds:', inds)
