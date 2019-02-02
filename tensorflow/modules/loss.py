@@ -14,7 +14,7 @@ LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
-def tf_maskOutInvalidPixels(tf_pred, tf_labels):
+def tf_mask_out_invalid_pixels(tf_pred, tf_labels):
     # Identify Pixels to be masked out.
     tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
 
@@ -42,7 +42,7 @@ def tf_L_MSE(tf_y, tf_y_, valid_pixels=True):
 
     # Mask Out
     if valid_pixels:
-        tf_y, tf_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+        tf_y, tf_y_ = tf_mask_out_invalid_pixels(tf_y, tf_y_)
 
     # npixels value depends on valid_pixels flag:
     # npixels = (batchSize*height*width) OR npixels = number of valid pixels
@@ -67,7 +67,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     # Mask Out
     if valid_pixels:
         # Overwrites the 'y' and 'y_' tensors!
-        tf_y, tf_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+        tf_y, tf_y_ = tf_mask_out_invalid_pixels(tf_y, tf_y_)
 
         # Overwrites the previous tensor, so now considers only the Valid Pixels!
         tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')

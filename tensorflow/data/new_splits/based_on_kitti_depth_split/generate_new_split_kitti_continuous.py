@@ -67,7 +67,7 @@ class KittiContinuous:
 
         self.filenames = []
 
-    def getFilenames(self):
+    def get_filenames(self):
         for i, line in enumerate(self.pairs):
             splitted = line[0].split('/')
 
@@ -93,7 +93,7 @@ class KittiContinuous:
 
         return list(data)
 
-    def getImageDepthPairRelativePaths(self):
+    def get_image_depth_pair_relative_paths(self):
         file = 'kitti_continuous.txt'
 
         if os.path.exists(file):
@@ -202,8 +202,8 @@ def main():
     kitti_depth.get_train_filenames()
     kitti_depth.get_test_filenames()
 
-    kitti_continuous.getImageDepthPairRelativePaths()
-    kitti_continuous.getFilenames()
+    kitti_continuous.get_image_depth_pair_relative_paths()
+    kitti_continuous.get_filenames()
 
     print()
     print('kitti_depth_train_filenames:', len(kitti_depth.train.filenames))

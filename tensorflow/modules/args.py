@@ -7,7 +7,7 @@ import argparse
 # ===========
 #  Functions
 # ===========
-def argumentHandler():
+def argument_handler():
     # Creating Arguments Parser
     parser = argparse.ArgumentParser(
         "Train the FCRN (Fully Convolution Residual Network) Tensorflow implementation taking image files as input.")

@@ -27,7 +27,7 @@ SAVE_IMAGES = False
 # ===========
 #  Functions
 # ===========
-def argumentHandler():
+def argument_handler():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
@@ -187,7 +187,7 @@ def processImages_removeSky(frame, pred, timer):
 #  Main
 # ======
 def main():
-    args = argumentHandler()
+    args = argument_handler()
 
     args.model_path = detect_available_models(args)
 
@@ -239,6 +239,9 @@ def main():
         # Load the converted parameters
         print('\nLoading the model...')
 
+        # --------- #
+        #  Restore  #
+        # --------- #
         # Use to load from ckpt file
         saver = tf.train.Saver()
         saver.restore(sess, args.model_path)

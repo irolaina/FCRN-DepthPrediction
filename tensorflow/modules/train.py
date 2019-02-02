@@ -47,7 +47,7 @@ class Train:
 
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
-                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, data.dataset.name)
+                tf_image, tf_depth = Dataloader.remove_sky(tf_image, tf_depth, data.dataset.name)
 
             # Network Input/Output. Overwrite Tensors!
             self.tf_image = tf_image
@@ -167,7 +167,7 @@ class Train:
         self.tf_train_image_key = tf_train_input_queue[0]
         self.tf_train_depth_key = tf_train_input_queue[1]
 
-        self.tf_train_image, self.tf_train_depth = Dataloader.decodeImages(self.tf_train_image_key, self.tf_train_depth_key, dataset_name)
+        self.tf_train_image, self.tf_train_depth = Dataloader.decode_images(self.tf_train_image_key, self.tf_train_depth_key, dataset_name)
 
         # Retrieves shape
         # tf_image.set_shape(self.image_size.getSize())

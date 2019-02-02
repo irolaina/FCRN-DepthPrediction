@@ -103,7 +103,7 @@ class KittiContinuous(Dataset):
             # input("enter")
 
             # TODO: Acredito que dê pra mover a chamada dessa função para fora
-            self.saveList(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
+            self.save_list(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
 
         # Debug
         # print(image_filenames[0], depth_filenames[0])

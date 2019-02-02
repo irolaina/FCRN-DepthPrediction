@@ -27,14 +27,14 @@ class Test:
             self.tf_image_key = tf.placeholder(tf.string)
             self.tf_depth_key = tf.placeholder(tf.string)
 
-            tf_image, tf_depth = Dataloader.decodeImages(self.tf_image_key, self.tf_depth_key, data.dataset.name)
+            tf_image, tf_depth = Dataloader.decode_images(self.tf_image_key, self.tf_depth_key, data.dataset.name)
 
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = data.rawdepth2meters(tf_depth, data.dataset.name)
 
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
-                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, args.dataset)
+                tf_image, tf_depth = Dataloader.remove_sky(tf_image, tf_depth, args.dataset)
 
             # Network Input/Output. Overwrite Tensors!
             # tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]

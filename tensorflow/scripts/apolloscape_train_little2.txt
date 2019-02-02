@@ -1,3 +1,0 @@
-/media/nicolas/nicolas_seagate/datasets/apolloscape/data/ColorImage/Record031/Camera 5/170908_065018845_Camera_5.jpg	/media/nicolas/nicolas_seagate/datasets/apolloscape/data/Depth/Record031/Camera 5/170908_065018845_Camera_5.png
-/media/nicolas/nicolas_seagate/datasets/apolloscape/data/ColorImage/Record035/Camera 6/171206_034350332_Camera_6.jpg	/media/nicolas/nicolas_seagate/datasets/apolloscape/data/Depth/Record035/Camera 6/171206_034350332_Camera_6.png
-/media/nicolas/nicolas_seagate/datasets/apolloscape/data/ColorImage/Record021/Camera 5/171206_032232742_Camera_5.jpg	/media/nicolas/nicolas_seagate/datasets/apolloscape/data/Depth/Record021/Camera 5/171206_032232742_Camera_5.png

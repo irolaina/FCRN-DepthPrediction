@@ -21,7 +21,7 @@ from modules.datasets.lrmjose import LRMJose
 # ===========
 #  Functions
 # ===========
-def getFilenamesTensors(image_filenames, depth_filenames):
+def get_filenames_tensors(image_filenames, depth_filenames):
     tf_image_filenames = tf.convert_to_tensor(image_filenames)
     tf_depth_filenames = tf.convert_to_tensor(depth_filenames)
 
@@ -77,15 +77,15 @@ class Dataloader:
             sys.exit()
 
         # Searches dataset image/depth filenames lists
-        self.train_image_filenames, self.train_depth_filenames, self.numTrainSamples = None, None, -1
+        self.train_image_filenames, self.train_depth_filenames, self.num_train_samples = None, None, -1
         self.tf_train_image_filenames, self.tf_train_depth_filenames = None, None
 
-        self.test_image_filenames, self.test_depth_filenames, self.numTestSamples = None, None, -1
+        self.test_image_filenames, self.test_depth_filenames, self.num_test_samples = None, None, -1
         self.tf_test_image_filenames, self.tf_test_depth_filenames = None, None
 
         if args.mode == 'train':
-            _ = self.getTrainData()
-            _ = self.getTestData()
+            _ = self.get_train_data()
+            _ = self.get_test_data()
 
             self.tf_train_image_key = None
             self.tf_train_image = None
@@ -102,16 +102,16 @@ class Dataloader:
 
         print("\n[Dataloader] dataloader object created.")
 
-    def getTrainData(self, mode='train'):
+    def get_train_data(self, mode='train'):
         image_filenames, depth_filenames, _ = self.dataset.getFilenamesLists(mode)
-        tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
+        tf_image_filenames, tf_depth_filenames = get_filenames_tensors(image_filenames, depth_filenames)
 
         try:
             print("Summary - TrainData")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
 
-            self.numTrainSamples = len(image_filenames)
+            self.num_train_samples = len(image_filenames)
 
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
@@ -121,18 +121,18 @@ class Dataloader:
         self.tf_train_image_filenames = tf_image_filenames
         self.tf_train_depth_filenames = tf_depth_filenames
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTrainSamples
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.num_train_samples
 
-    def getTestData(self, mode='test', test_split='', test_file_path=''):
+    def get_test_data(self, mode='test', test_split='', test_file_path=''):
         image_filenames, depth_filenames, file = self.dataset.getFilenamesLists(mode, test_split, test_file_path)
-        tf_image_filenames, tf_depth_filenames = getFilenamesTensors(image_filenames, depth_filenames)
+        tf_image_filenames, tf_depth_filenames = get_filenames_tensors(image_filenames, depth_filenames)
 
         try:
             print("Summary - TestData (Validation Set)")
             print("image_filenames: ", len(image_filenames))
             print("depth_filenames: ", len(depth_filenames))
 
-            self.numTestSamples = len(image_filenames)
+            self.num_test_samples = len(image_filenames)
 
         except TypeError:
             print("[TypeError] 'image_filenames' and 'depth_filenames' are None.")
@@ -142,7 +142,7 @@ class Dataloader:
         self.tf_test_image_filenames = tf_image_filenames
         self.tf_test_depth_filenames = tf_depth_filenames
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.numTestSamples, file
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.num_test_samples, file
 
     @staticmethod
     def rawdepth2meters(tf_depth, dataset_name):
@@ -166,7 +166,7 @@ class Dataloader:
         return tf_depth
 
     @staticmethod
-    def removeSky(tf_image, tf_depth, dataset_name):
+    def remove_sky(tf_image, tf_depth, dataset_name):
         """Crops Input and Depth Images (Removes Sky)"""
         if dataset_name[0:5] == 'kitti':
             tf_image_shape = tf.shape(tf_image)
@@ -182,7 +182,7 @@ class Dataloader:
         return tf_image, tf_depth
 
     @staticmethod
-    def decodeImages(tf_image_key, tf_depth_key, dataset_name):
+    def decode_images(tf_image_key, tf_depth_key, dataset_name):
         tf_image_file = tf.read_file(tf_image_key)
         tf_depth_file = tf.read_file(tf_depth_key)
 

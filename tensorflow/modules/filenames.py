@@ -92,7 +92,7 @@ class FilenamesHandler(object):
         return image_filenames, depth_filenames, n2, m2
 
     @staticmethod
-    def saveList(image_filenames, depth_filenames, name, mode, dataset_path):
+    def save_list(image_filenames, depth_filenames, name, mode, dataset_path):
         # TODO: add comemnt
         image_filenames_dump = [image.replace(dataset_path, '') for image in image_filenames]
         depth_filenames_dump = [depth.replace(dataset_path, '') for depth in depth_filenames]

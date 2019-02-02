@@ -68,6 +68,6 @@ class KittiDepth(Dataset):
             # input("enter")
 
             # TODO: Acredito que dê pra mover a chamada dessa função para fora
-            self.saveList(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
+            self.save_list(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
 
         return image_filenames, depth_filenames, file

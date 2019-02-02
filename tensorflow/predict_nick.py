@@ -272,7 +272,7 @@ def train(args):
     epoch, step = 0, 0
 
     # Proclaim the epochs
-    max_epochs = int(np.floor(args.batch_size * args.max_steps / data.numTrainSamples))
+    max_epochs = int(np.floor(args.batch_size * args.max_steps / data.num_train_samples))
     print('\nTrain with approximately %d epochs' % max_epochs)
 
     with tf.Session(graph=graph) as sess:
@@ -366,7 +366,7 @@ def train(args):
                 if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
                     valid_loss_sum = 0
                     print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
-                    for i in range(data.numTestSamples):
+                    for i in range(data.num_test_samples):
                         timer3 = -time.time()
                         feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
                                       model.valid.tf_depth_key: data.test_depth_filenames[i]}
@@ -394,10 +394,10 @@ def train(args):
 
                         timer3 += time.time()
                         print("%d/%d | valid_loss_sum: %f | valid_loss: %f | t: %4f" % (
-                            i + 1, data.numTestSamples, valid_loss_sum, model.valid.loss, timer3))
+                            i + 1, data.num_test_samples, valid_loss_sum, model.valid.loss, timer3))
 
                     # Calculate mean value of 'valid_loss'
-                    model.valid.loss = valid_loss_sum / data.numTestSamples  # Updates 'Valid_loss' value
+                    model.valid.loss = valid_loss_sum / data.num_test_samples  # Updates 'Valid_loss' value
                     print("mean(valid_loss): %f\n" % model.valid.loss)
 
                     if ENABLE_EARLY_STOP:
@@ -410,7 +410,7 @@ def train(args):
                         model.summary_writer.add_summary(summary_str, step)
                         model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
-                epoch = int(np.floor((step * args.batch_size) / data.numTrainSamples))
+                epoch = int(np.floor((step * args.batch_size) / data.num_train_samples))
             else:
                 print("[KeyEvent] 'F8' Pressed! Training process aborted!")
                 break
@@ -456,9 +456,9 @@ def test(args):
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, numSamples, args.test_file_path = data.getTestData(test_split=args.test_split, test_file_path=args.test_file_path)
+        _, _, _, _, numSamples, args.test_file_path = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, _, _, numSamples = data.getTrainData()
+        data.test_image_filenames, data.test_depth_filenames, _, _, numSamples = data.get_train_data()
 
     model = Test(args, data)
 
@@ -596,7 +596,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = argsLib.argumentHandler()
+    args = argsLib.argument_handler()
 
     # Limits Tensorflow to see only the specified GPU.
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu

@@ -21,7 +21,7 @@ class Validation:
         self.tf_image_key = tf.placeholder(tf.string)
         self.tf_depth_key = tf.placeholder(tf.string)
 
-        self.tf_image_raw, self.tf_depth_raw  = Dataloader.decodeImages(self.tf_image_key, self.tf_depth_key, dataset_name)
+        self.tf_image_raw, self.tf_depth_raw  = Dataloader.decode_images(self.tf_image_key, self.tf_depth_key, dataset_name)
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
@@ -34,7 +34,7 @@ class Validation:
 
         # Crops Input and Depth Images (Removes Sky)
         if args.remove_sky:
-            self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+            self.tf_image, self.tf_depth = Dataloader.remove_sky(tf_image, tf_depth, dataset_name)
 
         # Downsizes Input and Depth Images
         self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.AREA, align_corners=True)
