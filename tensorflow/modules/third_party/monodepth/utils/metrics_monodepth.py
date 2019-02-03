@@ -1,11 +1,14 @@
-import csv
 import imageio
 import matplotlib.pyplot as plt
+import pandas as pd
 from tqdm import tqdm
 
 from .evaluation_utils import *
 
 
+# ===========
+#  Functions
+# ===========
 def evaluate(args, pred_array, gt_array, args_gt_path):
     # --------------------------------------------- #
     #  Generate Depth Maps for kitti, eigen splits  #
@@ -145,7 +148,8 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             # print(im_sizes[t_id])
 
             try:
-                gt_depth_continuous = imageio.imread(gt_depth_continuous_path).astype(np.float32) / 3.0  # Convert uint8 to float, meters
+                gt_depth_continuous = imageio.imread(gt_depth_continuous_path).astype(
+                    np.float32) / 3.0  # Convert uint8 to float, meters
                 gt_depths_continuous.append(gt_depth_continuous)
             except FileNotFoundError:
                 gt_depths_continuous.append(np.zeros(shape=im_sizes[t_id]))
@@ -200,14 +204,14 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
     # ----------------- #
     #  Compute Metrics  #
     # ----------------- #
-    rms     = np.zeros(num_samples, np.float32)
+    rms = np.zeros(num_samples, np.float32)
     log_rms = np.zeros(num_samples, np.float32)
     abs_rel = np.zeros(num_samples, np.float32)
-    sq_rel  = np.zeros(num_samples, np.float32)
-    d1_all  = np.zeros(num_samples, np.float32)
-    a1      = np.zeros(num_samples, np.float32)
-    a2      = np.zeros(num_samples, np.float32)
-    a3      = np.zeros(num_samples, np.float32)
+    sq_rel = np.zeros(num_samples, np.float32)
+    d1_all = np.zeros(num_samples, np.float32)
+    a1 = np.zeros(num_samples, np.float32)
+    a2 = np.zeros(num_samples, np.float32)
+    a3 = np.zeros(num_samples, np.float32)
 
     print('\n[Metrics] Computing metrics...')
     # num_samples = 5 # Only for testing!
@@ -236,12 +240,12 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
                 # crop used by Garg ECCV16
                 # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
                 if args.garg_crop:
-                    crop = np.array([0.40810811 * gt_height,  0.99189189 * gt_height,
-                                     0.03594771 * gt_width,   0.96405229 * gt_width]).astype(np.int32)
+                    crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
+                                     0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
                 # crop we found by trial and error to reproduce Eigen NIPS14 results
                 elif args.eigen_crop:
-                    crop = np.array([0.3324324 * gt_height,  0.91351351 * gt_height,
-                                     0.0359477 * gt_width,   0.96405229 * gt_width]).astype(np.int32)
+                    crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
+                                     0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
 
                 crop_mask = np.zeros(mask.shape)
                 crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
@@ -261,7 +265,8 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         else:
             mask = gt_depth > 0
 
-        abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask], pred_depth[mask])
+        abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
+                                                                                        pred_depth[mask])
         # abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask], gt_depth[mask]) # Only for Testing
 
         # Show gt/pred Images
@@ -280,22 +285,18 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
     # --------- #
     #  Results  #
     # --------- #
-    results_header_formatter = "{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
-    results_data_formatter = "{:>83}, {:>10}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}\n"
-    # Save results on .txt file
-    if args.test_split == '':
-        test_split = args.dataset
-    else:
-        test_split = args.test_split
+    # Save results on .csv file
+    test_split = args.dataset if args.test_split == '' else args.test_split
 
     # TODO: Mover para utils.py?
-    def saveMetricsResultsTXT():
-        """Logs the obtained simulation results on a .txt file."""
-        save_file_path = 'results_metrics.txt'
+    def saveMetricsResultsCSV():
+        """Logs the obtained simulation results on a .csv file."""
+        save_file_path = 'output/results_metrics.csv'  # TODO: usar settings.output_dir +
         print("[Results] Logging simulation info to '%s' file..." % save_file_path)
 
-        f = open(save_file_path, 'a')
-        f.write(results_data_formatter.format(
+        results_metrics = pd.read_csv(save_file_path)
+
+        fields = pd.Series([
             args.model_path,
             test_split,
             abs_rel.mean(),
@@ -305,41 +306,26 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             d1_all.mean(),
             a1.mean(),
             a2.mean(),
-            a3.mean()))
-        f.close()
+            a3.mean()])
 
-    # FIXME: Use Pandas
-    def saveMetricsResultsCSV():
-        """Logs the obtained simulation results on a .csv file."""
-        save_file_path = 'results_metrics.csv'
-        print("[Results] Logging simulation info to '%s' file..." % save_file_path)
+        results_metrics.append(fields, ignore_index=True)
+        results_metrics.to_csv(save_file_path)
 
-        fields = [args.model_path,
-                  test_split,
-                  abs_rel.mean(),
-                  sq_rel.mean(),
-                  rms.mean(),
-                  log_rms.mean(),
-                  d1_all.mean(),
-                  a1.mean(),
-                  a2.mean(),
-                  a3.mean()]
+        print(results_metrics)
 
-        with open(save_file_path, 'a') as f:
-            writer = csv.writer(f)
-            writer.writerow(fields)
-
-    # saveMetricsResultsTXT()
     saveMetricsResultsCSV()
 
     # Display Results
+    results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
+    results_data_formatter = "{:>20}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
+
     print()
     print("# ----------------- #")
     print("#  Metrics Results  #")
     print("# ----------------- #")
+    print(args.model_path)
     print(results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
     print(results_data_formatter.format(
-        args.model_path,
         test_split,
         abs_rel.mean(),
         sq_rel.mean(),

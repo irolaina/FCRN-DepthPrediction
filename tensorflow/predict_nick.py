@@ -475,15 +475,15 @@ def test(args):
         # ==============
         #  Testing Loop
         # ==============
-        if args.show_test_results:
-            test_plot_obj = Plot(args.mode,
-                                 title='Test Predictions')  # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
-
-        timer = -time.time()
         pred_list, gt_list = [], []
+        num_samples = 5  # Only for testing! # TODO: Desativar!!!!!!!
+
+        # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
+        if args.show_test_results:
+            test_plot_obj = Plot(args.mode, title='Test Predictions')
 
         print("[Network/Testing] Generating Predictions...")
-        # num_samples = 5 # Only for testing!
+        timer = -time.time()
         for i in tqdm(range(num_samples)):
             timer2 = -time.time()
 
@@ -522,10 +522,8 @@ def test(args):
                 depth_uint16 = img_as_uint(depth_uint16)
 
                 # Save PNG Images
-                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png",
-                               pred_up_uint16)  # TODO: use the settings.output_dir variable
-                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png",
-                               depth_uint16)  # TODO: use the settings.output_dir variable
+                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16)  # TODO: use the settings.output_dir variable
+                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16)  # TODO: use the settings.output_dir variable
 
             # Prints Testing Progress
             timer2 += time.time()
