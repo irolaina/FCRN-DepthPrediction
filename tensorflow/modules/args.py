@@ -85,3 +85,5 @@ def argument_handler():
     parser.add_argument('-i', '--image_path', help='Set path to the image to be predicted', default='')
 
     return parser.parse_args()
+
+args = argument_handler()

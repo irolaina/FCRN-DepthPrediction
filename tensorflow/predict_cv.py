@@ -17,6 +17,7 @@ import tensorflow as tf
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.utils import detect_available_models
+from common import settings
 
 # ==================
 #  Global Variables
@@ -195,7 +196,7 @@ def process_images_remove_sky(frame, pred, timer):
 #  Main
 # ======
 def main():
-    args.model_path = detect_available_models(args)
+    args.model_path = detect_available_models()
 
     timer = CvTimer()
 
@@ -288,9 +289,9 @@ def main():
 
             # Save Images
             if SAVE_IMAGES:
-                cv2.imwrite("output/fcrn_cv/frame%06d.png" % count, frame)  # TODO: settings.outputdir +
-                cv2.imwrite("output/fcrn_cv/pred%06d.png" % count, pred_uint8)  # TODO: settings.outputdir +
-                cv2.imwrite("output/fcrn_cv/jet%06d.png" % count, pred_jet_resized)  # TODO: settings.outputdir +
+                cv2.imwrite(settings.output_dir + "fcrn_cv/frame%06d.png" % count, frame)
+                cv2.imwrite(settings.output_dir + "fcrn_cv/pred%06d.png" % count, pred_uint8)
+                cv2.imwrite(settings.output_dir + "fcrn_cv/jet%06d.png" % count, pred_jet_resized)
                 count += 1
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.

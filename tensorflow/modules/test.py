@@ -3,9 +3,10 @@
 # ===========
 import tensorflow as tf
 
+from modules.args import args
 from .dataloader import Dataloader
-from .third_party.laina.fcrn import ResNet50UpProj
 from .size import Size
+from .third_party.laina.fcrn import ResNet50UpProj
 
 
 # ==================
@@ -17,7 +18,7 @@ from .size import Size
 #  Class Declaration
 # ===================
 class Test:
-    def __init__(self, args, data):
+    def __init__(self, data):
         # Construct the network
         with tf.variable_scope('model'):
             self.input_size = Size(228, 304, 3)

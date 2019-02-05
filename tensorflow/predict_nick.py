@@ -54,7 +54,6 @@
 # ===========
 #  Libraries
 # ===========
-import os
 import sys
 import time
 import warnings
@@ -71,13 +70,13 @@ from tqdm import tqdm
 
 # Custom Libraries
 from common import *
-from modules.args import argument_handler
-import modules.third_party.monodepth.utils.metrics_monodepth as monodepth_metrics
+from modules.args import args
 from modules.dataloader import Dataloader
 from modules.framework import Model
 from modules.plot import Plot
 from modules.test import Test
 from modules.third_party.laina.fcrn import ResNet50UpProj
+from modules.third_party.monodepth.utils import metrics
 from modules.utils import detect_available_models
 
 # ==========================
@@ -115,7 +114,7 @@ running = True
 def get_save_folder_paths():  # TODO: Settings Class instead
     """Defines folders paths for saving the model variables to disk."""
     px_str = args.px + '_px'
-    relative_save_path = 'output/' + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'  # TODO: use the settings.output_dir variable
+    relative_save_path = settings.output_dir + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'
     save_path = os.path.join(os.getcwd(), relative_save_path)
     save_restore_path = os.path.join(save_path, 'restore/')
 
@@ -147,8 +146,8 @@ hookman.start()
 # ========= #
 #  Predict  #
 # ========= #
-def predict(args):
-    args.model_path = detect_available_models(args)
+def predict():
+    args.model_path = detect_available_models()
 
     # Default input size
     batch_size, height, width = 1, 228, 304
@@ -238,7 +237,7 @@ def predict(args):
 # ===================== #
 #  Training/Validation  #
 # ===================== #
-def train(args):
+def train():
     print('[%s] Selected mode: Train' % appName)
 
     # Local Variables
@@ -252,7 +251,7 @@ def train(args):
     # ----------------------------------------- #
     graph = tf.Graph()
     with graph.as_default():
-        data = Dataloader(args)
+        data = Dataloader()
 
         # If enabled, the framework will train the network for only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
@@ -260,7 +259,7 @@ def train(args):
             data.train_depth_filenames = np.expand_dims(data.train_depth_filenames[0], axis=0)
 
         # Build Network Model
-        model = Model(args, data)
+        model = Model(data)
         model.collect_summaries(save_path, graph)
         model.create_train_saver()
 
@@ -439,19 +438,19 @@ def train(args):
 # ========= #
 #  Testing  #
 # ========= #
-def test(args):
+def test():
     print('[%s] Selected mode: Test' % appName)
 
     # Local Variables
     num_samples = None
 
-    args.model_path = detect_available_models(args)
+    args.model_path = detect_available_models()
 
     # -----------------------------------------
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
     # Loads the dataset and restores a specified trained model.
-    data = Dataloader(args)
+    data = Dataloader()
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
@@ -460,7 +459,7 @@ def test(args):
     elif TEST_EVALUATE_SUBSET == 1:
         data.test_image_filenames, data.test_depth_filenames, _, _, num_samples = data.get_train_data()
 
-    model = Test(args, data)
+    model = Test(data)
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
@@ -554,8 +553,8 @@ def test(args):
             print()
 
             # TODO: Criar um argumento para selecionar a evaluation_tool
-            monodepth_metrics.evaluate(args, settings, pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='monodepth')
-            # monodepth_metrics.evaluate(args, settings, pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='kitti_depth')
+            metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='monodepth')
+            # metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='kitti_depth')
 
         else:
             print(
@@ -565,15 +564,15 @@ def test(args):
 # ======
 #  Main
 # ======
-def main(args):
+def main():
     print('\n[%s] Selected Params: \n\n%s\n' % (appName, args))
 
     if args.mode == 'train':
-        train(args)
+        train()
     elif args.mode == 'test':
-        test(args)
+        test()
     elif args.mode == 'pred':
-        predict(args)
+        predict()
     else:
         print("[ModeError] Selected mode doesn't exist! Select one of the following: 'train', 'test', or 'pred'.")
         raise SystemExit
@@ -586,9 +585,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = argument_handler()
-
     # Limits Tensorflow to see only the specified GPU.
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-    tf.app.run(main=main(args))
+    tf.app.run(main=main())

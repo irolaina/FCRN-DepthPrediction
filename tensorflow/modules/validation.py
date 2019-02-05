@@ -3,9 +3,11 @@
 # ===========
 import tensorflow as tf
 
+from modules.args import args
 from .dataloader import Dataloader
-from .third_party.laina.fcrn import ResNet50UpProj
 from .plot import Plot
+from .third_party.laina.fcrn import ResNet50UpProj
+
 
 # ==================
 #  Global Variables
@@ -16,7 +18,7 @@ from .plot import Plot
 #  Class Declaration
 # ===================
 class Validation:
-    def __init__(self, args, input_size, output_size, max_depth, dataset_name):
+    def __init__(self, input_size, output_size, max_depth, dataset_name):
         # Raw Input/Output
         self.tf_image_key = tf.placeholder(tf.string)
         self.tf_depth_key = tf.placeholder(tf.string)

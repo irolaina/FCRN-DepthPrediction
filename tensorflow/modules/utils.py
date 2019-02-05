@@ -3,10 +3,12 @@
 # ===========
 import glob
 import os
-
-from sys import getsizeof, stderr
-from itertools import chain
 from collections import deque
+from itertools import chain
+from sys import getsizeof, stderr
+
+from common import settings
+from modules.args import args
 
 
 # ===========
@@ -60,9 +62,9 @@ def total_size(o, handlers=None, verbose=False):
     return sizeof(o)
 
 
-def detect_available_models(args):
+def detect_available_models():
     if args.model_path == '':
-        found_models = glob.glob("output/fcrn/*/*/*/*/restore/*.meta")  # TODO: use the settings.output_dir variable
+        found_models = glob.glob(settings.output_dir + "fcrn/*/*/*/*/restore/*.meta")
         found_models.sort()
 
         for i, model in enumerate(found_models):

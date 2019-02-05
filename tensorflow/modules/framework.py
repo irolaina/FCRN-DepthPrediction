@@ -1,33 +1,24 @@
 # ===========
 #  Libraries
 # ===========
-import numpy as np
-import tensorflow as tf
 import os
 import sys
-import modules.loss as loss
 
+import numpy as np
+import tensorflow as tf
+
+import modules.loss as loss
+from modules.args import args
 from modules.size import Size
 from modules.train import Train
 from modules.validation import Validation
 
 
-# ==================
-#  Global Variables
-# ==================
-
-
-# ===========
-#  Functions
-# ===========
-
 # ===================
 #  Class Declaration
 # ===================
 class Model(object):
-    def __init__(self, args, data):
-        self.args = args
-
+    def __init__(self, data):
         selected_loss = args.loss
         selected_px = args.px
 
@@ -62,10 +53,10 @@ class Model(object):
         # =============================================
         # Construct the network graphs
         with tf.variable_scope("model"):
-            self.train = Train(self.args, data, self.input_size, self.output_size, self.args.data_aug)
+            self.train = Train(data, self.input_size, self.output_size)
 
         with tf.variable_scope("model", reuse=True):
-            self.valid = Validation(self.args, self.input_size, self.output_size, data.dataset.max_depth,
+            self.valid = Validation(self.input_size, self.output_size, data.dataset.max_depth,
                                     data.dataset.name)
 
     def build_losses(self, selected_loss, selected_px):
@@ -116,7 +107,7 @@ class Model(object):
                 print("[Network/Loss] Invalid Loss Function Selected!")
                 sys.exit()
 
-            if self.args.l2norm:
+            if args.l2norm:
                 self.train.tf_loss += loss.calculateL2norm()
 
             if valid_pixels:
@@ -171,7 +162,7 @@ class Model(object):
     def collect_summaries(self, save_path, graph):
         with tf.name_scope("Summaries"):
             # Summary Objects
-            self.summary_writer = tf.summary.FileWriter(save_path + self.args.log_directory, graph)
+            self.summary_writer = tf.summary.FileWriter(save_path + args.log_directory, graph) # TODO: atrelar este log_directory com a classe settings
             self.summary_op = tf.summary.merge_all('model_0')
 
     def create_train_saver(self):
@@ -199,7 +190,7 @@ class Model(object):
 
         f = open(save_file_path, 'a')
         f.write("%s\t\t%s\t\t%s\t\t%s\t\tepoch: %d/%d\t\tstep: %d/%d\ttrain_loss: %f\tvalid_loss: %f\tt: %f s\n" % (
-            datetime, self.args.model_name, self.args.dataset, self.loss_name, epoch, max_epochs, step, max_steps,
+            datetime, args.model_name, args.dataset, self.loss_name, epoch, max_epochs, step, max_steps,
             self.train.loss, self.valid.loss,
             sim_train))
         f.close()

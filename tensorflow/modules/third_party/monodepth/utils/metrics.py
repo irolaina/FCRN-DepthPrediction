@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
 
+from common import settings
+from modules.args import args
 from .evaluation_utils import *
 
 
@@ -10,7 +12,7 @@ from .evaluation_utils import *
 #  Functions
 # ===========
 
-def generate_depth_maps(args, pred_list, gt_list, args_gt_path):
+def generate_depth_maps(pred_list, gt_list, args_gt_path):
     pred_array = np.array(pred_list)
     gt_array = np.array(gt_list)
 
@@ -179,11 +181,11 @@ def generate_depth_maps(args, pred_list, gt_list, args_gt_path):
     return pred_depths, gt_depths, num_samples
 
 
-def evaluate(args, settings, pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
+def evaluate(pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
     # --------------------------------------------- #
     #  Generate Depth Maps for kitti, eigen splits  #
     # --------------------------------------------- #
-    pred_depths, gt_depths, num_samples = generate_depth_maps(args, pred_list, gt_list,
+    pred_depths, gt_depths, num_samples = generate_depth_maps(pred_list, gt_list,
                                                               args_gt_path)  # FIXME: Talvez esta função não precise estar dentro da evaluate()
 
     # ----------------- #
@@ -285,7 +287,7 @@ def evaluate(args, settings, pred_list, gt_list, args_gt_path, evaluation_tool='
         # TODO: Mover para utils.py?
         def save_metrics_results_csv():
             """Logs the obtained simulation results on a .csv file."""
-            save_file_path = 'output/results_metrics.csv'  # TODO: usar settings.output_dir +
+            save_file_path = settings.output_dir + 'results_metrics.csv'
             print("\n[Results] Logging simulation info to '%s' file..." % save_file_path)
 
             df_results_metrics = pd.read_csv(save_file_path)

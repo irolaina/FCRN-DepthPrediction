@@ -5,12 +5,13 @@ import sys
 
 import tensorflow as tf
 
+from modules.args import args
 from modules.datasets.apolloscape import Apolloscape
 from modules.datasets.kitti_continuous import KittiContinuous
 from modules.datasets.kitti_depth import KittiDepth
 from modules.datasets.kitti_discrete import KittiDiscrete
-from modules.datasets.nyudepth import NyuDepth
 from modules.datasets.lrmjose import LRMJose
+from modules.datasets.nyudepth import NyuDepth
 
 
 # ==================
@@ -32,7 +33,7 @@ def get_filenames_tensors(image_filenames, depth_filenames):
 #  Class Declaration
 # ===================
 class Dataloader:
-    def __init__(self, args):
+    def __init__(self):
         # Defines dataset_root path depending on which machine is used.
         dataset_root = None
 

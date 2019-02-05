@@ -1,17 +1,17 @@
 # ===========
 #  Libraries
 # ===========
+from collections import deque
+
 import numpy as np
 import tensorflow as tf
 
-from collections import deque
-
+from modules.args import args
 from .dataloader import Dataloader
+from .plot import Plot
 from .third_party.laina.fcrn import ResNet50UpProj
 from .third_party.tensorflow.inception_preprocessing import apply_with_random_selector
 from .third_party.tensorflow.inception_preprocessing import distort_color
-
-from .plot import Plot
 
 # ==================
 #  Global Variables
@@ -27,7 +27,7 @@ MAX_STEPS_AFTER_STABILIZATION = 10000
 #  Class Declaration
 # ===================
 class Train:
-    def __init__(self, args, data, input_size, output_size, enable_dataaug):
+    def __init__(self, data, input_size, output_size):
         self.tf_train_image_key, self.tf_train_depth_key = None, None
         self.tf_train_image, self.tf_train_depth = None, None
 
@@ -41,7 +41,7 @@ class Train:
             self.tf_image = tf_image
             self.tf_depth = tf_depth
 
-            if enable_dataaug:
+            if args.data_aug:
                 tf_image, tf_depth = self.augment_image_pair(tf_image, tf_depth)
 
             # True Depth Value Calculation. May vary from dataset to dataset.
