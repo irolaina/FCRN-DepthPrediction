@@ -282,11 +282,32 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             plt.draw()
             plt.pause(1)
 
+    metrics = {'abs_rel': abs_rel.mean(),
+               'sq_rel': sq_rel.mean(),
+               'rms': rms.mean(),
+               'log_rms': log_rms.mean(),
+               'd1_all': d1_all.mean(),
+               'a1': a1.mean(),
+               'a2': a2.mean(),
+               'a3': a3.mean()}
+
     # --------- #
     #  Results  #
     # --------- #
     # Save results on .csv file
     test_split = args.dataset if args.test_split == '' else args.test_split
+
+    results_metrics = [
+        args.model_path,
+        test_split,
+        metrics['abs_rel'],
+        metrics['sq_rel'],
+        metrics['rms'],
+        metrics['log_rms'],
+        metrics['d1_all'],
+        metrics['a1'],
+        metrics['a2'],
+        metrics['a3']]
 
     # TODO: Mover para utils.py?
     def saveMetricsResultsCSV():
@@ -294,24 +315,15 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         save_file_path = 'output/results_metrics.csv'  # TODO: usar settings.output_dir +
         print("[Results] Logging simulation info to '%s' file..." % save_file_path)
 
-        results_metrics = pd.read_csv(save_file_path)
+        df_results_metrics = pd.read_csv(save_file_path)
 
-        fields = pd.Series([
-            args.model_path,
-            test_split,
-            abs_rel.mean(),
-            sq_rel.mean(),
-            rms.mean(),
-            log_rms.mean(),
-            d1_all.mean(),
-            a1.mean(),
-            a2.mean(),
-            a3.mean()])
 
-        results_metrics.append(fields, ignore_index=True)
-        results_metrics.to_csv(save_file_path)
+        results_series = pd.Series(results_metrics)
 
-        print(results_metrics)
+        df_results_metrics.append(results_series, ignore_index=True)
+        df_results_metrics.to_csv(save_file_path)
+
+        print(df_results_metrics)
 
     saveMetricsResultsCSV()
 
@@ -325,13 +337,6 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
     print("# ----------------- #")
     print(args.model_path)
     print(results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
-    print(results_data_formatter.format(
-        test_split,
-        abs_rel.mean(),
-        sq_rel.mean(),
-        rms.mean(),
-        log_rms.mean(),
-        d1_all.mean(),
-        a1.mean(),
-        a2.mean(),
-        a3.mean()))
+
+    print(results_data_formatter.format(*results_metrics[1:]))
+
