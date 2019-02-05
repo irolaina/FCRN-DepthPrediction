@@ -9,11 +9,10 @@ from .evaluation_utils import *
 # ===========
 #  Functions
 # ===========
-def evaluate(args, pred_array, gt_array, args_gt_path):
-    # --------------------------------------------- #
-    #  Generate Depth Maps for kitti, eigen splits  #
-    # --------------------------------------------- #
-    # pred_disparities = np.load(args.predicted_disp_path)
+
+def generate_depth_maps(args, pred_list, gt_list, args_gt_path):
+    pred_array = np.array(pred_list)
+    gt_array = np.array(gt_list)
 
     if args.test_split == 'kitti':
         num_samples = 200
@@ -22,10 +21,8 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         gt_disparities = load_gt_disp_kitti(args_gt_path)
 
         print('\n[Metrics] Generating depth maps...')
-        # gt_depths, pred_depths, pred_disparities_resized = convert_disps_to_depths_kitti(gt_disparities, pred_disparities)
         gt_depths = convert_gt_disps_to_depths_kitti(gt_disparities)
 
-        # num_samples = 5  # Only for testing!
         for t_id in tqdm(range(num_samples)):
             # Show the Disparity/Depth ground truths and the corresponding predictions for the evaluation images.
             if False:  # TODO: ativar pela flag -u
@@ -72,17 +69,6 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
             gt_depths.append(depth.astype(np.float32))
 
-            # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
-            # disp_pred = cv2.resize(pred_disparities[t_id], (im_sizes[t_id][1], im_sizes[t_id][0]), interpolation=cv2.INTER_LINEAR)
-            # disp_pred = disp_pred * disp_pred.shape[1]
-            #
-            # # need to convert from disparity to depth
-            # focal_length, baseline = get_focal_length_baseline(gt_calib[t_id], camera_id)
-            # depth_pred = (baseline * focal_length) / disp_pred
-            # depth_pred[np.isinf(depth_pred)] = 0
-            #
-            # pred_depths.append(depth_pred)
-
             # Show the corresponding generated Depth Map from the Stereo Pair.
             if False:  # TODO: ativar pela flag -u
                 print(depth)
@@ -124,17 +110,6 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             camera_id = cams[t_id]  # 2 is left, 3 is right
             depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
             gt_depths.append(depth.astype(np.float32))
-
-            # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
-            # disp_pred = cv2.resize(pred_disparities[t_id], (im_sizes[t_id][1], im_sizes[t_id][0]), interpolation=cv2.INTER_LINEAR)
-            # disp_pred = disp_pred * disp_pred.shape[1]
-            #
-            # # need to convert from disparity to depth
-            # focal_length, baseline = get_focal_length_baseline(gt_calib[t_id], camera_id)
-            # depth_pred = (baseline * focal_length) / disp_pred
-            # depth_pred[np.isinf(depth_pred)] = 0
-            #
-            # pred_depths.append(depth_pred)
 
             depth_split = gt_files[t_id].split('/')
             new_depth_filename = depth_split[8] + '_' + depth_split[-1].replace('.bin', '.png')
@@ -201,6 +176,14 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
 
     pred_depths = pred_array
 
+    return pred_depths, gt_depths, num_samples
+
+def evaluate(args, pred_list, gt_list, args_gt_path):
+    # --------------------------------------------- #
+    #  Generate Depth Maps for kitti, eigen splits  #
+    # --------------------------------------------- #
+    pred_depths, gt_depths, num_samples = generate_depth_maps(args, pred_list, gt_list, args_gt_path)
+
     # ----------------- #
     #  Compute Metrics  #
     # ----------------- #
@@ -213,8 +196,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
     a2 = np.zeros(num_samples, np.float32)
     a3 = np.zeros(num_samples, np.float32)
 
-    print('\n[Metrics] Computing metrics...')
-    # num_samples = 5 # Only for testing!
+    print('[Metrics] Computing metrics...')
     for i in tqdm(range(num_samples)):
 
         if args.test_split == 'eigen_continuous':
@@ -251,23 +233,10 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
                 crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
                 mask = np.logical_and(mask, crop_mask)
 
-        if args.test_split == 'kitti':
-            # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
-            # gt_disp = gt_disparities[i]
-            # mask = gt_disp > 0
-            # pred_disp = pred_disparities_resized[i]
-            #
-            # disp_diff = np.abs(gt_disp[mask] - pred_disp[mask])
-            # bad_pixels = np.logical_and(disp_diff >= 3, (disp_diff / gt_disp[mask]) >= 0.05)
-            # d1_all[i] = 100.0 * bad_pixels.sum() / mask.sum()
-
-            mask = gt_depth > 0
-        else:
-            mask = gt_depth > 0
+        mask = gt_depth > 0
 
         abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
                                                                                         pred_depth[mask])
-        # abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask], gt_depth[mask]) # Only for Testing
 
         # Show gt/pred Images
         if False:  # TODO: Remover?
@@ -282,6 +251,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
             plt.draw()
             plt.pause(1)
 
+    # End of Loop
     metrics = {'abs_rel': abs_rel.mean(),
                'sq_rel': sq_rel.mean(),
                'rms': rms.mean(),
@@ -310,13 +280,12 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
         metrics['a3']]
 
     # TODO: Mover para utils.py?
-    def saveMetricsResultsCSV():
+    def save_metrics_results_csv():
         """Logs the obtained simulation results on a .csv file."""
         save_file_path = 'output/results_metrics.csv'  # TODO: usar settings.output_dir +
-        print("[Results] Logging simulation info to '%s' file..." % save_file_path)
+        print("\n[Results] Logging simulation info to '%s' file..." % save_file_path)
 
         df_results_metrics = pd.read_csv(save_file_path)
-
 
         results_series = pd.Series(results_metrics)
 
@@ -325,7 +294,7 @@ def evaluate(args, pred_array, gt_array, args_gt_path):
 
         print(df_results_metrics)
 
-    saveMetricsResultsCSV()
+    save_metrics_results_csv()
 
     # Display Results
     results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"

@@ -17,7 +17,7 @@ sh make.sh
 Run:
 
 ```shell
-./evaluate_depth ../../../../output/tmp/gt/ ../../../../output/tmp/pred/
+./evaluation/kitti_depth_prediction/devkit/cpp/evaluate_depth output/tmp/gt/ output/tmp/pred/
 ```
 
 # Issues

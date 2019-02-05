@@ -473,13 +473,13 @@ def test(args):
         #  Testing Loop
         # ==============
         pred_list, gt_list = [], []
-        # num_samples = 20  # Only for testing! # TODO: Desativar!!!!!!!
+        num_samples = 5  # Only for testing! # TODO: Desativar!!!!!!!
 
         # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
         if args.show_test_results:
             test_plot_obj = Plot(args.mode, title='Test Predictions')
 
-        print("[Network/Testing] Generating Predictions...")
+        print("\n[Network/Testing] Generating Predictions...")
         timer = -time.time()
         for i in tqdm(range(num_samples)):
             timer2 = -time.time()
@@ -509,26 +509,19 @@ def test(args):
             pred_list.append(pred_up[0, :, :, 0])
             gt_list.append(depth[:, :, 0])
 
-            print("pred_list: ", sys.getsizeof(pred_list))
-            print("gt_list: ", sys.getsizeof(gt_list))
-
             # Saves the Test Predictions as uint16 PNG Images
             if SAVE_TEST_DISPARITIES:
                 # Convert the Predictions Images from float32 to uint16
-                pred_up_uint16 = exposure.rescale_intensity(pred_up[0], out_range='float')
-                pred_up_uint16 = img_as_uint(pred_up_uint16)
-
-                depth_uint16 = exposure.rescale_intensity(depth, out_range='float')
-                depth_uint16 = img_as_uint(depth_uint16)
+                pred_up_uint16 = img_as_uint(exposure.rescale_intensity(pred_up[0], out_range='float'))
+                depth_uint16 = img_as_uint(exposure.rescale_intensity(depth, out_range='float'))
 
                 # Save PNG Images
-                imageio.imsave("output/tmp/pred/pred" + str(i) + ".png", pred_up_uint16)  # TODO: use the settings.output_dir variable
-                imageio.imsave("output/tmp/gt/gt" + str(i) + ".png", depth_uint16)  # TODO: use the settings.output_dir variable
+                imageio.imsave(settings.output_tmp_pred_dir + 'pred' + str(i) + '.png', pred_up_uint16)
+                imageio.imsave(settings.output_tmp_gt_dir + 'gt' + str(i) + '.png', depth_uint16)
 
             # Prints Testing Progress
             timer2 += time.time()
-            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, num_samples, timer2, total_size(pred_list)+total_size(gt_list)))
-            # break # Test
+            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, num_samples, timer2, sys.getsizeof(pred_list)+sys.getsizeof(gt_list)))
 
             # Show Results
             if args.show_test_results:
@@ -546,7 +539,7 @@ def test(args):
 
         # Testing Finished.
         timer += time.time()
-        print("\n[Network/Testing] Testing FINISHED! Time elapsed: %f s" % timer)
+        print("[Network/Testing] Testing FINISHED! Time elapsed: {} s\n".format(timer))
 
         # =========
         #  Results
@@ -555,19 +548,14 @@ def test(args):
         if data.test_depth_filenames:
             print("[Network/Testing] Calculating Metrics based on Test Predictions...")
 
-            pred_array = np.array(pred_list)
-            gt_array = np.array(gt_list)
-
-            print()
             print('args.test_split:', args.test_split)
             print('args.test_file_path:', args.test_file_path)
             print('dataset_path:', data.dataset.dataset_path)
             print()
-            # input("[Metrics] Press ENTER to start evaluation...") # TODO: Desativar?
 
             # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
             # myMetrics.evaluate(pred_array, gt_array) # FIXME:
-            monodepth_metrics.evaluate(args, pred_array, gt_array, data.dataset.dataset_path)
+            monodepth_metrics.evaluate(args, pred_list, gt_list, data.dataset.dataset_path)
 
         else:
             print(

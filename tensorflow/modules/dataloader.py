@@ -100,7 +100,7 @@ class Dataloader:
             self.tf_test_depth_key = None
             self.tf_test_depth = None
 
-        print("\n[Dataloader] dataloader object created.")
+        print("[Dataloader] dataloader object created.")
 
     def get_train_data(self, mode='train'):
         image_filenames, depth_filenames, _ = self.dataset.getFilenamesLists(mode)
@@ -199,7 +199,7 @@ class Dataloader:
             tf_depth = tf.image.decode_png(tf_depth_file, channels=1, dtype=tf.uint16)
 
         # Print Tensors
-        print("tf_image_file: \t", tf_image_file)
-        print("tf_depth_file: \t", tf_depth_file)
+        # print("tf_image_file: \t", tf_image_file)
+        # print("tf_depth_file: \t", tf_depth_file)
 
         return tf_image, tf_depth

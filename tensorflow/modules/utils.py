@@ -69,6 +69,7 @@ def detect_available_models(args):
             print(i, model)
 
         selected_model_id = input("\nSelect Model: ")
+        print()
         selected_model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
     else:
         selected_model_path = args.model_path
