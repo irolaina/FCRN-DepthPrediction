@@ -70,7 +70,7 @@ from skimage import exposure, img_as_uint
 from tqdm import tqdm
 
 # Custom Libraries
-# import common import * # TODO: Descomentar
+from common import *
 from modules.args import argument_handler
 import modules.third_party.monodepth.utils.metrics_monodepth as monodepth_metrics
 from modules.dataloader import Dataloader
@@ -469,14 +469,11 @@ def test(args):
         saver = tf.train.Saver()
         saver.restore(sess, args.model_path)
 
-        # Use to load from npy file
-        # net.load(model_data_path, sess)
-
         # ==============
         #  Testing Loop
         # ==============
         pred_list, gt_list = [], []
-        num_samples = 5  # Only for testing! # TODO: Desativar!!!!!!!
+        # num_samples = 20  # Only for testing! # TODO: Desativar!!!!!!!
 
         # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
         if args.show_test_results:
@@ -498,8 +495,7 @@ def test(args):
             else:
                 feed_test = {model.tf_image_key: data.test_image_filenames[i]}
 
-            _, image, image_resized = sess.run(model.image_op, feed_test)
-            pred, pred_up = sess.run(model.pred_op, feed_test)
+            _, image, image_resized, pred, pred_up = sess.run(model.image_op + model.pred_op, feed_test)
 
             # Clips Predictions at 50, 80 meters
             try:
@@ -509,8 +505,12 @@ def test(args):
                 pred_80 = np.zeros((model.batch_size,) + model.output_size.get_size())
 
             # Fill arrays for later on metrics evaluation
+            # FIXME: This may cause crashing problems
             pred_list.append(pred_up[0, :, :, 0])
             gt_list.append(depth[:, :, 0])
+
+            print("pred_list: ", sys.getsizeof(pred_list))
+            print("gt_list: ", sys.getsizeof(gt_list))
 
             # Saves the Test Predictions as uint16 PNG Images
             if SAVE_TEST_DISPARITIES:
