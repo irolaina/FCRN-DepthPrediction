@@ -178,134 +178,147 @@ def generate_depth_maps(args, pred_list, gt_list, args_gt_path):
 
     return pred_depths, gt_depths, num_samples
 
-def evaluate(args, pred_list, gt_list, args_gt_path):
+
+def evaluate(args, settings, pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
     # --------------------------------------------- #
     #  Generate Depth Maps for kitti, eigen splits  #
     # --------------------------------------------- #
-    pred_depths, gt_depths, num_samples = generate_depth_maps(args, pred_list, gt_list, args_gt_path)
+    pred_depths, gt_depths, num_samples = generate_depth_maps(args, pred_list, gt_list,
+                                                              args_gt_path)  # FIXME: Talvez esta função não precise estar dentro da evaluate()
 
     # ----------------- #
     #  Compute Metrics  #
     # ----------------- #
-    rms = np.zeros(num_samples, np.float32)
-    log_rms = np.zeros(num_samples, np.float32)
-    abs_rel = np.zeros(num_samples, np.float32)
-    sq_rel = np.zeros(num_samples, np.float32)
-    d1_all = np.zeros(num_samples, np.float32)
-    a1 = np.zeros(num_samples, np.float32)
-    a2 = np.zeros(num_samples, np.float32)
-    a3 = np.zeros(num_samples, np.float32)
+    if evaluation_tool == 'monodepth':
+        rms = np.zeros(num_samples, np.float32)
+        log_rms = np.zeros(num_samples, np.float32)
+        abs_rel = np.zeros(num_samples, np.float32)
+        sq_rel = np.zeros(num_samples, np.float32)
+        d1_all = np.zeros(num_samples, np.float32)
+        a1 = np.zeros(num_samples, np.float32)
+        a2 = np.zeros(num_samples, np.float32)
+        a3 = np.zeros(num_samples, np.float32)
 
-    print('[Metrics] Computing metrics...')
-    for i in tqdm(range(num_samples)):
+        print('[Metrics] Computing metrics...')
+        for i in tqdm(range(num_samples)):
 
-        if args.test_split == 'eigen_continuous':
-            gt_depth = gt_depths_continuous[i]
+            if args.test_split == 'eigen_continuous':
+                gt_depth = gt_depths_continuous[i]
 
-            if i in invalid_idx:
-                print("invalid")
-                continue  # Skips the rest of the code
-        else:
-            gt_depth = gt_depths[i]
+                if i in invalid_idx:
+                    print("invalid")
+                    continue  # Skips the rest of the code
+            else:
+                gt_depth = gt_depths[i]
 
-        pred_depth = pred_depths[i]
+            pred_depth = pred_depths[i]
 
-        pred_depth[pred_depth < args.min_depth] = args.min_depth
-        pred_depth[pred_depth > args.max_depth] = args.max_depth
+            pred_depth[pred_depth < args.min_depth] = args.min_depth
+            pred_depth[pred_depth > args.max_depth] = args.max_depth
 
-        if args.test_split == 'eigen' or args.test_split == 'eigen_continuous':  # TODO: Validar!
-            mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
+            if args.test_split == 'eigen' or args.test_split == 'eigen_continuous':  # TODO: Validar!
+                mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
 
-            if args.garg_crop or args.eigen_crop:
-                gt_height, gt_width = gt_depth.shape
+                if args.garg_crop or args.eigen_crop:
+                    gt_height, gt_width = gt_depth.shape
 
-                # crop used by Garg ECCV16
-                # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
-                if args.garg_crop:
-                    crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
-                                     0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
-                # crop we found by trial and error to reproduce Eigen NIPS14 results
-                elif args.eigen_crop:
-                    crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
-                                     0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+                    # crop used by Garg ECCV16
+                    # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
+                    if args.garg_crop:
+                        crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
+                                         0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+                    # crop we found by trial and error to reproduce Eigen NIPS14 results
+                    elif args.eigen_crop:
+                        crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
+                                         0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
 
-                crop_mask = np.zeros(mask.shape)
-                crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
-                mask = np.logical_and(mask, crop_mask)
+                    crop_mask = np.zeros(mask.shape)
+                    crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
+                    mask = np.logical_and(mask, crop_mask)
 
-        mask = gt_depth > 0
+            mask = gt_depth > 0
 
-        abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
-                                                                                        pred_depth[mask])
+            abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
+                                                                                            pred_depth[mask])
 
-        # Show gt/pred Images
-        if False:  # TODO: Remover?
-            plt.figure(102)
-            plt.title('pred')
-            plt.imshow(pred_depth)
+            # Show gt/pred Images
+            if False:  # TODO: Remover?
+                plt.figure(102)
+                plt.title('pred')
+                plt.imshow(pred_depth)
 
-            plt.figure(103)
-            plt.imshow(gt_depth)
-            plt.title('left')
+                plt.figure(103)
+                plt.imshow(gt_depth)
+                plt.title('left')
 
-            plt.draw()
-            plt.pause(1)
+                plt.draw()
+                plt.pause(1)
 
-    # End of Loop
-    metrics = {'abs_rel': abs_rel.mean(),
-               'sq_rel': sq_rel.mean(),
-               'rms': rms.mean(),
-               'log_rms': log_rms.mean(),
-               'd1_all': d1_all.mean(),
-               'a1': a1.mean(),
-               'a2': a2.mean(),
-               'a3': a3.mean()}
+        # End of Loop
+        metrics = {'abs_rel': abs_rel.mean(),
+                   'sq_rel': sq_rel.mean(),
+                   'rms': rms.mean(),
+                   'log_rms': log_rms.mean(),
+                   'd1_all': d1_all.mean(),
+                   'a1': a1.mean(),
+                   'a2': a2.mean(),
+                   'a3': a3.mean()}
 
-    # --------- #
-    #  Results  #
-    # --------- #
-    # Save results on .csv file
-    test_split = args.dataset if args.test_split == '' else args.test_split
+        # --------- #
+        #  Results  #
+        # --------- #
+        # Save results on .csv file
+        test_split = args.dataset if args.test_split == '' else args.test_split
 
-    results_metrics = [
-        args.model_path,
-        test_split,
-        metrics['abs_rel'],
-        metrics['sq_rel'],
-        metrics['rms'],
-        metrics['log_rms'],
-        metrics['d1_all'],
-        metrics['a1'],
-        metrics['a2'],
-        metrics['a3']]
+        results_metrics = [
+            args.model_path,
+            test_split,
+            metrics['abs_rel'],
+            metrics['sq_rel'],
+            metrics['rms'],
+            metrics['log_rms'],
+            metrics['d1_all'],
+            metrics['a1'],
+            metrics['a2'],
+            metrics['a3']]
 
-    # TODO: Mover para utils.py?
-    def save_metrics_results_csv():
-        """Logs the obtained simulation results on a .csv file."""
-        save_file_path = 'output/results_metrics.csv'  # TODO: usar settings.output_dir +
-        print("\n[Results] Logging simulation info to '%s' file..." % save_file_path)
+        # TODO: Mover para utils.py?
+        def save_metrics_results_csv():
+            """Logs the obtained simulation results on a .csv file."""
+            save_file_path = 'output/results_metrics.csv'  # TODO: usar settings.output_dir +
+            print("\n[Results] Logging simulation info to '%s' file..." % save_file_path)
 
-        df_results_metrics = pd.read_csv(save_file_path)
+            df_results_metrics = pd.read_csv(save_file_path)
 
-        results_series = pd.Series(results_metrics)
+            results_series = pd.Series(results_metrics)
 
-        df_results_metrics.append(results_series, ignore_index=True)
-        df_results_metrics.to_csv(save_file_path)
+            df_results_metrics.append(results_series, ignore_index=True)
+            df_results_metrics.to_csv(save_file_path)
 
-        print(df_results_metrics)
+            print(df_results_metrics)
 
-    save_metrics_results_csv()
+        save_metrics_results_csv()
 
-    # Display Results
-    results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
-    results_data_formatter = "{:>20}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
+        # Display Results
+        results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
+        results_data_formatter = "{:>20}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
 
-    print()
-    print("# ----------------- #")
-    print("#  Metrics Results  #")
-    print("# ----------------- #")
-    print(args.model_path)
-    print(results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
+        print()
+        print("# ----------------- #")
+        print("#  Metrics Results  #")
+        print("# ----------------- #")
+        print(args.model_path)
+        print(
+            results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
 
-    print(results_data_formatter.format(*results_metrics[1:]))
+        print(results_data_formatter.format(*results_metrics[1:]))
 
+    elif evaluation_tool == 'kitti_depth':
+        import subprocess
+
+        print("[KittiDepth Evaluation Tool] Invoking 'evaluate_depth' executable...")
+        subprocess.call(
+            [r"evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth", "{}".format(settings.output_tmp_gt_dir),
+             "{}".format(settings.output_tmp_pred_dir)])
+    else:
+        raise SystemError

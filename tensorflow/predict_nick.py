@@ -553,9 +553,9 @@ def test(args):
             print('dataset_path:', data.dataset.dataset_path)
             print()
 
-            # LainaMetrics.evaluate(pred_array, gt_array) # FIXME:
-            # myMetrics.evaluate(pred_array, gt_array) # FIXME:
-            monodepth_metrics.evaluate(args, pred_list, gt_list, data.dataset.dataset_path)
+            # TODO: Criar um argumento para selecionar a evaluation_tool
+            monodepth_metrics.evaluate(args, settings, pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='monodepth')
+            # monodepth_metrics.evaluate(args, settings, pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='kitti_depth')
 
         else:
             print(
