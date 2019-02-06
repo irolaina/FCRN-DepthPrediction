@@ -11,7 +11,6 @@ from .evaluation_utils import *
 # ===========
 #  Functions
 # ===========
-
 def generate_depth_maps(pred_list, gt_list, args_gt_path):
     pred_array = np.array(pred_list)
     gt_array = np.array(gt_list)
@@ -180,6 +179,25 @@ def generate_depth_maps(pred_list, gt_list, args_gt_path):
 
     return pred_depths, gt_depths, num_samples
 
+def save_stats_depth_to_csv():
+
+    stats_depth_csv_filename = settings.output_dir + 'kitti_depth_eval.csv'
+
+    df = pd.read_csv(settings.output_tmp_pred_dir + 'stats_depth.txt', sep=':', header=None)
+    df[0] = df[0].apply(lambda x: x.replace(' ', '_'))
+    df[0] = df[0].apply(lambda x: x.replace('__', '_'))
+    df = df.T
+    df = df.rename(columns=df.iloc[0])
+    df = df.drop(df.index[0])
+    df.drop(df.columns[0], axis=1)
+    df['model'] = args.model_path
+    df = df.set_index('model')
+
+    if not os.path.isfile(stats_depth_csv_filename):
+        df.to_csv(stats_depth_csv_filename)
+    else:
+        with open(stats_depth_csv_filename, 'a') as file:
+            df.to_csv(file, header=False)
 
 def evaluate(pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
     # --------------------------------------------- #
@@ -322,5 +340,8 @@ def evaluate(pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
         subprocess.call(
             [r"evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth", "{}".format(settings.output_tmp_gt_dir),
              "{}".format(settings.output_tmp_pred_dir)])
+
+        save_stats_depth_to_csv()
+
     else:
         raise SystemError

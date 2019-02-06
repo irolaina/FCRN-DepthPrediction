@@ -553,8 +553,8 @@ def test():
             print()
 
             # TODO: Criar um argumento para selecionar a evaluation_tool
-            metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='monodepth')
-            # metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='kitti_depth')
+            # metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='monodepth')
+            metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='kitti_depth')
 
         else:
             print(
