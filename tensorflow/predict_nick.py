@@ -454,8 +454,7 @@ def test():
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, num_samples, args.test_file_path = data.get_test_data(test_split=args.test_split,
-                                                                          test_file_path=args.test_file_path)
+        _, _, _, _, num_samples = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
         data.test_image_filenames, data.test_depth_filenames, _, _, num_samples = data.get_train_data()
 

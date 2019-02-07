@@ -179,8 +179,8 @@ def generate_depth_maps(pred_list, gt_list, args_gt_path):
 
     return pred_depths, gt_depths, num_samples
 
-def save_stats_depth_to_csv():
 
+def stats_depth_txt2csv(num_evaluated_pairs):
     stats_depth_csv_filename = settings.output_dir + 'kitti_depth_eval.csv'
 
     df = pd.read_csv(settings.output_tmp_pred_dir + 'stats_depth.txt', sep=':', header=None)
@@ -193,11 +193,20 @@ def save_stats_depth_to_csv():
     df['model'] = args.model_path
     df = df.set_index('model')
 
+    # Adding New info
+    df['test_split'] = args.test_file_path
+    df['num_evaluated_pairs'] = num_evaluated_pairs
+
+    # Rearranges Columns Order
+    new_order = [27, 28] + list(range(27))
+    df = df[df.columns[new_order]]
+
     if not os.path.isfile(stats_depth_csv_filename):
         df.to_csv(stats_depth_csv_filename)
     else:
         with open(stats_depth_csv_filename, 'a') as file:
             df.to_csv(file, header=False)
+
 
 def evaluate(pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
     # --------------------------------------------- #
@@ -341,7 +350,7 @@ def evaluate(pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
             [r"evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth", "{}".format(settings.output_tmp_gt_dir),
              "{}".format(settings.output_tmp_pred_dir)])
 
-        save_stats_depth_to_csv()
+        stats_depth_txt2csv(len(pred_list))
 
     else:
         raise SystemError

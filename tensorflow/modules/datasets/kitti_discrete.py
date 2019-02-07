@@ -109,4 +109,4 @@ class KittiDiscrete(Dataset):
         # print(image_filenames[0], depth_filenames[0])
         # input("enter")
 
-        return image_filenames, depth_filenames, file
+        return image_filenames, depth_filenames

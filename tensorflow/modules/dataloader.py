@@ -104,7 +104,7 @@ class Dataloader:
         print("[Dataloader] dataloader object created.")
 
     def get_train_data(self, mode='train'):
-        image_filenames, depth_filenames, _ = self.dataset.getFilenamesLists(mode)
+        image_filenames, depth_filenames = self.dataset.getFilenamesLists(mode)
         tf_image_filenames, tf_depth_filenames = get_filenames_tensors(image_filenames, depth_filenames)
 
         try:
@@ -125,7 +125,7 @@ class Dataloader:
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.num_train_samples
 
     def get_test_data(self, mode='test', test_split='', test_file_path=''):
-        image_filenames, depth_filenames, file = self.dataset.getFilenamesLists(mode, test_split, test_file_path)
+        image_filenames, depth_filenames = self.dataset.getFilenamesLists(mode, test_split, test_file_path)
         tf_image_filenames, tf_depth_filenames = get_filenames_tensors(image_filenames, depth_filenames)
 
         try:
@@ -143,7 +143,7 @@ class Dataloader:
         self.tf_test_image_filenames = tf_image_filenames
         self.tf_test_depth_filenames = tf_depth_filenames
 
-        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.num_test_samples, file
+        return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.num_test_samples
 
     @staticmethod
     def rawdepth2meters(tf_depth, dataset_name):

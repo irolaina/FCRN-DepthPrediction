@@ -3,7 +3,7 @@
 # ===========
 from ..size import Size
 from ..filenames import FilenamesHandler
-
+from ..args import args
 
 # ===================
 #  Class Declaration
@@ -42,5 +42,7 @@ class Dataset(FilenamesHandler):
                 file = 'data/' + self.name + '_' + mode + '.txt'
             else:
                 file = test_file_path
+
+        args.test_file_path = file
 
         return file

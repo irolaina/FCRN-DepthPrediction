@@ -84,4 +84,4 @@ class LRMJose(Dataset):
             # TODO: Acredito que dê pra mover a chamada dessa função para fora
             self.save_list(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
 
-        return image_filenames, depth_filenames, file
+        return image_filenames, depth_filenames
