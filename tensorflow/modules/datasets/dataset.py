@@ -5,6 +5,7 @@ from ..size import Size
 from ..filenames import FilenamesHandler
 from ..args import args
 
+
 # ===================
 #  Class Declaration
 # ===================

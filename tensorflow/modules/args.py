@@ -86,4 +86,5 @@ def argument_handler():
 
     return parser.parse_args()
 
+
 args = argument_handler()

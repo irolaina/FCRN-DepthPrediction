@@ -162,7 +162,7 @@ class Model(object):
     def collect_summaries(self, save_path, graph):
         with tf.name_scope("Summaries"):
             # Summary Objects
-            self.summary_writer = tf.summary.FileWriter(save_path + args.log_directory, graph) # TODO: atrelar este log_directory com a classe settings
+            self.summary_writer = tf.summary.FileWriter(save_path + args.log_directory, graph)  # TODO: atrelar este log_directory com a classe settings
             self.summary_op = tf.summary.merge_all('model_0')
 
     def create_train_saver(self):
