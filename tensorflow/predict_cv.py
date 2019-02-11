@@ -250,7 +250,11 @@ def main():
         # --------- #
         # Use to load from ckpt file
         saver = tf.train.Saver()
-        saver.restore(sess, args.model_path)
+        try:
+            saver.restore(sess, args.model_path)
+        except tf.errors.NotFoundError:
+            print("[NotFoundError] '{}' model not found!".format(args.model_path))
+            os._exit(1)
 
         # Use to load from npy file
         # net.load(args.model_path, sess)

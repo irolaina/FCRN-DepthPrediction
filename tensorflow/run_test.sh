@@ -58,8 +58,8 @@ python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r 
 #python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-02_16-01-22/restore/model.fcrn
 #python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-09_21-47-07/restore/model.fcrn
 #python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-12_06-14-00/restore/model.fcrn
-#python3 predict_nick.py -m test -s kittidepth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-13_10-24-39/restore/model.fcrn
-#python3 predict_nick.py -m test -s kittidepth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-20_13-10-32/restore/model.fcrn
-#python3 predict_nick.py -m test -s kittidepth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn
+#python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-13_10-24-39/restore/model.fcrn
+#python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-20_13-10-32/restore/model.fcrn
+#python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/nyudepth/all_px/berhu/2018-07-23_18-34-45/restore/model.fcrn
 
 # *São do tipo 1x1conv

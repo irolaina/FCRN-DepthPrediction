@@ -195,7 +195,11 @@ def predict():
         # --------- #
         # Use to load from ckpt file
         saver = tf.train.Saver()
-        saver.restore(sess, args.model_path)
+        try:
+            saver.restore(sess, args.model_path)
+        except tf.errors.NotFoundError:
+            print("[NotFoundError] '{}' model not found!".format(args.model_path))
+            os._exit(1)
 
         # Use to load from npy file
         # net.load(model_data_path, sess)
@@ -465,13 +469,17 @@ def test():
 
         # Use to load from *.ckpt file
         saver = tf.train.Saver()
-        saver.restore(sess, args.model_path)
+        try:
+            saver.restore(sess, args.model_path)
+        except tf.errors.NotFoundError:
+            print("[NotFoundError] '{}' model not found!".format(args.model_path))
+            os._exit(1)
 
         # ==============
         #  Testing Loop
         # ==============
         pred_list, gt_list = [], []
-        # num_samples = 5  # Only for testing! # TODO: Desativar!!!!!!!
+        num_samples = 5  # Only for testing! # TODO: Desativar!!!!!!!
 
         # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
         if args.show_test_results:
