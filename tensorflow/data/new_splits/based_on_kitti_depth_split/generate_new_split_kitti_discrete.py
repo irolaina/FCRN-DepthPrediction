@@ -94,12 +94,12 @@ class KittiDiscrete:
         return list(data)
 
     def get_image_depth_pair_relative_paths(self):
-        file = 'kitti_discrete.txt'
+        file_path = 'kitti_discrete.txt'
 
-        if os.path.exists(file):
-            self.pairs = self.read_text_file(file)
+        if os.path.exists(file_path):
+            self.pairs = self.read_text_file(file_path)
         else:
-            print("[Dataloader] '%s' doesn't exist..." % file)
+            print("[Dataloader] '%s' doesn't exist..." % file_path)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
