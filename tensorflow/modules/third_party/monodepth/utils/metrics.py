@@ -204,8 +204,8 @@ def stats_depth_txt2csv(num_evaluated_pairs):
     if not os.path.isfile(stats_depth_csv_filename):
         df.to_csv(stats_depth_csv_filename)
     else:
-        with open(stats_depth_csv_filename, 'a') as file:
-            df.to_csv(file, header=False)
+        with open(stats_depth_csv_filename, 'a') as f:
+            df.to_csv(f, header=False)
 
 
 def evaluate(pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):

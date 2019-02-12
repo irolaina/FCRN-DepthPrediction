@@ -36,12 +36,12 @@ class KittiDepth(Dataset):
         if mode == 'test':
             mode = 'val'
 
-        file = self.get_file_path(mode, test_split, test_file_path)
+        file_path = self.get_file_path(mode, test_split, test_file_path)
 
-        if os.path.exists(file):
-            image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
+        if os.path.exists(file_path):
+            image_filenames, depth_filenames = self.read_text_file(file_path, self.dataset_path)
         else:
-            print("[Dataloader] '%s' doesn't exist..." % file)
+            print("[Dataloader] '%s' doesn't exist..." % file_path)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside the list of folders.
