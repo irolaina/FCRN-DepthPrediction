@@ -29,21 +29,21 @@ class Dataset(FilenamesHandler):
 
     def get_file_path(self, mode, test_split, test_file_path):  # TODO: change name
         if test_split == 'eigen' or test_split == 'eigen_continuous':
-            file = 'modules/third_party/monodepth/utils/filenames/eigen_test_files.txt'
+            file_path = 'modules/third_party/monodepth/utils/filenames/eigen_test_files.txt'
 
             # Overwrite the 'dataset_path' specified by the dataset
             self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/'
         elif test_split == 'kitti':
-            file = 'modules/third_party/monodepth/utils/filenames/kitti_stereo_2015_test_files.txt'
+            file_path = 'modules/third_party/monodepth/utils/filenames/kitti_stereo_2015_test_files.txt'
 
             # Overwrite the 'dataset_path' specified by the dataset
             self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/stereo/stereo2015/data_scene_flow/'
         else:
             if test_file_path == '':
-                file = 'data/' + self.name + '_' + mode + '.txt'
+                file_path = 'data/' + self.name + '_' + mode + '.txt'
             else:
-                file = test_file_path
+                file_path = test_file_path
 
-        args.test_file_path = file
+        args.test_file_path = file_path
 
-        return file
+        return file_path
