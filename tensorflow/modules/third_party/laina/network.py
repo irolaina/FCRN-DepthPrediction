@@ -37,7 +37,7 @@ def layer(op):
         name = kwargs.setdefault('name', self.get_unique_name(op.__name__))
 
         # Figure out the layer inputs.
-        if len(self.terminals) == 0:
+        if self.terminals == 0:
             raise RuntimeError('No input variables found for layer %s.' % name)
         elif len(self.terminals) == 1:
             layer_input = self.terminals[0]
@@ -98,7 +98,7 @@ class Network(object):
     def feed(self, *args):
         """Set the input(s) for the next operation by replacing the terminal nodes.
         The arguments can be either layer names or the actual layers."""
-        assert len(args) != 0
+        assert args != 0
         self.terminals = []
         for fed_layer in args:
             if isinstance(fed_layer, str):
