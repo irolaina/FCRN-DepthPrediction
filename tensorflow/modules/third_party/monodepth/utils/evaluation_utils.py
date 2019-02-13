@@ -48,8 +48,7 @@ def convert_disps_to_depths_kitti(gt_disparities, pred_disparities):
     pred_depths = []
     pred_disparities_resized = []
 
-    for i in range(len(gt_disparities)):
-        gt_disp = gt_disparities[i]
+    for i, gt_disp in enumerate(gt_disparities):
         height, width = gt_disp.shape
 
         pred_disp = pred_disparities[i]
