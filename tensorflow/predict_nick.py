@@ -54,6 +54,7 @@
 # ===========
 #  Libraries
 # ===========
+import os
 import sys
 import time
 import warnings
@@ -69,7 +70,7 @@ from skimage import exposure, img_as_uint
 from tqdm import tqdm
 
 # Custom Libraries
-from common import *
+from common import settings
 from modules.args import args
 from modules.dataloader import Dataloader
 from modules.framework import Model
