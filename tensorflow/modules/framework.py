@@ -118,13 +118,19 @@ class Model(object):
 
     def build_optimizer(self):
         with tf.name_scope("Optimizer"):
-            # Select Optimizer
-            # TODO: create a switch case
-            # optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.train.tf_loss, global_step=self.global_step)
-            optimizer = tf.train.AdamOptimizer(self.train.tf_learning_rate)
-            # optimizer = tf.train.MomentumOptimizer(self.train.tf_learning_rate, momentum=0.9, use_nesterov=True)
-            # optimizer = tf.train.AdadeltaOptimizer(self.train.tf_learning_rate)
-            # optimizer = tf.train.RMSPropOptimizer(self.train.tf_learning_rate)
+            def optimizer_selector(argument, tf_learning_rate):
+                switcher = {
+                    1: tf.train.GradientDescentOptimizer(tf_learning_rate),
+                    2: tf.train.AdamOptimizer(tf_learning_rate),
+                    3: tf.train.MomentumOptimizer(tf_learning_rate, momentum=0.9, use_nesterov=True),
+                    4: tf.train.AdadeltaOptimizer(tf_learning_rate),
+                    5: tf.train.RMSPropOptimizer(tf_learning_rate),
+                }
+
+                return switcher.get(argument, "Invalid optimizer")
+
+            # Select Optimizer:
+            optimizer = optimizer_selector(2, self.train.tf_learning_rate)
 
             self.train_step = optimizer.minimize(self.train.tf_loss, global_step=self.train.tf_global_step)
             tf.add_to_collection("train_step", self.train_step)
