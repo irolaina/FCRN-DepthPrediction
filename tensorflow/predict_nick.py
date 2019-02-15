@@ -221,8 +221,8 @@ def predict():
         for nrows, ncols, plot_number in X:
             axes.append(fig.add_subplot(nrows, ncols, plot_number))
 
-        _ = axes[0].imshow(image)
-        _ = axes[1].imshow(image_resized_uint8)
+        axes[0].imshow(image)
+        axes[1].imshow(image_resized_uint8)
         img2 = axes[2].imshow(pred[0, :, :, 0])
 
         axes[0].set_title('Image')
