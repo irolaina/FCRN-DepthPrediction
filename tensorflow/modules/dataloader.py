@@ -85,8 +85,8 @@ class Dataloader:
         self.tf_test_image_filenames, self.tf_test_depth_filenames = None, None
 
         if args.mode == 'train':
-            _ = self.get_train_data()
-            _ = self.get_test_data()
+            self.get_train_data()
+            self.get_test_data()
 
             self.tf_train_image_key = None
             self.tf_train_image = None
@@ -104,7 +104,7 @@ class Dataloader:
         print("[Dataloader] dataloader object created.")
 
     def get_train_data(self, mode='train'):
-        image_filenames, depth_filenames = self.dataset.getFilenamesLists(mode)
+        image_filenames, depth_filenames = self.dataset.get_filenames_lists(mode)
         tf_image_filenames, tf_depth_filenames = get_filenames_tensors(image_filenames, depth_filenames)
 
         try:
@@ -125,7 +125,7 @@ class Dataloader:
         return image_filenames, depth_filenames, tf_image_filenames, tf_depth_filenames, self.num_train_samples
 
     def get_test_data(self, mode='test', test_split='', test_file_path=''):
-        image_filenames, depth_filenames = self.dataset.getFilenamesLists(mode, test_split, test_file_path)
+        image_filenames, depth_filenames = self.dataset.get_filenames_lists(mode, test_split, test_file_path)
         tf_image_filenames, tf_depth_filenames = get_filenames_tensors(image_filenames, depth_filenames)
 
         try:

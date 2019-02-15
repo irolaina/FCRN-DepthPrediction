@@ -31,7 +31,7 @@ class KittiDepth(Dataset):
     def __init__(self, *args, **kwargs):
         super(KittiDepth, self).__init__(*args, **kwargs)
 
-    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
+    def get_filenames_lists(self, mode, test_split='', test_file_path=''):
         # Workaround # FIXME: Temporary
         if mode == 'test':
             mode = 'val'

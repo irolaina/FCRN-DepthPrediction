@@ -35,7 +35,7 @@ class LRMJose(Dataset):
     def __init__(self, *args, **kwargs):
         super(LRMJose, self).__init__(*args, **kwargs)
 
-    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
+    def get_filenames_lists(self, mode, test_split='', test_file_path=''):
         file_path = self.get_file_path(mode, test_split, test_file_path)
 
         if os.path.exists(file_path):

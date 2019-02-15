@@ -24,6 +24,7 @@
 import glob
 import os
 
+from modules.args import args
 from .dataset import Dataset
 
 
@@ -34,7 +35,7 @@ class Apolloscape(Dataset):
     def __init__(self, *args, **kwargs):
         super(Apolloscape, self).__init__(*args, **kwargs)
 
-    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
+    def get_filenames_lists(self, mode, test_split='', test_file_path=''):
         file_path = self.get_file_path(mode, test_split, test_file_path)
 
         if os.path.exists(file_path):
@@ -70,11 +71,11 @@ class Apolloscape(Dataset):
             print('%s_image_set: %d/%d' % (mode, n3, n2))
             print('%s_depth_set: %d/%d' % (mode, m3, m2))
 
-            # Debug # TODO: use args.debug variable
-            # filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
-            # for i in filenames:
-            #     print(i)
-            # input("enter")
+            if args.debug:
+                filenames = list(zip(image_filenames[:10], depth_filenames[:10]))
+                for i in filenames:
+                    print(i)
+                input("Continue...")
 
             # TODO: Acredito que dê pra mover a chamada dessa função para fora
             self.save_list(image_filenames, depth_filenames, self.name, mode, self.dataset_path)

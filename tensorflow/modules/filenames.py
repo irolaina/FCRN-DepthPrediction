@@ -7,6 +7,8 @@ import time
 
 import numpy as np
 
+from modules.args import args
+
 
 # ==================
 #  Global Variables
@@ -51,20 +53,20 @@ class FilenamesHandler(object):
         image_filenames = []
         depth_filenames = []
 
-        # TODO: use args.debug variable
-        # print(image_filenames_tmp)
-        # print(len(image_filenames_tmp))
-        # input("image_filenames_tmp")
-        # print(depth_filenames_tmp)
-        # print(len(depth_filenames_tmp))
-        # input("depth_filenames_tmp")
+        if args.debug:
+            print(image_filenames_tmp)
+            print(len(image_filenames_tmp))
+            input("image_filenames_tmp")
+            print(depth_filenames_tmp)
+            print(len(depth_filenames_tmp))
+            input("depth_filenames_tmp")
 
-        # print(image_filenames_aux)
-        # print(len(image_filenames_aux))
-        # input("image_filenames_aux")
-        # print(depth_filenames_aux)
-        # print(len(depth_filenames_aux))
-        # input("depth_filenames_aux")
+            print(image_filenames_aux)
+            print(len(image_filenames_aux))
+            input("image_filenames_aux")
+            print(depth_filenames_aux)
+            print(len(depth_filenames_aux))
+            input("depth_filenames_aux")
 
         _, m = len(image_filenames_aux), len(depth_filenames_aux)
 
