@@ -27,17 +27,25 @@ class Dataset(FilenamesHandler):
 
         print("[Dataloader] %s object created." % self.name)
 
-    def get_file_path(self, mode, test_split, test_file_path):  # TODO: change name
-        if test_split == 'eigen' or test_split == 'eigen_continuous':
+    def get_file_path(self, mode, test_split, test_file_path):
+        if test_split == 'eigen' or test_split == 'eigen_continuous':  # FIXME: O mais correto seria chamar de 'eigen_stereo' e 'eigen_stereo_continuous'
             file_path = 'modules/third_party/monodepth/utils/filenames/eigen_test_files.txt'
 
             # Overwrite the 'dataset_path' specified by the dataset
             self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/'
+
         elif test_split == 'kitti_stereo':
             file_path = 'modules/third_party/monodepth/utils/filenames/kitti_stereo_2015_test_files.txt'
 
             # Overwrite the 'dataset_path' specified by the dataset
             self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/stereo/stereo2015/data_scene_flow/'
+
+        elif test_split == 'eigen_kitti_depth':  # FIXME: Validar!
+            file_path = 'data/new_splits/kitti_splits_based_on_monodepth_files/kitti_depth/eigen_test_files.txt'
+
+            # Overwrite the 'dataset_path' specified by the dataset
+            self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
+
         else:
             if test_file_path == '':
                 file_path = 'data/' + self.name + '_' + mode + '.txt'
