@@ -17,7 +17,7 @@ from .evaluation_utils import load_gt_disp_kitti, convert_gt_disps_to_depths_kit
 #  Functions
 # ===========
 def generate_depth_maps_kitti_split(pred_array, args_gt_path):
-    num_samples = 200
+    num_test_images = 200
 
     # The FCRN predicts meters instead of disparities, so it's not necessary to convert disps to depth!!!
     gt_disparities = load_gt_disp_kitti(args_gt_path)
@@ -25,7 +25,7 @@ def generate_depth_maps_kitti_split(pred_array, args_gt_path):
     print('\n[Metrics] Generating depth maps...')
     gt_depths = convert_gt_disps_to_depths_kitti(gt_disparities)
 
-    for t_id in tqdm(range(num_samples)):
+    for t_id in tqdm(range(num_test_images)):
         # Show the Disparity/Depth ground truths and the corresponding predictions for the evaluation images.
         if args.show_test_results:
             print("gt_disp:", gt_disparities[t_id])
@@ -59,7 +59,7 @@ def generate_depth_maps_kitti_split(pred_array, args_gt_path):
 
 
 def generate_depth_maps_eigen_split(pred_array, args_gt_path):
-    num_samples = 697
+    num_test_images = 697
 
     test_files = read_text_lines(args.test_file_path)
     gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args_gt_path)
@@ -67,7 +67,7 @@ def generate_depth_maps_eigen_split(pred_array, args_gt_path):
     gt_depths = []
     print('\n[Metrics] Generating depth maps...')
 
-    for t_id in tqdm(range(num_samples)):
+    for t_id in tqdm(range(num_test_images)):
         camera_id = cams[t_id]  # 2 is left, 3 is right
         gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
 
@@ -99,7 +99,7 @@ def generate_depth_maps_eigen_split(pred_array, args_gt_path):
 
 
 def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
-    num_samples = 697
+    num_test_images = 697
 
     test_files = read_text_lines(args.test_file_path)
     gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args_gt_path)
@@ -109,7 +109,7 @@ def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
     invalid_idx = []
     print('\n[Metrics] Generating depth maps...')
 
-    for t_id in tqdm(range(num_samples)):
+    for t_id in tqdm(range(num_test_images)):
         camera_id = cams[t_id]  # 2 is left, 3 is right
         gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
         gt_depths.append(gt_depth.astype(np.float32))
@@ -239,19 +239,19 @@ def stats_depth_txt2csv(num_evaluated_pairs):
 
 @deprecated(version='1.0', reason="You shouldn't use this function. It's not recommended to evaluate the trained methods on ground truth images generated from LIDAR measurements.")
 def evaluation_tool_monodepth(gt_list):
-    num_samples = len(gt_list)
+    num_test_images = len(gt_list)
 
-    rms = np.zeros(num_samples, np.float32)
-    log_rms = np.zeros(num_samples, np.float32)
-    abs_rel = np.zeros(num_samples, np.float32)
-    sq_rel = np.zeros(num_samples, np.float32)
-    d1_all = np.zeros(num_samples, np.float32)
-    a1 = np.zeros(num_samples, np.float32)
-    a2 = np.zeros(num_samples, np.float32)
-    a3 = np.zeros(num_samples, np.float32)
+    rms = np.zeros(num_test_images, np.float32)
+    log_rms = np.zeros(num_test_images, np.float32)
+    abs_rel = np.zeros(num_test_images, np.float32)
+    sq_rel = np.zeros(num_test_images, np.float32)
+    d1_all = np.zeros(num_test_images, np.float32)
+    a1 = np.zeros(num_test_images, np.float32)
+    a2 = np.zeros(num_test_images, np.float32)
+    a3 = np.zeros(num_test_images, np.float32)
 
     print('[Metrics] Computing metrics...')
-    for i in tqdm(range(num_samples)):
+    for i in tqdm(range(num_test_images)):
 
         if args.test_split == 'eigen_continuous':
             gt_depth = gt_depths_continuous[i]
@@ -350,7 +350,7 @@ def evaluation_tool_monodepth(gt_list):
     print(results_data_formatter.format(*results_metrics[1:]))
 
 
-def evaluation_tool_kitti_depth(pred_list):
+def evaluation_tool_kitti_depth(num_test_images):
     import subprocess
 
     print("[KittiDepth Evaluation Tool] Invoking 'evaluate_depth' executable...")
@@ -359,13 +359,13 @@ def evaluation_tool_kitti_depth(pred_list):
          "{}".format(settings.output_tmp_gt_dir),
          "{}".format(settings.output_tmp_pred_dir)])
 
-    stats_depth_txt2csv(len(pred_list))
+    stats_depth_txt2csv(num_test_images)
 
 
 def evaluation(pred_list, gt_list, evaluation_tool='kitti_depth'):
     if evaluation_tool == 'monodepth':  # FIXME: After major changes, possibly this function is broken!
         evaluation_tool_monodepth(gt_list)
     elif evaluation_tool == 'kitti_depth':
-        evaluation_tool_kitti_depth(pred_list)
+        evaluation_tool_kitti_depth(num_test_images=len(pred_list))
     else:
         raise SystemError

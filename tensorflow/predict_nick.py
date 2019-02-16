@@ -440,7 +440,7 @@ def train():
 # ========= #
 def test():
     # Local Variables
-    num_samples = None
+    num_test_images = None
 
     args.model_path = detect_available_models()
 
@@ -452,9 +452,9 @@ def test():
 
     # Searches dataset images filenames
     if TEST_EVALUATE_SUBSET == 0:
-        _, _, _, _, num_samples = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
+        _, _, _, _, num_test_images = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
     elif TEST_EVALUATE_SUBSET == 1:
-        data.test_image_filenames, data.test_depth_filenames, _, _, num_samples = data.get_train_data()
+        data.test_image_filenames, data.test_depth_filenames, _, _, num_test_images = data.get_train_data()
 
     model = Test(data)
 
@@ -473,7 +473,7 @@ def test():
         #  Testing Loop
         # ==============
         pred_list, gt_list = [], []
-        # num_samples = 5  # Only for testing! # TODO: Desativar!!!!!!!
+        num_test_images = 5  # Only for testing! # TODO: Desativar!!!!!!!
 
         # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
         if args.show_test_results:
@@ -481,7 +481,7 @@ def test():
 
         print("\n[Network/Testing] Generating Predictions...")
         timer = -time.time()
-        for i in tqdm(range(num_samples)):
+        for i in tqdm(range(num_test_images)):
             timer2 = -time.time()
 
             # Evalute the network for the given image
@@ -521,7 +521,7 @@ def test():
 
             # Prints Testing Progress
             timer2 += time.time()
-            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, num_samples, timer2, sys.getsizeof(pred_list)+sys.getsizeof(gt_list)))
+            # print('step: %d/%d | t: %f | size(pred_list+gt_list): %d' % (i + 1, num_test_images, timer2, sys.getsizeof(pred_list)+sys.getsizeof(gt_list)))
 
             # Show Results
             if args.show_test_results:
