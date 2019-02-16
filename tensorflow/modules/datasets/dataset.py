@@ -33,7 +33,7 @@ class Dataset(FilenamesHandler):
 
             # Overwrite the 'dataset_path' specified by the dataset
             self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/'
-        elif test_split == 'kitti':
+        elif test_split == 'kitti_stereo':
             file_path = 'modules/third_party/monodepth/utils/filenames/kitti_stereo_2015_test_files.txt'
 
             # Overwrite the 'dataset_path' specified by the dataset

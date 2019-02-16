@@ -4,6 +4,7 @@ import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from deprecated import deprecated
 from tqdm import tqdm
 
 from common import settings
@@ -179,7 +180,7 @@ def generate_depth_maps(pred_list, gt_list, args_gt_path):
     pred_array = np.array(pred_list)
     gt_array = np.array(gt_list)
 
-    if args.test_split == 'kitti':
+    if args.test_split == 'kitti_stereo':
         gt_depths = generate_depth_maps_kitti_split(pred_array, args_gt_path)
 
     elif args.test_split == 'eigen':
@@ -239,127 +240,135 @@ def stats_depth_txt2csv(num_evaluated_pairs):
             df.to_csv(f, header=False)
 
 
-def evaluation(pred_list, gt_list, evaluation_tool='monodepth'):
+@deprecated(version='1.0', reason="You shouldn't use this function. It's not recommended to evaluate the trained methods on ground truth images generated from LIDAR measurements.")
+def evaluation_tool_monodepth(gt_list):
     num_samples = len(gt_list)
 
-    if evaluation_tool == 'monodepth':  # FIXME:
-        rms = np.zeros(num_samples, np.float32)
-        log_rms = np.zeros(num_samples, np.float32)
-        abs_rel = np.zeros(num_samples, np.float32)
-        sq_rel = np.zeros(num_samples, np.float32)
-        d1_all = np.zeros(num_samples, np.float32)
-        a1 = np.zeros(num_samples, np.float32)
-        a2 = np.zeros(num_samples, np.float32)
-        a3 = np.zeros(num_samples, np.float32)
+    rms = np.zeros(num_samples, np.float32)
+    log_rms = np.zeros(num_samples, np.float32)
+    abs_rel = np.zeros(num_samples, np.float32)
+    sq_rel = np.zeros(num_samples, np.float32)
+    d1_all = np.zeros(num_samples, np.float32)
+    a1 = np.zeros(num_samples, np.float32)
+    a2 = np.zeros(num_samples, np.float32)
+    a3 = np.zeros(num_samples, np.float32)
 
-        print('[Metrics] Computing metrics...')
-        for i in tqdm(range(num_samples)):
+    print('[Metrics] Computing metrics...')
+    for i in tqdm(range(num_samples)):
 
-            if args.test_split == 'eigen_continuous':
-                gt_depth = gt_depths_continuous[i]
+        if args.test_split == 'eigen_continuous':
+            gt_depth = gt_depths_continuous[i]
 
-                if i in invalid_idx:
-                    print("invalid")
-                    continue  # Skips the rest of the code
-            else:
-                gt_depth = gt_depths[i]
+            if i in invalid_idx:
+                print("invalid")
+                continue  # Skips the rest of the code
+        else:
+            gt_depth = gt_depths[i]
 
-            pred_depth = pred_depths[i]
+        pred_depth = pred_depths[i]
 
-            pred_depth[pred_depth < args.min_depth] = args.min_depth
-            pred_depth[pred_depth > args.max_depth] = args.max_depth
+        pred_depth[pred_depth < args.min_depth] = args.min_depth
+        pred_depth[pred_depth > args.max_depth] = args.max_depth
 
-            if args.test_split == 'eigen' or args.test_split == 'eigen_continuous':
-                mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
+        if args.test_split == 'eigen' or args.test_split == 'eigen_continuous':
+            mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
 
-                if args.garg_crop or args.eigen_crop:
-                    gt_height, gt_width = gt_depth.shape
+            if args.garg_crop or args.eigen_crop:
+                gt_height, gt_width = gt_depth.shape
 
-                    # Crop used by Garg ECCV16
-                    # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
-                    if args.garg_crop:
-                        crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
-                                         0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
-                    # Crop we found by trial and error to reproduce Eigen NIPS14 results
-                    elif args.eigen_crop:
-                        crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
-                                         0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+                # Crop used by Garg ECCV16
+                # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
+                if args.garg_crop:
+                    crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
+                                     0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+                # Crop we found by trial and error to reproduce Eigen NIPS14 results
+                elif args.eigen_crop:
+                    crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
+                                     0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
 
-                    crop_mask = np.zeros(mask.shape)
-                    crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
-                    mask = np.logical_and(mask, crop_mask)
+                crop_mask = np.zeros(mask.shape)
+                crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
+                mask = np.logical_and(mask, crop_mask)
 
-            mask = gt_depth > 0
+        mask = gt_depth > 0
 
-            abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
-                                                                                            pred_depth[mask])
+        abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
+                                                                                        pred_depth[mask])
 
-            # Show gt/pred Images
-            if False:  # TODO: Remover?
-                plt.figure(102)
-                plt.title('pred')
-                plt.imshow(pred_depth)
+        # Show gt/pred Images
+        if False:  # TODO: Remover?
+            plt.figure(102)
+            plt.title('pred')
+            plt.imshow(pred_depth)
 
-                plt.figure(103)
-                plt.imshow(gt_depth)
-                plt.title('left')
+            plt.figure(103)
+            plt.imshow(gt_depth)
+            plt.title('left')
 
-                plt.draw()
-                plt.pause(1)
+            plt.draw()
+            plt.pause(1)
 
-        # End of Loop
-        metrics = {'abs_rel': abs_rel.mean(),
-                   'sq_rel': sq_rel.mean(),
-                   'rms': rms.mean(),
-                   'log_rms': log_rms.mean(),
-                   'd1_all': d1_all.mean(),
-                   'a1': a1.mean(),
-                   'a2': a2.mean(),
-                   'a3': a3.mean()}
+    # End of Loop
+    metrics = {'abs_rel': abs_rel.mean(),
+               'sq_rel': sq_rel.mean(),
+               'rms': rms.mean(),
+               'log_rms': log_rms.mean(),
+               'd1_all': d1_all.mean(),
+               'a1': a1.mean(),
+               'a2': a2.mean(),
+               'a3': a3.mean()}
 
-        # --------- #
-        #  Results  #
-        # --------- #
-        test_split = args.dataset if args.test_split == '' else args.test_split
+    # --------- #
+    #  Results  #
+    # --------- #
+    test_split = args.dataset if args.test_split == '' else args.test_split
 
-        results_metrics = [
-            args.model_path,
-            test_split,
-            metrics['abs_rel'],
-            metrics['sq_rel'],
-            metrics['rms'],
-            metrics['log_rms'],
-            metrics['d1_all'],
-            metrics['a1'],
-            metrics['a2'],
-            metrics['a3']]
+    results_metrics = [
+        args.model_path,
+        test_split,
+        metrics['abs_rel'],
+        metrics['sq_rel'],
+        metrics['rms'],
+        metrics['log_rms'],
+        metrics['d1_all'],
+        metrics['a1'],
+        metrics['a2'],
+        metrics['a3']]
 
-        # Save results on .csv file
-        save_metrics_results_csv(results_metrics)
+    # Save results on .csv file
+    save_metrics_results_csv(results_metrics)
 
-        # Display Results
-        results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
-        results_data_formatter = "{:>20}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
+    # Display Results
+    results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
+    results_data_formatter = "{:>20}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
 
-        print()
-        print("# ----------------- #")
-        print("#  Metrics Results  #")
-        print("# ----------------- #")
-        print(args.model_path)
-        print(
-            results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
+    print()
+    print("# ----------------- #")
+    print("#  Metrics Results  #")
+    print("# ----------------- #")
+    print(args.model_path)
+    print(
+        results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
 
-        print(results_data_formatter.format(*results_metrics[1:]))
+    print(results_data_formatter.format(*results_metrics[1:]))
 
+
+def evaluation_tool_kitti_depth(pred_list):
+    import subprocess
+
+    print("[KittiDepth Evaluation Tool] Invoking 'evaluate_depth' executable...")
+    subprocess.call(
+        [r"evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth",
+         "{}".format(settings.output_tmp_gt_dir),
+         "{}".format(settings.output_tmp_pred_dir)])
+
+    stats_depth_txt2csv(len(pred_list))
+
+
+def evaluation(pred_list, gt_list, evaluation_tool='kitti_depth'):
+    if evaluation_tool == 'monodepth':  # FIXME: After major changes, possibly this function is broken!
+        evaluation_tool_monodepth(gt_list)
     elif evaluation_tool == 'kitti_depth':
-        import subprocess
-
-        print("[KittiDepth Evaluation Tool] Invoking 'evaluate_depth' executable...")
-        subprocess.call(
-            [r"evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth", "{}".format(settings.output_tmp_gt_dir),
-             "{}".format(settings.output_tmp_pred_dir)])
-
-        stats_depth_txt2csv(len(pred_list))
-
+        evaluation_tool_kitti_depth(pred_list)
     else:
         raise SystemError
