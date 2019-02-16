@@ -15,7 +15,6 @@ from .evaluation_utils import load_gt_disp_kitti, convert_gt_disps_to_depths_kit
 # ===========
 #  Functions
 # ===========
-
 def generate_depth_maps_kitti_split(pred_array, args_gt_path):
     num_samples = 200
 
@@ -197,6 +196,21 @@ def generate_depth_maps(pred_list, gt_list, args_gt_path):
     return pred_depths, gt_depths
 
 
+def save_metrics_results_csv(results_metrics):
+    """Logs the obtained simulation results on a .csv file."""
+    save_file_path = settings.output_dir + 'results_metrics.csv'
+    print("\n[Results] Logging simulation info to '%s' file..." % save_file_path)
+
+    df_results_metrics = pd.read_csv(save_file_path)
+
+    results_series = pd.Series(results_metrics)
+
+    df_results_metrics.append(results_series, ignore_index=True)
+    df_results_metrics.to_csv(save_file_path)
+
+    print(df_results_metrics)
+
+
 def stats_depth_txt2csv(num_evaluated_pairs):
     stats_depth_csv_filename = settings.output_dir + 'kitti_depth_eval.csv'
 
@@ -225,14 +239,10 @@ def stats_depth_txt2csv(num_evaluated_pairs):
             df.to_csv(f, header=False)
 
 
-
 def evaluation(pred_list, gt_list, evaluation_tool='monodepth'):
     num_samples = len(gt_list)
 
-    # ----------------- #
-    #  Compute Metrics  #
-    # ----------------- #
-    if evaluation_tool == 'monodepth':
+    if evaluation_tool == 'monodepth':  # FIXME:
         rms = np.zeros(num_samples, np.float32)
         log_rms = np.zeros(num_samples, np.float32)
         abs_rel = np.zeros(num_samples, np.float32)
@@ -265,12 +275,12 @@ def evaluation(pred_list, gt_list, evaluation_tool='monodepth'):
                 if args.garg_crop or args.eigen_crop:
                     gt_height, gt_width = gt_depth.shape
 
-                    # crop used by Garg ECCV16
+                    # Crop used by Garg ECCV16
                     # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
                     if args.garg_crop:
                         crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
                                          0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
-                    # crop we found by trial and error to reproduce Eigen NIPS14 results
+                    # Crop we found by trial and error to reproduce Eigen NIPS14 results
                     elif args.eigen_crop:
                         crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
                                          0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
@@ -310,7 +320,6 @@ def evaluation(pred_list, gt_list, evaluation_tool='monodepth'):
         # --------- #
         #  Results  #
         # --------- #
-        # Save results on .csv file
         test_split = args.dataset if args.test_split == '' else args.test_split
 
         results_metrics = [
@@ -325,22 +334,8 @@ def evaluation(pred_list, gt_list, evaluation_tool='monodepth'):
             metrics['a2'],
             metrics['a3']]
 
-        # TODO: Mover para utils.py?
-        def save_metrics_results_csv():
-            """Logs the obtained simulation results on a .csv file."""
-            save_file_path = settings.output_dir + 'results_metrics.csv'
-            print("\n[Results] Logging simulation info to '%s' file..." % save_file_path)
-
-            df_results_metrics = pd.read_csv(save_file_path)
-
-            results_series = pd.Series(results_metrics)
-
-            df_results_metrics.append(results_series, ignore_index=True)
-            df_results_metrics.to_csv(save_file_path)
-
-            print(df_results_metrics)
-
-        save_metrics_results_csv()
+        # Save results on .csv file
+        save_metrics_results_csv(results_metrics)
 
         # Display Results
         results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
