@@ -177,22 +177,19 @@ def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
 
 
 def generate_depth_maps(pred_list, gt_list, args_gt_path):
-    pred_array = np.array(pred_list)
-    gt_array = np.array(gt_list)
+    pred_depths = np.array(pred_list)
 
     if args.test_split == 'kitti_stereo':
-        gt_depths = generate_depth_maps_kitti_split(pred_array, args_gt_path)
+        gt_depths = generate_depth_maps_kitti_split(pred_depths, args_gt_path)
 
     elif args.test_split == 'eigen':
-        gt_depths = generate_depth_maps_eigen_split(pred_array, args_gt_path)
+        gt_depths = generate_depth_maps_eigen_split(pred_depths, args_gt_path)
 
     elif args.test_split == 'eigen_continuous':
-        gt_depths = generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path)
+        gt_depths = generate_depth_maps_eigen_continuous_split(pred_depths, args_gt_path)
 
     else:
-        gt_depths = gt_array
-
-    pred_depths = pred_array
+        gt_depths = np.array(gt_list)
 
     return pred_depths, gt_depths
 
