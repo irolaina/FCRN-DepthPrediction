@@ -92,9 +92,8 @@ SAVE_TRAINED_MODEL = True  # Default: True
 #  [Test] Framework Config
 # =========================
 # Select Subset:
-# 0 - TestData                  # Default
-# 1 - TrainData
-TEST_EVALUATE_SUBSET = 0
+evaluation_subset_selector = {0: 'test', 1: 'train'}
+SELECTED_EVALUATION_SUBSET = evaluation_subset_selector[0]
 
 SAVE_TEST_DISPARITIES = True  # Default: True
 
@@ -451,9 +450,9 @@ def test():
     data = Dataloader()
 
     # Searches dataset images filenames
-    if TEST_EVALUATE_SUBSET == 0:
+    if SELECTED_EVALUATION_SUBSET == 'test':
         _, _, _, _, num_test_images = data.get_test_data(test_split=args.test_split, test_file_path=args.test_file_path)
-    elif TEST_EVALUATE_SUBSET == 1:
+    elif SELECTED_EVALUATION_SUBSET == 'train':
         data.test_image_filenames, data.test_depth_filenames, _, _, num_test_images = data.get_train_data()
 
     model = Test(data)
@@ -472,8 +471,8 @@ def test():
         # ==============
         #  Testing Loop
         # ==============
-        pred_list, gt_list = [], []
-        num_test_images = 5  # Only for testing! # TODO: Desativar!!!!!!!
+        # pred_list, gt_list = [], []
+        # num_test_images = 5  # Only for testing! # TODO: Desativar!!!!!!!
 
         # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
         if args.show_test_results:
@@ -506,8 +505,8 @@ def test():
 
             # Fill arrays for later on metrics evaluation
             # FIXME: This may cause crashing problems
-            pred_list.append(pred_up[0, :, :, 0])
-            gt_list.append(depth[:, :, 0])
+            # pred_list.append(pred_up[0, :, :, 0])
+            # gt_list.append(depth[:, :, 0])
 
             # Saves the Test Predictions as uint16 PNG Images
             if SAVE_TEST_DISPARITIES:
@@ -525,6 +524,7 @@ def test():
 
             # Show Results
             if args.show_test_results:
+                # TODO: Fazer um lista the 'images_to_display' e dar append das imagens na lista
                 test_plot_obj.show_test_results(image=image,
                                                 depth=depth[:, :, 0],
                                                 image_resized=image_resized,
@@ -544,7 +544,7 @@ def test():
         # =========
         #  Results
         # =========
-        # Calculate Metrics
+        # Calculates Metrics
         if data.test_depth_filenames:
             print("[Network/Testing] Calculating Metrics based on Test Predictions...")
 
@@ -553,13 +553,16 @@ def test():
             print('dataset_path:', data.dataset.dataset_path)
             print()
 
-            #  Generate Depth Maps for kitti, eigen splits
-            pred_depths, gt_depths = metrics.generate_depth_maps(pred_list, gt_list, data.dataset.dataset_path)
+            # Invokes Evaluation Tools
+            evaluation_tool = 'kitti_depth'  # TODO: Criar um argumento para selecionar a evaluation_tool
 
-            # Evaluation
-            # TODO: Criar um argumento para selecionar a evaluation_tool
-            # metrics.evaluate(pred_depths, gt_depths, data.dataset.dataset_path, evaluation_tool='monodepth')
-            metrics.evaluation(pred_depths, gt_depths, evaluation_tool='kitti_depth')
+            if evaluation_tool == 'monodepth':  # FIXME: After major changes, possibly this function is broken!
+                pred_depths, gt_depths = metrics.generate_depth_maps(pred_list, gt_list, data.dataset.dataset_path)
+                metrics.evaluation_tool_monodepth(gt_depths)
+            elif evaluation_tool == 'kitti_depth':
+                metrics.evaluation_tool_kitti_depth(num_test_images)
+            else:
+                raise SystemError
 
         else:
             print(

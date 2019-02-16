@@ -177,6 +177,7 @@ def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
 
 
 def generate_depth_maps(pred_list, gt_list, args_gt_path):
+    """Generate Depth Maps for kitti_stereo, eigen, eigen_continuous splits."""
     pred_depths = np.array(pred_list)
 
     if args.test_split == 'kitti_stereo':
@@ -360,12 +361,3 @@ def evaluation_tool_kitti_depth(num_test_images):
          "{}".format(settings.output_tmp_pred_dir)])
 
     stats_depth_txt2csv(num_test_images)
-
-
-def evaluation(pred_list, gt_list, evaluation_tool='kitti_depth'):
-    if evaluation_tool == 'monodepth':  # FIXME: After major changes, possibly this function is broken!
-        evaluation_tool_monodepth(gt_list)
-    elif evaluation_tool == 'kitti_depth':
-        evaluation_tool_kitti_depth(num_test_images=len(pred_list))
-    else:
-        raise SystemError
