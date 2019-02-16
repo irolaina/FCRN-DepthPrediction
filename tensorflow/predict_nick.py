@@ -560,9 +560,13 @@ def test():
             print('dataset_path:', data.dataset.dataset_path)
             print()
 
+            #  Generate Depth Maps for kitti, eigen splits
+            pred_depths, gt_depths = metrics.generate_depth_maps(pred_list, gt_list, data.dataset.dataset_path)  # FIXME: Talvez esta função não precise estar dentro da evaluate()
+
+            # Evaluation
             # TODO: Criar um argumento para selecionar a evaluation_tool
-            # metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='monodepth')
-            metrics.evaluate(pred_list, gt_list, data.dataset.dataset_path, evaluation_tool='kitti_depth')
+            # metrics.evaluate(pred_depths, gt_depths, data.dataset.dataset_path, evaluation_tool='monodepth')
+            metrics.evaluation(pred_depths, gt_depths, evaluation_tool='kitti_depth')
 
         else:
             print(

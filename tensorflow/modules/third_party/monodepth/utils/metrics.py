@@ -8,7 +8,8 @@ from tqdm import tqdm
 
 from common import settings
 from modules.args import args
-from .evaluation_utils import load_gt_disp_kitti, convert_gt_disps_to_depths_kitti, read_text_lines, read_file_data, generate_depth_map
+from .evaluation_utils import load_gt_disp_kitti, convert_gt_disps_to_depths_kitti, read_text_lines, read_file_data, \
+    generate_depth_map
 
 
 # ===========
@@ -37,7 +38,6 @@ def generate_depth_maps_kitti_split(pred_array, args_gt_path):
             print(np.min(pred_array[t_id]), np.max(pred_array[t_id]))
             print()
 
-
             plt.figure(100)
             plt.imshow(gt_disparities[t_id])
             plt.title('gt_disp')
@@ -64,9 +64,7 @@ def generate_depth_maps_eigen_split(pred_array, args_gt_path):
     test_files = read_text_lines(args.test_file_path)
     gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args_gt_path)
 
-    num_test = len(im_files)
     gt_depths = []
-    pred_depths = []
     print('\n[Metrics] Generating depth maps...')
 
     for t_id in tqdm(range(num_samples)):
@@ -106,10 +104,8 @@ def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
     test_files = read_text_lines(args.test_file_path)
     gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args_gt_path)
 
-    num_test = len(im_files)
     gt_depths = []
     gt_depths_continuous = []
-    pred_depths = []
     invalid_idx = []
     print('\n[Metrics] Generating depth maps...')
 
@@ -229,13 +225,9 @@ def stats_depth_txt2csv(num_evaluated_pairs):
             df.to_csv(f, header=False)
 
 
-def evaluate(pred_list, gt_list, args_gt_path, evaluation_tool='monodepth'):
-    # --------------------------------------------- #
-    #  Generate Depth Maps for kitti, eigen splits  #
-    # --------------------------------------------- #
-    pred_depths, gt_depths = generate_depth_maps(pred_list, gt_list, args_gt_path)  # FIXME: Talvez esta função não precise estar dentro da evaluate()
 
-    num_samples = len(gt_depths)
+def evaluation(pred_list, gt_list, evaluation_tool='monodepth'):
+    num_samples = len(gt_list)
 
     # ----------------- #
     #  Compute Metrics  #
