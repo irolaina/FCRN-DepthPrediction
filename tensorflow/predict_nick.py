@@ -133,7 +133,7 @@ def kbevent(event):
         global running
         running = False
 
-
+# TODO: Melhorar isto https://stackoverflow.com/questions/47706467/keyboard-interrupt-tensorflow-run-and-save-at-that-point
 # Create hookmanager
 hookman = pyxhook.HookManager()
 # Define our callback to fire when a key is pressed down
@@ -202,9 +202,6 @@ def predict():
             print("[NotFoundError] '{}' model not found!".format(args.model_path))
             os._exit(1)
 
-        # Use to load from npy file
-        # net.load(model_data_path, sess)
-
         # ----- #
         #  Run  #
         # ----- #
@@ -243,8 +240,6 @@ def predict():
 #  Training/Validation  #
 # ===================== #
 def train():
-    print('[%s] Selected mode: Train' % appName)
-
     # Local Variables
     global running  # Create a loop to keep the application running
     running = True
@@ -444,8 +439,6 @@ def train():
 #  Testing  #
 # ========= #
 def test():
-    print('[%s] Selected mode: Test' % appName)
-
     # Local Variables
     num_samples = None
 
@@ -561,7 +554,7 @@ def test():
             print()
 
             #  Generate Depth Maps for kitti, eigen splits
-            pred_depths, gt_depths = metrics.generate_depth_maps(pred_list, gt_list, data.dataset.dataset_path)  # FIXME: Talvez esta função não precise estar dentro da evaluate()
+            pred_depths, gt_depths = metrics.generate_depth_maps(pred_list, gt_list, data.dataset.dataset_path)
 
             # Evaluation
             # TODO: Criar um argumento para selecionar a evaluation_tool
@@ -577,7 +570,8 @@ def test():
 #  Main
 # ======
 def main():
-    print('\n[%s] Selected Params: \n\n%s\n' % (appName, args))
+    print('\n[{}] Selected Params: \n\n{}\n'.format(appName, args))
+    print('[{}] Selected mode: {}'.format(appName, args.mode.capitalize()))
 
     if args.mode == 'train':
         train()
