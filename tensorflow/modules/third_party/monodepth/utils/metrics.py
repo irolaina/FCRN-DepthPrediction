@@ -68,7 +68,7 @@ def generate_depth_maps_eigen_split(pred_array, args_gt_path):
 
     for t_id in tqdm(range(num_samples)):
         camera_id = cams[t_id]  # 2 is left, 3 is right
-        gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
+        gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
 
         gt_depths.append(gt_depth.astype(np.float32))
 
@@ -110,7 +110,7 @@ def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
 
     for t_id in tqdm(range(num_samples)):
         camera_id = cams[t_id]  # 2 is left, 3 is right
-        gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
+        gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
         gt_depths.append(gt_depth.astype(np.float32))
 
         depth_split = gt_files[t_id].split('/')

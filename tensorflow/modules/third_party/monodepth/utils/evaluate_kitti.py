@@ -33,7 +33,7 @@ if __name__ == '__main__':
         pred_depths = []
         for t_id in range(num_samples):
             camera_id = cams[t_id]  # 2 is left, 3 is right
-            depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
+            depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
             gt_depths.append(depth.astype(np.float32))
 
             disp_pred = cv2.resize(pred_disparities[t_id], (im_sizes[t_id][1], im_sizes[t_id][0]), interpolation=cv2.INTER_LINEAR)
