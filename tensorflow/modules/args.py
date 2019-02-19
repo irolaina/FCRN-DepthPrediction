@@ -60,6 +60,9 @@ def argument_handler():
     parser.add_argument('--test_split', type=str, help="Select the desired test split for State-of-art evaluation: 'kitti_stereo', 'eigen', 'eigen_continuous', etc",
                         default='')
 
+    parser.add_argument('--eval_tool', type=str, help="Select the evaluation tool for computing metrics: 'monodepth' or 'kitti_depth'",
+                        default='kitti_depth')
+
     parser.add_argument('--test_file_path', type=str, help="Evaluates the Model for the images speficied by test_file.txt file",
                         default='')
 

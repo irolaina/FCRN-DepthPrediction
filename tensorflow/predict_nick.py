@@ -471,7 +471,7 @@ def test():
         # ==============
         #  Testing Loop
         # ==============
-        # pred_list, gt_list = [], []
+        pred_list, gt_list = [], []
         # num_test_images = 5  # Only for testing! # TODO: Desativar!!!!!!!
 
         # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
@@ -504,9 +504,9 @@ def test():
                 pred_80 = np.zeros((model.batch_size,) + model.output_size.get_size())
 
             # Fill arrays for later on metrics evaluation
-            # FIXME: This may cause crashing problems
-            # pred_list.append(pred_up[0, :, :, 0])
-            # gt_list.append(depth[:, :, 0])
+            if args.eval_tool == 'monodepth':
+                pred_list.append(pred_up[0, :, :, 0])
+                gt_list.append(depth[:, :, 0])
 
             # Saves the Test Predictions as uint16 PNG Images
             if SAVE_TEST_DISPARITIES:
@@ -554,12 +554,10 @@ def test():
             print()
 
             # Invokes Evaluation Tools
-            evaluation_tool = 'kitti_depth'  # TODO: Criar um argumento para selecionar a evaluation_tool
-
-            if evaluation_tool == 'monodepth':  # FIXME: After major changes, possibly this function is broken!
+            if args.eval_tool == 'monodepth':  # FIXME: After major changes, possibly this function is broken!
                 pred_depths, gt_depths = metrics.generate_depth_maps(pred_list, gt_list, data.dataset.dataset_path)
-                metrics.evaluation_tool_monodepth(gt_depths)
-            elif evaluation_tool == 'kitti_depth':
+                metrics.evaluation_tool_monodepth(pred_depths, gt_depths)
+            elif args.eval_tool == 'kitti_depth':
                 metrics.evaluation_tool_kitti_depth(num_test_images)
             else:
                 raise SystemError

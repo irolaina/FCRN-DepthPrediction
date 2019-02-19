@@ -3,7 +3,7 @@ import pandas as pd
 
 # Select
 column = {'raw_data': 0, 'depth': 1}
-selected_column = column['raw_data']
+selected_column = column['depth']
 
 # Input
 eigen_test = pd.read_csv('eigen_test_files.txt', delimiter='\t', header=None)

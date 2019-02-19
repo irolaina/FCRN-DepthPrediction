@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from deprecated import deprecated
+from modules.third_party.monodepth.utils.evaluation_utils import compute_errors
 from tqdm import tqdm
 
 from common import settings
@@ -194,20 +195,20 @@ def generate_depth_maps(pred_list, gt_list, args_gt_path):
 
     return pred_depths, gt_depths
 
-
-def save_metrics_results_csv(results_metrics):
+# FIXME: Always saves with the index 0
+def save_metrics_results_csv(metrics):
     """Logs the obtained simulation results on a .csv file."""
-    save_file_path = settings.output_dir + 'results_metrics.csv'
-    print("\n[Results] Logging simulation info to '%s' file..." % save_file_path)
+    save_metrics_filename = settings.output_dir + 'results_metrics.csv'
+    print("\n[Results] Logging simulation info to '%s' file..." % save_metrics_filename)
 
-    df_results_metrics = pd.read_csv(save_file_path)
+    if os.path.exists(save_metrics_filename):
+        df_metrics = pd.DataFrame(metrics, index=[0])
+        df_metrics.to_csv(save_metrics_filename, mode='a', header=False)
+    else:
+        df_metrics = pd.DataFrame(metrics, index=[0])
+        df_metrics.to_csv(save_metrics_filename)
 
-    results_series = pd.Series(results_metrics)
-
-    df_results_metrics.append(results_series, ignore_index=True)
-    df_results_metrics.to_csv(save_file_path)
-
-    print(df_results_metrics)
+    print(df_metrics)
 
 
 def stats_depth_txt2csv(num_evaluated_pairs):
@@ -225,7 +226,7 @@ def stats_depth_txt2csv(num_evaluated_pairs):
 
     # Adding New info
     df['test_split'] = args.test_file_path
-    df['num_evaluated_pairs'] = num_evaluated_pairs
+    df['num_test_images'] = num_evaluated_pairs
 
     # Rearranges Columns Order
     new_order = [27, 28] + list(range(27))
@@ -234,13 +235,12 @@ def stats_depth_txt2csv(num_evaluated_pairs):
     if not os.path.isfile(stats_depth_csv_filename):
         df.to_csv(stats_depth_csv_filename)
     else:
-        with open(stats_depth_csv_filename, 'a') as f:
-            df.to_csv(f, header=False)
+        df.to_csv(stats_depth_csv_filename, mode='a', header=False)
 
 
 @deprecated(version='1.0', reason="You shouldn't use this function. It's not recommended to evaluate the trained methods on ground truth images generated from LIDAR measurements.")
-def evaluation_tool_monodepth(gt_list):
-    num_test_images = len(gt_list)
+def evaluation_tool_monodepth(pred_depths, gt_depths):
+    num_test_images = len(gt_depths)
 
     rms = np.zeros(num_test_images, np.float32)
     log_rms = np.zeros(num_test_images, np.float32)
@@ -254,7 +254,7 @@ def evaluation_tool_monodepth(gt_list):
     print('[Metrics] Computing metrics...')
     for i in tqdm(range(num_test_images)):
 
-        if args.test_split == 'eigen_continuous':
+        if args.test_split == 'eigen_continuous':  # FIXME: Remove everything related to eigen_continuous
             gt_depth = gt_depths_continuous[i]
 
             if i in invalid_idx:
@@ -306,49 +306,33 @@ def evaluation_tool_monodepth(gt_list):
             plt.draw()
             plt.pause(1)
 
-    # End of Loop
-    metrics = {'abs_rel': abs_rel.mean(),
-               'sq_rel': sq_rel.mean(),
-               'rms': rms.mean(),
-               'log_rms': log_rms.mean(),
-               'd1_all': d1_all.mean(),
-               'a1': a1.mean(),
-               'a2': a2.mean(),
-               'a3': a3.mean()}
 
     # --------- #
     #  Results  #
     # --------- #
     test_split = args.dataset if args.test_split == '' else args.test_split
-
-    results_metrics = [
-        args.model_path,
-        test_split,
-        metrics['abs_rel'],
-        metrics['sq_rel'],
-        metrics['rms'],
-        metrics['log_rms'],
-        metrics['d1_all'],
-        metrics['a1'],
-        metrics['a2'],
-        metrics['a3']]
+    metrics = {
+        'model': args.model_path,
+        'test_split': test_split,
+        'num_test_images': num_test_images,
+        'abs_rel': abs_rel.mean(),
+        'sq_rel': sq_rel.mean(),
+        'rms': rms.mean(),
+        'log_rms': log_rms.mean(),
+        'd1_all': d1_all.mean(),
+        'a1': a1.mean(),
+        'a2': a2.mean(),
+        'a3': a3.mean()}
 
     # Save results on .csv file
-    save_metrics_results_csv(results_metrics)
+    save_metrics_results_csv(metrics)
 
     # Display Results
-    results_header_formatter = "{:>20}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}"
-    results_data_formatter = "{:>20}, {:10.4f}, {:10.4f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}, {:10.3f}"
-
     print()
     print("# ----------------- #")
     print("#  Metrics Results  #")
     print("# ----------------- #")
-    print(args.model_path)
-    print(
-        results_header_formatter.format('split', 'abs_rel', 'sq_rel', 'rms', 'log_rms', 'd1_all', 'd1', 'd2', 'd3'))
-
-    print(results_data_formatter.format(*results_metrics[1:]))
+    print(metrics)
 
 
 def evaluation_tool_kitti_depth(num_test_images):
