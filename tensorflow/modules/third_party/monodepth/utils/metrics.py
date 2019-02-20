@@ -195,6 +195,7 @@ def generate_depth_maps(pred_list, gt_list, args_gt_path):
 
     return pred_depths, gt_depths
 
+
 # FIXME: Always saves with the index 0
 def save_metrics_results_csv(metrics):
     """Logs the obtained simulation results on a .csv file."""
@@ -238,7 +239,8 @@ def stats_depth_txt2csv(num_evaluated_pairs):
         df.to_csv(stats_depth_csv_filename, mode='a', header=False)
 
 
-@deprecated(version='1.0', reason="You shouldn't use this function. It's not recommended to evaluate the trained methods on ground truth images generated from LIDAR measurements.")
+@deprecated(version='1.0',
+            reason="You shouldn't use this function. It's not recommended to evaluate the trained methods on ground truth images generated from LIDAR measurements.")
 def evaluation_tool_monodepth(pred_depths, gt_depths):
     num_test_images = len(gt_depths)
 
@@ -305,7 +307,6 @@ def evaluation_tool_monodepth(pred_depths, gt_depths):
 
             plt.draw()
             plt.pause(1)
-
 
     # --------- #
     #  Results  #
