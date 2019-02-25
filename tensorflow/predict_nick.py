@@ -134,13 +134,13 @@ def kbevent(event):
 
 # TODO: Melhorar isto https://stackoverflow.com/questions/47706467/keyboard-interrupt-tensorflow-run-and-save-at-that-point
 # Create hookmanager
-hookman = pyxhook.HookManager()
+# hookman = pyxhook.HookManager()
 # Define our callback to fire when a key is pressed down
-hookman.KeyDown = kbevent
+# hookman.KeyDown = kbevent
 # Hook the keyboard
-hookman.HookKeyboard()
+# hookman.HookKeyboard()
 # Start our listener
-hookman.start()
+# hookman.start()
 
 
 # ========= #
@@ -585,7 +585,7 @@ def main():
         raise SystemExit
 
     # Close the listener when we are done
-    hookman.cancel()
+    # hookman.cancel()
 
     print("\n[%s] Done." % appName)
     sys.exit()

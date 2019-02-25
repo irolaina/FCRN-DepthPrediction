@@ -18,8 +18,8 @@ python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_spli
 python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_split eigen -r output/fcrn/kitti_discrete/all_px/mse/2019-02-11_08-03-00/restore/model.fcrn
 python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_split eigen -r output/fcrn/kitti_discrete/valid_px/berhu/2019-02-06_02-53-55/restore/model.fcrn
 python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_split eigen -r output/fcrn/kitti_discrete/valid_px/eigen/2019-02-07_20-34-58/restore/model.fcrn
-python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_split eigen -r output/fcrn/kitti_discrete/valid_px/eigen_grads/2019-02-09_17-33-42/restore/model.fcrn
 python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_split eigen -r output/fcrn/kitti_discrete/valid_px/mse/2019-02-04_07-45-39/restore/model.fcrn
+python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_split eigen -r output/fcrn/kitti_discrete/valid_px/eigen_grads/2019-02-09_17-33-42/restore/model.fcrn
 
 # Evaluate trained models in the Eigen Split based on 652 KITTI Depth annotated ground truth images (semi-dense)
 python3 predict_nick.py -m test -s kitti_depth --eval_tool monodepth --test_split eigen_kitti_depth -r output/fcrn/kitti_continuous/valid_px/mse/2019-02-17_22-48-02/restore/model.fcrn
