@@ -199,7 +199,7 @@ def generate_depth_maps(pred_list, gt_list, args_gt_path):
 # FIXME: Always saves with the index 0
 def save_metrics_results_csv(metrics):
     """Logs the obtained simulation results on a .csv file."""
-    save_metrics_filename = settings.output_dir + 'results_metrics.csv'
+    save_metrics_filename = settings.output_dir + 'results_test_monodepth.csv'
     print("\n[Results] Logging simulation info to '%s' file..." % save_metrics_filename)
 
     if os.path.exists(save_metrics_filename):
@@ -213,7 +213,7 @@ def save_metrics_results_csv(metrics):
 
 
 def stats_depth_txt2csv(num_evaluated_pairs):
-    stats_depth_csv_filename = settings.output_dir + 'kitti_depth_eval.csv'
+    stats_depth_csv_filename = settings.output_dir + 'results_test_kitti_depth.csv'
 
     df = pd.read_csv(settings.output_tmp_pred_dir + 'stats_depth.txt', sep=':', header=None)
     df[0] = df[0].apply(lambda x: x.replace(' ', '_'))
@@ -316,6 +316,7 @@ def evaluation_tool_monodepth(pred_depths, gt_depths):
         'model': args.model_path,
         'test_split': test_split,
         'num_test_images': num_test_images,
+        'cap': args.max_depth,
         'abs_rel': abs_rel.mean(),
         'sq_rel': sq_rel.mean(),
         'rms': rms.mean(),
