@@ -77,6 +77,13 @@ class CvTimer:
     def avg_fps(self):
         return sum(self.l_fps_history) / float(self.fps_len)
 
+def apply_overlay(frame, pred_jet_resized):
+    alpha = 0.5
+    background = frame.copy()
+    overlay = pred_jet_resized.copy()
+    overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
+
+    return overlay
 
 def process_images(frame, pred, timer):
     # Change Data Scale from meters to uint8
@@ -97,11 +104,7 @@ def process_images(frame, pred, timer):
     pred_hsv_resized = cv2.resize(pred_hsv, (304, 228), interpolation=cv2.INTER_CUBIC)
 
     # Apply the overlay
-    alpha = 0.5
-    background = frame.copy()
-    overlay = pred_jet_resized.copy()
-
-    overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
+    overlay = apply_overlay(frame, pred_jet_resized)
 
     # Concatenates Images
     conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
@@ -113,7 +116,6 @@ def process_images(frame, pred, timer):
         print(pred_uint8.shape, pred_uint8.dtype)
         print(pred_jet_resized.shape, pred_jet_resized.dtype)
         print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
-        print(background.shape, background.dtype)
         print(overlay.shape, overlay.dtype)
 
     # Display the resulting frame - OpenCV
@@ -157,11 +159,7 @@ def process_images_remove_sky(frame, pred, timer):
     pred_hsv_resized = cv2.resize(pred_hsv, (304, 160), interpolation=cv2.INTER_CUBIC)
 
     # Apply the overlay
-    alpha = 0.5
-    background = frame.copy()
-    overlay = pred_jet_resized.copy()
-
-    overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
+    overlay = apply_overlay(frame, pred_jet_resized)
 
     # Concatenates Images
     conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
@@ -173,7 +171,6 @@ def process_images_remove_sky(frame, pred, timer):
         print(pred_uint8.shape, pred_uint8.dtype)
         print(pred_jet_resized.shape, pred_jet_resized.dtype)
         print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
-        print(background.shape, background.dtype)
         print(overlay.shape, overlay.dtype)
         input("Continue...")
 

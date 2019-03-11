@@ -60,7 +60,7 @@ from modules.framework import Model
 from modules.plot import Plot
 from modules.test import Test
 from modules.third_party.laina.fcrn import ResNet50UpProj
-from modules.third_party.monodepth.utils import metrics
+from modules import metrics
 from modules.utils import settings, detect_available_models
 
 # ==========================
