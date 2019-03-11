@@ -11,7 +11,7 @@ eigen_test = pd.read_csv('eigen_test_files.txt', delimiter='\t', header=None)
 
 # Preprocessing
 eigen_test[selected_column] = eigen_test[selected_column].apply(lambda x: '/media/nicolas/nicolas_seagate/datasets/kitti/' + x)
-eigen_test['exists'] = eigen_test[selected_column].apply(lambda x: os.path.exists(x))
+eigen_test['exists'] = eigen_test[selected_column].apply(os.path.exists)
 
 # Results
 print(eigen_test[[selected_column, 'exists']])
