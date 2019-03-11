@@ -16,8 +16,7 @@ import numpy as np
 import tensorflow as tf
 
 from modules.third_party.laina.fcrn import ResNet50UpProj
-from modules.utils import detect_available_models
-from common import settings
+from modules.utils import settings, detect_available_models
 
 # ==================
 #  Global Variables

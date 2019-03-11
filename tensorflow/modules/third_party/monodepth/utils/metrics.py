@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from deprecated import deprecated
-from modules.third_party.monodepth.utils.evaluation_utils import compute_errors
 from tqdm import tqdm
 
-from common import settings
 from modules.args import args
+from modules.third_party.monodepth.utils.evaluation_utils import compute_errors
+from modules.utils import settings
 from .evaluation_utils import load_gt_disp_kitti, convert_gt_disps_to_depths_kitti, read_text_lines, read_file_data, \
     generate_depth_map
 

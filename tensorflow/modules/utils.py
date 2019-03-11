@@ -7,13 +7,57 @@ from collections import deque
 from itertools import chain
 from sys import getsizeof, stderr
 
-from common import settings
 from modules.args import args
+from modules.utils import settings
 
+# ========= #
+#  Classes  #
+# ========= #
+class Settings:
+    def __init__(self, output_dir, output_tmp_dir, output_log_file):
+        self.output_dir = output_dir
+        self.output_tmp_dir = output_tmp_dir
+        self.output_tmp_pred_dir = output_tmp_dir + 'pred/'
+        self.output_tmp_gt_dir = output_tmp_dir + 'gt/'
+        self.logger_output_file = output_dir + output_log_file
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+
+        for root, dirs, files in os.walk(self.output_tmp_dir, topdown=False):
+            for name in files:
+                # print(os.path.join(root, name))
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                # print(os.path.join(root, name))
+                os.rmdir(os.path.join(root, name))
+
+        if not os.path.exists(self.output_tmp_pred_dir):
+            os.makedirs(self.output_tmp_pred_dir)
+
+        if not os.path.exists(self.output_tmp_gt_dir):
+            os.makedirs(self.output_tmp_gt_dir)
 
 # ===========
 #  Functions
 # ===========
+def detect_available_models():
+    if args.model_path == '':
+        found_models = glob.glob(settings.output_dir + "fcrn/*/*/*/*/restore/*.meta")
+        found_models.sort()
+
+        for i, model in enumerate(found_models):
+            print(i, model)
+
+        selected_model_id = input("\nSelect Model: ")
+        print()
+        selected_model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
+    else:
+        selected_model_path = args.model_path
+
+    return selected_model_path
+
+
 def total_size(o, handlers=None, verbose=False):
     """Returns the approximate memory footprint an object and all of its contents.
 
@@ -61,19 +105,7 @@ def total_size(o, handlers=None, verbose=False):
 
     return sizeof(o)
 
-
-def detect_available_models():
-    if args.model_path == '':
-        found_models = glob.glob(settings.output_dir + "fcrn/*/*/*/*/restore/*.meta")
-        found_models.sort()
-
-        for i, model in enumerate(found_models):
-            print(i, model)
-
-        selected_model_id = input("\nSelect Model: ")
-        print()
-        selected_model_path = os.path.splitext(found_models[int(selected_model_id)])[0]
-    else:
-        selected_model_path = args.model_path
-
-    return selected_model_path
+# ================== #
+#  Global Variables  #
+# ================== #
+settings = Settings('output/', 'output/tmp/', 'log.txt')
