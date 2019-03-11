@@ -50,6 +50,6 @@ print("\n{} pairs were found!".format(count))
 print()
 
 # Save
-np.savetxt('kitti_depth_eigen_test_files.txt', np.array(eigen_test), fmt='%s', delimiter='\t')
+np.savetxt('eigen_test_kitti_depth_files.txt', np.array(eigen_test), fmt='%s', delimiter='\t')
 
 print("Done.")
