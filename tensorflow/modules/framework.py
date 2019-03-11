@@ -11,6 +11,7 @@ import modules.loss as loss
 from modules.args import args
 from modules.size import Size
 from modules.train import Train
+from modules.utils import settings
 from modules.validation import Validation
 
 
@@ -165,10 +166,10 @@ class Model(object):
             total_num_parameters += np.array(variable.get_shape().as_list()).prod()
         print("[Network/Model] Number of trainable parameters: {}".format(total_num_parameters))
 
-    def collect_summaries(self, save_path, graph):
+    def collect_summaries(self, graph):
         with tf.name_scope("Summaries"):
             # Summary Objects
-            self.summary_writer = tf.summary.FileWriter(save_path + args.log_directory, graph)  # TODO: atrelar este log_directory com a classe settings
+            self.summary_writer = tf.summary.FileWriter(settings.log_tb, graph)
             self.summary_op = tf.summary.merge_all('model_0')
 
     def create_train_saver(self):

@@ -69,7 +69,7 @@ from modules.utils import settings, detect_available_models
 TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = True  # Default: True
 ENABLE_TENSORBOARD = True  # Default: True
-SAVE_TRAINED_MODEL = True  # Default: True
+
 
 # =========================
 #  [Test] Framework Config
@@ -86,24 +86,12 @@ SAVE_TEST_DISPARITIES = True  # Default: True
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
 
-appName = 'fcrn'
-datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 running = True
 
 
 # ===========
 #  Functions
 # ===========
-def get_save_folder_paths():  # TODO: Settings Class instead
-    """Defines folders paths for saving the model variables to disk."""
-    px_str = args.px + '_px'
-    relative_save_path = settings.output_dir + appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + datetime + '/'
-    save_path = os.path.join(os.getcwd(), relative_save_path)
-    save_restore_path = os.path.join(save_path, 'restore/')
-
-    return save_path, save_restore_path
-
-
 def kbevent(event):
     """This function is called every time a key is presssed."""
 
@@ -239,8 +227,6 @@ def train():
     global running  # Create a loop to keep the application running
     running = True
 
-    save_path, save_restore_path = get_save_folder_paths()
-
     # ----------------------------------------- #
     #  Network Training Model - Building Graph  #
     # ----------------------------------------- #
@@ -255,7 +241,7 @@ def train():
 
         # Build Network Model
         model = Model(data)
-        model.collect_summaries(save_path, graph)
+        model.collect_summaries(graph)
         model.create_train_saver()
 
     # ---------------------------------------- #
@@ -419,13 +405,8 @@ def train():
         # ==============
         #  Save Results
         # ==============
-        if SAVE_TRAINED_MODEL:
-            if not os.path.exists(save_restore_path):
-                os.makedirs(save_restore_path)
-
-            model.save_trained_model(save_restore_path, sess, model.train_saver, args.model_name)
-
-        model.save_results(datetime, epoch, max_epochs, step, args.max_steps, timer)
+        model.save_trained_model(settings.get_save_restore_path(), sess, model.train_saver, args.model_name)
+        model.save_results(settings.datetime, epoch, max_epochs, step, args.max_steps, timer)
 
         sess.close()
 
@@ -567,8 +548,8 @@ def test():
 #  Main
 # ======
 def main():
-    print('\n[{}] Selected Params: \n\n{}\n'.format(appName, args))
-    print('[{}] Selected mode: {}'.format(appName, args.mode.capitalize()))
+    print('\n[{}] Selected Params: \n\n{}\n'.format(settings.appName, args))
+    print('[{}] Selected mode: {}'.format(settings.appName, args.mode.capitalize()))
 
     if args.mode == 'train':
         train()
@@ -583,7 +564,7 @@ def main():
     # Close the listener when we are done
     # hookman.cancel()
 
-    print("\n[%s] Done." % appName)
+    print("\n[%s] Done." % settings.appName)
     sys.exit()
 
 

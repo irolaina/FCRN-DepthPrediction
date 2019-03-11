@@ -3,6 +3,7 @@
 # ===========
 import glob
 import os
+import time
 from collections import deque
 from itertools import chain
 from sys import getsizeof, stderr
@@ -14,12 +15,21 @@ from modules.args import args
 #  Classes  #
 # ========= #
 class Settings:
-    def __init__(self, output_dir, output_tmp_dir, output_log_file):
+    def __init__(self, appName, output_dir, output_tmp_dir, output_log_file):
+        self.appName = appName
+        self.datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
+
+        # Defines folders paths for saving the model variables to disk.
+        px_str = args.px + '_px'
+        relative_save_path = output_dir + self.appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + self.datetime + '/'
+        self.save_path = os.path.join(os.getcwd(), relative_save_path)
+        self.save_restore_path = os.path.join(self.save_path, 'restore/')
+
         self.output_dir = output_dir
         self.output_tmp_dir = output_tmp_dir
         self.output_tmp_pred_dir = output_tmp_dir + 'pred/'
         self.output_tmp_gt_dir = output_tmp_dir + 'gt/'
-        self.logger_output_file = output_dir + output_log_file
+        self.log_tb = self.save_path + args.log_directory
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
@@ -38,6 +48,15 @@ class Settings:
         if not os.path.exists(self.output_tmp_gt_dir):
             os.makedirs(self.output_tmp_gt_dir)
 
+        if not os.path.exists(self.save_restore_path):
+            os.makedirs(self.save_restore_path)
+
+
+    def get_save_path(self):
+        return self.save_path
+
+    def get_save_restore_path(self):
+        return self.save_restore_path
 
 # ===========
 #  Functions
@@ -110,4 +129,4 @@ def total_size(o, handlers=None, verbose=False):
 # ================== #
 #  Global Variables  #
 # ================== #
-settings = Settings('output/', 'output/tmp/', 'log.txt')
+settings = Settings('fcrn', 'output/', 'output/tmp/', 'log.txt')
