@@ -15,32 +15,17 @@
 
 # [Valid] FIXME: valid.loss sempre igual a zero quando utiliza-se a as flags 'valid' e 'eigen_grads'
 
-# [Test] TODO: Realizar Tests comparando KITTI Depth x KITTI Discrete (disp1) x KITTI Continuous (disp2)
-# [Test] TODO: Implementar Métricas em Batches
 # [Test] FIXME: A Terceira imagem de Test, a depth_resized (~20m) não possui o mesmo range que a depth image (~70 m). Reproduce: python3 predict_nick.py -m test -s kitti_continuous --px all -r output/fcrn/kitti_continuous/all_px/eigen_grads/2018-06-27_11-14-21/restore/model.fcrn -u
-# [Test] FIXME: Em DORN, vi que as métricas utilizadas para avaliar o NYUDepth (d1, d2, d3, rel, log10, rms), Make3D (C1, C2 Errors) e o Kitti (d1, d2, d3, rmse, rmse_log, abs_rel, sq_rel) são Diferentes. Implementar as métricas que faltam.
 
 # Known Bugs
 # [Train] FIXME: Early Stopping parece não disparar.
 # [Train] FIXME: Resolver erro que acontece com as imagens do ApolloScape durante valid evaluation @ ~24000
 # [All] TODO: Devo continuar usando tf.image.resize_images()? Há relatos desta função ser bugada
 
-# [Train] FIXME: KittiDepth e KittiDiscrete indo melhor que o KittiContinuous:
-# Especulações:
-# @nicolas: Acredito que as superfícies contínuas ao interpolar os pontos da nuvem nem sempre garantem que o valor de profundidade do ponto original, isto é, talvez o ponto original não seja um ponto âncora para a superfície.
-# @vitor: Visto que as imagens de avaliação utilizadas são esparsas, o vitor acha que elas deveriam ser contínuas.
-# Acho que isso é uma parte do problema, não existe comparação na imagem inteira, aí os benefícios do contínuo não ficam aparentes nos números obtidos.
-
-# SOLUÇÃO: TODO: Criar um novo split, Continuous Splits, o qual consiste das mesmas 697 imagens de avaliação propostas pelo Eigen, porém contínuas.
-# Isto é, utilizar as images contínuas como avaliação ao invés das esparsas, assim os métodos treinados no esparso errariam mais e os modelos treinados no dataset contínuo conseguiriam ir melhor.
-# Entretanto, esta solução dificultaria a comparação com os métodos do Estado-da-Arte.
-# @vitor: "É, seria uma metodologia de comparação nova, mas dentro dos métodos que tem comparações na literatura você pode relacionar com essa nova metodologia, mostrando que os resulados são comparáveis."
-
-
 # Optional
 # [Dataset] FIXME: Descobrir porquê o código do vitor (cnn_hilbert) não está gerando todas as imagens (disp1 e disp2)
 # [Train] TODO: Dar suporte ao Make3D
-# [Train] TODO: Adicionar feature para realizar pré-carregamento do modelo pré-treinado no ImageNet
+# [Train] TODO: Adicionar feature para permitir fine tunning
 
 # Ideas
 # TODO: Trabalhar com Sequências Temporais: Semelhante à SfM, LSTM
@@ -62,7 +47,6 @@ import warnings
 import imageio
 import matplotlib.pyplot as plt
 import numpy as np
-import pyxhook
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -70,7 +54,6 @@ from skimage import exposure, img_as_uint
 from tqdm import tqdm
 
 # Custom Libraries
-from common import settings
 from modules.args import args
 from modules.dataloader import Dataloader
 from modules.framework import Model
@@ -78,7 +61,7 @@ from modules.plot import Plot
 from modules.test import Test
 from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.third_party.monodepth.utils import metrics
-from modules.utils import detect_available_models
+from modules.utils import settings, detect_available_models
 
 # ==========================
 #  [Train] Framework Config
@@ -131,6 +114,7 @@ def kbevent(event):
     if event.Ascii == 197:  # Press 'F8' to stop training.
         global running
         running = False
+
 
 # TODO: Melhorar isto https://stackoverflow.com/questions/47706467/keyboard-interrupt-tensorflow-run-and-save-at-that-point
 # Create hookmanager
@@ -236,8 +220,8 @@ def predict():
         fig.colorbar(img2, cax=cax)
 
         plt.figure(2)
-        plt.imshow(pred_up[0,:,:,0])
-        plt.imsave(settings.output_dir + 'pred_up.png', pred_up[0,:,:,0])
+        plt.imshow(pred_up[0, :, :, 0])
+        plt.imsave(settings.output_dir + 'pred_up.png', pred_up[0, :, :, 0])
 
         plt.figure(3)
         plt.imshow(pred_up_80[0, -264:, :, 0])

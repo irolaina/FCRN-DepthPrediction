@@ -8,7 +8,7 @@ from itertools import chain
 from sys import getsizeof, stderr
 
 from modules.args import args
-from modules.utils import settings
+
 
 # ========= #
 #  Classes  #
@@ -37,6 +37,7 @@ class Settings:
 
         if not os.path.exists(self.output_tmp_gt_dir):
             os.makedirs(self.output_tmp_gt_dir)
+
 
 # ===========
 #  Functions
@@ -104,6 +105,7 @@ def total_size(o, handlers=None, verbose=False):
         return s
 
     return sizeof(o)
+
 
 # ================== #
 #  Global Variables  #

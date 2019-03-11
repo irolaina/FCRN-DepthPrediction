@@ -1,11 +1,12 @@
 import argparse
 import os
+
 import numpy as np
 import tensorflow as tf
-from matplotlib import pyplot as plt
 from PIL import Image
+from matplotlib import pyplot as plt
 
-import models
+from modules.third_party.laina.fcrn import ResNet50UpProj
 
 
 def predict(model_data_path, image_path):
@@ -25,7 +26,7 @@ def predict(model_data_path, image_path):
     input_node = tf.placeholder(tf.float32, shape=(None, height, width, channels))
 
     # Construct the network
-    net = models.ResNet50UpProj({'data': input_node}, batch_size, 1, False)
+    net = ResNet50UpProj({'data': input_node}, batch_size, 1, False)
 
     with tf.Session() as sess:
         # Load the converted parameters
