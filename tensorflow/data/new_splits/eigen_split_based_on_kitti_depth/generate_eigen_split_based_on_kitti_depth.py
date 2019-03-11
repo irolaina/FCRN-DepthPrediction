@@ -52,4 +52,4 @@ print()
 # Save
 np.savetxt('eigen_test_kitti_depth_files.txt', np.array(eigen_test), fmt='%s', delimiter='\t')
 
-print("Done.")
+print("\nDone.")

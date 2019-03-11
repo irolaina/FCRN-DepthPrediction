@@ -60,4 +60,4 @@ print()
 # Save
 np.savetxt('eigen_test_kitti_depth_aligned_with_kitti_continuous_files.txt', np.array(eigen_test_kitti_depth_aligned_with_kitti_continuous), fmt='%s', delimiter='\t')
 
-print("Done.")
+print("\nDone.")
