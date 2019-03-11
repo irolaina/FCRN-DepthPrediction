@@ -18,18 +18,17 @@ for line in eigen_test_file:
     splitted.pop(-2)
     splitted.pop(1)
 
-    depth = glob(dataset_path+('/'.join(splitted)))
+    depth = glob(dataset_path + ('/'.join(splitted)))
 
     splitted = line.split()[0].split('/')
     splitted.insert(0, 'raw_data')
 
     image = glob(dataset_path + ('/'.join(splitted)))
 
-    if image and depth: # TODO: change to 'image and depth
+    if image and depth:  # TODO: change to 'image and depth
         newline = [image[0].replace(dataset_path, ''), depth[0].replace(dataset_path, '')]
         eigen_test.append(newline)
         count += 1
-
 
     # Display
     # print(splitted)

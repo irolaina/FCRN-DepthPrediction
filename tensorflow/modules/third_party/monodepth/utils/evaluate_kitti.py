@@ -3,7 +3,6 @@ import argparse
 import cv2
 import numpy as np
 
-# from .evaluation_utils import *
 from .evaluation_utils import load_gt_disp_kitti, convert_disps_to_depths_kitti, read_text_lines, read_file_data, \
     generate_depth_map, get_focal_length_baseline, compute_errors
 

@@ -70,7 +70,6 @@ TRAIN_ON_SINGLE_IMAGE = False  # Default: False
 ENABLE_EARLY_STOP = True  # Default: True
 ENABLE_TENSORBOARD = True  # Default: True
 
-
 # =========================
 #  [Test] Framework Config
 # =========================
@@ -104,109 +103,6 @@ class SessionWithExitSave(tf.Session):
                 print('Output saved to: "{}./*"'.format(self.exit_save_path))
         super().__exit__(exc_type, exc_value, exc_tb)
 
-# ========= #
-#  Predict  #
-# ========= #
-def predict():
-    args.model_path = detect_available_models()
-
-    # Default input size
-    batch_size, height, width = 1, 228, 304
-
-    # Read image (uint8)
-    img = Image.open(args.image_path)
-    img = np.array(img)
-
-    # ------- #
-    #  Graph  #
-    # ------- #
-    # Create a placeholder for the input image
-    tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
-    tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
-    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.AREA,
-                                              align_corners=True)
-
-    tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
-
-    with tf.variable_scope('model'):
-        # Construct the network
-        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1,
-                             is_training=False)
-        tf_pred = net.get_output()
-        tf_pred_up = tf.image.resize_images(tf_pred, img.shape[:2], tf.image.ResizeMethod.BILINEAR,
-                                                 align_corners=True)
-        tf_imask_80 = tf.where(tf_pred_up < 80.0, tf.ones_like(tf_pred_up), tf.zeros_like(tf_pred_up))
-        tf_pred_up_80 = tf.multiply(tf_pred_up, tf_imask_80)
-
-        # for var in tf.trainable_variables():
-        #     print(var)
-
-    # Merge Ops
-    pred_op = [tf_image, tf_image_resized_uint8, tf_pred, tf_pred_up, tf_pred_up_80]
-
-    # Print Variables
-    # print(img)
-    print(img.shape, img.dtype)
-
-    print(tf_image)
-    print(tf_image_resized)
-    print(tf_pred)
-
-    with tf.Session() as sess:
-        # Load the converted parameters
-        print('\n[network/Predict] Loading the model')
-
-        # --------- #
-        #  Restore  #
-        # --------- #
-        # Use to load from ckpt file
-        saver = tf.train.Saver()
-        try:
-            saver.restore(sess, args.model_path)
-        except tf.errors.NotFoundError:
-            print("[NotFoundError] '{}' model not found!".format(args.model_path))
-            os._exit(1)
-
-        # ----- #
-        #  Run  #
-        # ----- #
-        # Evalute the network for the given image
-        image, image_resized_uint8, pred, pred_up, pred_up_80 = sess.run(pred_op, feed_dict={tf_image: img})
-
-        # --------- #
-        #  Results  #
-        # --------- #
-        fig = plt.figure(figsize=(15, 3))
-        fig.subplots_adjust(bottom=0.025, left=0.025, top=0.975, right=0.975)
-        X = [(1, 4, (1, 2)), (1, 4, 3), (1, 4, 4)]
-        axes = []
-        for nrows, ncols, plot_number in X:
-            axes.append(fig.add_subplot(nrows, ncols, plot_number))
-
-        axes[0].imshow(image)
-        axes[1].imshow(image_resized_uint8)
-        img2 = axes[2].imshow(pred[0, :, :, 0])
-
-        axes[0].set_title('Image')
-        axes[1].set_title('Resized')
-        axes[2].set_title('Pred')
-
-        # Fix Colorbar size
-        divider = make_axes_locatable(axes[2])
-        cax = divider.append_axes("right", size="5%", pad=0.15)
-        fig.colorbar(img2, cax=cax)
-
-        plt.figure(2)
-        plt.imshow(pred_up[0, :, :, 0])
-        plt.imsave(settings.output_dir + 'pred_up.png', pred_up[0, :, :, 0])
-
-        plt.figure(3)
-        plt.imshow(pred_up_80[0, -264:, :, 0])
-        plt.imsave(settings.output_dir + 'pred_up_80.png', pred_up_80[0, -264:, :, 0])
-        plt.show()
-
-        return pred
-
 
 # ===================== #
 #  Training/Validation  #
@@ -239,7 +135,8 @@ def train():
     max_epochs = int(np.floor(args.batch_size * args.max_steps / data.num_train_samples))
     print('\nTrain with approximately %d epochs' % max_epochs)
 
-    with SessionWithExitSave(saver=model.train_saver, exit_save_path='output/tf-saves/lastest.ckpt', graph=graph) as sess:
+    with SessionWithExitSave(saver=model.train_saver, exit_save_path='output/tf-saves/lastest.ckpt',
+                             graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         sess.run(init_op)
@@ -424,6 +321,7 @@ def test():
             saver.restore(sess, args.model_path)
         except tf.errors.NotFoundError:
             print("[NotFoundError] '{}' model not found!".format(args.model_path))
+            # noinspection PyProtectedMember
             os._exit(1)
 
         # ==============
@@ -523,6 +421,111 @@ def test():
         else:
             print(
                 "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+
+
+# ========= #
+#  Predict  #
+# ========= #
+def predict():
+    args.model_path = detect_available_models()
+
+    # Default input size
+    batch_size, height, width = 1, 228, 304
+
+    # Read image (uint8)
+    img = Image.open(args.image_path)
+    img = np.array(img)
+
+    # ------- #
+    #  Graph  #
+    # ------- #
+    # Create a placeholder for the input image
+    tf_image = tf.placeholder(tf.uint8, shape=(None, None, 3))
+    tf_image_float32 = tf.image.convert_image_dtype(tf_image, tf.float32)  # uint8 -> float32 [0.0, 1.0]
+    tf_image_resized = tf.image.resize_images(tf_image_float32, [height, width], method=tf.image.ResizeMethod.AREA,
+                                              align_corners=True)
+
+    tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
+
+    with tf.variable_scope('model'):
+        # Construct the network
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1,
+                             is_training=False)
+        tf_pred = net.get_output()
+        tf_pred_up = tf.image.resize_images(tf_pred, img.shape[:2], tf.image.ResizeMethod.BILINEAR,
+                                            align_corners=True)
+        tf_imask_80 = tf.where(tf_pred_up < 80.0, tf.ones_like(tf_pred_up), tf.zeros_like(tf_pred_up))
+        tf_pred_up_80 = tf.multiply(tf_pred_up, tf_imask_80)
+
+        # for var in tf.trainable_variables():
+        #     print(var)
+
+    # Merge Ops
+    pred_op = [tf_image, tf_image_resized_uint8, tf_pred, tf_pred_up, tf_pred_up_80]
+
+    # Print Variables
+    # print(img)
+    print(img.shape, img.dtype)
+
+    print(tf_image)
+    print(tf_image_resized)
+    print(tf_pred)
+
+    with tf.Session() as sess:
+        # Load the converted parameters
+        print('\n[network/Predict] Loading the model')
+
+        # --------- #
+        #  Restore  #
+        # --------- #
+        # Use to load from ckpt file
+        saver = tf.train.Saver()
+        try:
+            saver.restore(sess, args.model_path)
+        except tf.errors.NotFoundError:
+            print("[NotFoundError] '{}' model not found!".format(args.model_path))
+            # noinspection PyProtectedMember
+            os._exit(1)
+
+        # ----- #
+        #  Run  #
+        # ----- #
+        # Evalute the network for the given image
+        image, image_resized_uint8, pred, pred_up, pred_up_80 = sess.run(pred_op, feed_dict={tf_image: img})
+
+        # --------- #
+        #  Results  #
+        # --------- #
+        fig = plt.figure(figsize=(15, 3))
+        fig.subplots_adjust(bottom=0.025, left=0.025, top=0.975, right=0.975)
+        X = [(1, 4, (1, 2)), (1, 4, 3), (1, 4, 4)]
+        axes = []
+        for nrows, ncols, plot_number in X:
+            axes.append(fig.add_subplot(nrows, ncols, plot_number))
+
+        axes[0].imshow(image)
+        axes[1].imshow(image_resized_uint8)
+        img2 = axes[2].imshow(pred[0, :, :, 0])
+
+        axes[0].set_title('Image')
+        axes[1].set_title('Resized')
+        axes[2].set_title('Pred')
+
+        # Fix Colorbar size
+        divider = make_axes_locatable(axes[2])
+        cax = divider.append_axes("right", size="5%", pad=0.15)
+        fig.colorbar(img2, cax=cax)
+
+        plt.figure(2)
+        plt.imshow(pred_up[0, :, :, 0])
+        plt.imsave(settings.output_dir + 'pred_up.png', pred_up[0, :, :, 0])
+
+        plt.figure(3)
+        plt.imshow(pred_up_80[0, -264:, :, 0])
+        plt.imsave(settings.output_dir + 'pred_up_80.png', pred_up_80[0, -264:, :, 0])
+        plt.show()
+
+        return pred
 
 
 # ======
