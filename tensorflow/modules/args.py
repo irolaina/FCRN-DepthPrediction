@@ -32,7 +32,7 @@ def argument_handler():
     parser.add_argument('--px', action='store',
                         help="Selects which pixels to minimize ['all' or 'valid']", default='all')
 
-    parser.add_argument('--data_aug', action='store_true', help="Enable Data Augmentation", default=False)
+    parser.add_argument('--data_aug', action='store_true', help="Enable Data Augmentation", default=True)
 
     parser.add_argument('--loss', type=str, help="Select the desired loss function: 'mse', 'berhu', 'eigen', 'eigen_grads' etc",
                         default='berhu')

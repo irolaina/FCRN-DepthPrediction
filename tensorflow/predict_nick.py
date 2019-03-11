@@ -86,34 +86,23 @@ SAVE_TEST_DISPARITIES = True  # Default: True
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
 
-running = True
-
 
 # ===========
 #  Functions
 # ===========
-def kbevent(event):
-    """This function is called every time a key is presssed."""
+# TODO: Mover
+class SessionWithExitSave(tf.Session):
+    def __init__(self, *args, saver=None, exit_save_path=None, **kwargs):
+        self.saver = saver
+        self.exit_save_path = exit_save_path
+        super().__init__(*args, **kwargs)
 
-    # Print key info
-    # print(event)
-
-    # If the ascii value matches spacebar, terminate the while loop
-    if event.Ascii == 197:  # Press 'F8' to stop training.
-        global running
-        running = False
-
-
-# TODO: Melhorar isto https://stackoverflow.com/questions/47706467/keyboard-interrupt-tensorflow-run-and-save-at-that-point
-# Create hookmanager
-# hookman = pyxhook.HookManager()
-# Define our callback to fire when a key is pressed down
-# hookman.KeyDown = kbevent
-# Hook the keyboard
-# hookman.HookKeyboard()
-# Start our listener
-# hookman.start()
-
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        if exc_type is KeyboardInterrupt:
+            if self.saver:
+                self.saver.save(self, self.exit_save_path)
+                print('Output saved to: "{}./*"'.format(self.exit_save_path))
+        super().__exit__(exc_type, exc_value, exc_tb)
 
 # ========= #
 #  Predict  #
@@ -223,10 +212,6 @@ def predict():
 #  Training/Validation  #
 # ===================== #
 def train():
-    # Local Variables
-    global running  # Create a loop to keep the application running
-    running = True
-
     # ----------------------------------------- #
     #  Network Training Model - Building Graph  #
     # ----------------------------------------- #
@@ -254,7 +239,7 @@ def train():
     max_epochs = int(np.floor(args.batch_size * args.max_steps / data.num_train_samples))
     print('\nTrain with approximately %d epochs' % max_epochs)
 
-    with tf.Session(graph=graph) as sess:
+    with SessionWithExitSave(saver=model.train_saver, exit_save_path='output/tf-saves/lastest.ckpt', graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         sess.run(init_op)
@@ -268,131 +253,127 @@ def train():
 
         timer = -time.time()
         for step in range(1, args.max_steps + 1):
-            if running:
-                # --------------------- #
-                # [Train] Session Run!  #
-                # --------------------- #
-                timer2 = -time.time()
+            # --------------------- #
+            # [Train] Session Run!  #
+            # --------------------- #
+            timer2 = -time.time()
 
-                _, \
-                batch_image, \
-                batch_image_key, \
-                batch_image_uint8, \
-                batch_depth, \
-                batch_depth_key, \
-                batch_pred, \
-                model.train.loss, \
-                summary_train_loss = sess.run([model.train_step,
-                                               model.train.tf_batch_image,
-                                               model.train.tf_batch_image_key,
-                                               model.train.tf_batch_image_uint8,
-                                               model.train.tf_batch_depth,
-                                               model.train.tf_batch_depth_key,
-                                               model.train.fcrn.get_output(),
-                                               model.train.tf_loss,
-                                               model.tf_summary_train_loss])
+            _, \
+            batch_image, \
+            batch_image_key, \
+            batch_image_uint8, \
+            batch_depth, \
+            batch_depth_key, \
+            batch_pred, \
+            model.train.loss, \
+            summary_train_loss = sess.run([model.train_step,
+                                           model.train.tf_batch_image,
+                                           model.train.tf_batch_image_key,
+                                           model.train.tf_batch_image_uint8,
+                                           model.train.tf_batch_depth,
+                                           model.train.tf_batch_depth_key,
+                                           model.train.fcrn.get_output(),
+                                           model.train.tf_loss,
+                                           model.tf_summary_train_loss])
 
-                # Reset network parameters to prevent the model from collapsing
-                # TODO: Validar. Se a condição for facilmente/frequentemente atingida, o modelo talvez não convirja nunca.
-                # TODO: Adicionar um contador para evitar falsos positivos
-                # TODO: Adicionar contador, caso o master reset for acionado mais que N vezes. Abortar treinamento.
-                if np.max(batch_pred) < 0.2:
-                    print("[Train] MASTER RESET triggered!!! max(batch_pred):", np.max(batch_pred))
-                    sess.run(init_op)
+            # Reset network parameters to prevent the model from collapsing
+            # TODO: Validar. Se a condição for facilmente/frequentemente atingida, o modelo talvez não convirja nunca.
+            # TODO: Adicionar um contador para evitar falsos positivos
+            # TODO: Adicionar contador, caso o master reset for acionado mais que N vezes. Abortar treinamento.
+            if np.max(batch_pred) < 0.2:
+                print("[Train] MASTER RESET triggered!!! max(batch_pred):", np.max(batch_pred))
+                sess.run(init_op)
 
-                # # Detect Invalid Pairs
-                # for i in range(args.batch_size):
-                #     print(i, batch_image_key[i], batch_depth_key[i])
-                #     image_head, image_tail = os.path.split(batch_image_key[i].decode("utf-8"))
-                #     depth_head, depth_tail = os.path.split(batch_depth_key[i].decode("utf-8"))
-                #
-                #     if image_tail.split('_')[0] != depth_tail.split('_')[0]:
-                #         input("Invalid Pair Detected!")
-                # print()
+            # # Detect Invalid Pairs
+            # for i in range(args.batch_size):
+            #     print(i, batch_image_key[i], batch_depth_key[i])
+            #     image_head, image_tail = os.path.split(batch_image_key[i].decode("utf-8"))
+            #     depth_head, depth_tail = os.path.split(batch_depth_key[i].decode("utf-8"))
+            #
+            #     if image_tail.split('_')[0] != depth_tail.split('_')[0]:
+            #         input("Invalid Pair Detected!")
+            # print()
 
-                model.summary_writer.add_summary(summary_train_loss, step)
+            model.summary_writer.add_summary(summary_train_loss, step)
 
-                # Prints Training Progress
-                if step % 10 == 0:
-                    if args.show_train_progress:
-                        model.train.plot.show_train_results(raw=batch_image_uint8[0],
-                                                            label=batch_depth[0, :, :, 0],
-                                                            pred=batch_pred[0, :, :, 0])
+            # Prints Training Progress
+            if step % 10 == 0:
+                if args.show_train_progress:
+                    model.train.plot.show_train_results(raw=batch_image_uint8[0],
+                                                        label=batch_depth[0, :, :, 0],
+                                                        pred=batch_pred[0, :, :, 0])
 
-                    timer2 += time.time()
+                timer2 += time.time()
 
-                    print(
-                        'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
-                            epoch,
-                            max_epochs,
-                            step,
-                            args.max_steps,
-                            timer2,
-                            model.train.loss,
-                            model.valid.loss))
+                print(
+                    'epoch: {0:d}/{1:d} | step: {2:d}/{3:d} | t: {4:f} | Batch trLoss: {5:>16.4f} | vLoss: {6:>16.4f} '.format(
+                        epoch,
+                        max_epochs,
+                        step,
+                        args.max_steps,
+                        timer2,
+                        model.train.loss,
+                        model.valid.loss))
 
-                if step % 1000 == 0:
+            if step % 1000 == 0:
+                model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
+
+            # -------------------------- #
+            # [Validation] Session Run!  #
+            # -------------------------- #
+            # [Valid] TODO: Portar Leitura para o Tensorflow
+            # [Valid] TODO: Implementar Leitura por Batches
+
+            # Detects the end of a epoch
+            # if True: # Only for testing the following condition!!!
+            # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
+            if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
+                valid_loss_sum = 0
+                print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
+                for i in range(data.num_test_samples):
+                    timer3 = -time.time()
+                    feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
+                                  model.valid.tf_depth_key: data.test_depth_filenames[i]}
+
+                    # valid_image_key, valid_depth_key = sess.run([model.valid.tf_image_key, model.valid.tf_depth_key], feed_valid)
+                    # print(valid_image_key, valid_depth_key)
+
+                    valid_image, \
+                    valid_image_uint8, \
+                    valid_pred, \
+                    valid_depth, \
+                    model.valid.loss = sess.run([model.valid.tf_image_resized,
+                                                 model.valid.tf_image_resized_uint8,
+                                                 model.valid.tf_pred,
+                                                 model.valid.tf_depth_resized,
+                                                 model.valid.tf_loss],
+                                                feed_dict=feed_valid)
+
+                    if args.show_valid_progress:
+                        model.valid.plot.show_train_results(raw=valid_image_uint8,
+                                                            label=valid_depth[:, :, 0],
+                                                            pred=valid_pred[0, :, :, 0])
+
+                    valid_loss_sum += model.valid.loss
+
+                    timer3 += time.time()
+                    print("%d/%d | valid_loss_sum: %f | valid_loss: %f | t: %4f" % (
+                        i + 1, data.num_test_samples, valid_loss_sum, model.valid.loss, timer3))
+
+                # Calculate mean value of 'valid_loss'
+                model.valid.loss = valid_loss_sum / data.num_test_samples  # Updates 'Valid_loss' value
+                print("mean(valid_loss): %f\n" % model.valid.loss)
+
+                if ENABLE_EARLY_STOP and model.train.stop.check(step, model.valid.loss):  # TODO: Validar
+                    break
+
+                # Write information to TensorBoard
+                if ENABLE_TENSORBOARD:
+                    summary_str = sess.run(model.summary_op, feed_valid)
+                    model.summary_writer.add_summary(summary_str, step)
                     model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
 
-                # -------------------------- #
-                # [Validation] Session Run!  #
-                # -------------------------- #
-                # [Valid] TODO: Portar Leitura para o Tensorflow
-                # [Valid] TODO: Implementar Leitura por Batches
-
-                # Detects the end of a epoch
-                # if True: # Only for testing the following condition!!!
-                # if (np.floor((step * args.batch_size) / data.numTrainSamples) != epoch) and not TRAIN_ON_SINGLE_IMAGE:
-                if step % 1000 == 0 and not TRAIN_ON_SINGLE_IMAGE:
-                    valid_loss_sum = 0
-                    print("\n[Network/Validation] Epoch finished. Starting TestData evaluation...")
-                    for i in range(data.num_test_samples):
-                        timer3 = -time.time()
-                        feed_valid = {model.valid.tf_image_key: data.test_image_filenames[i],
-                                      model.valid.tf_depth_key: data.test_depth_filenames[i]}
-
-                        # valid_image_key, valid_depth_key = sess.run([model.valid.tf_image_key, model.valid.tf_depth_key], feed_valid)
-                        # print(valid_image_key, valid_depth_key)
-
-                        valid_image, \
-                        valid_image_uint8, \
-                        valid_pred, \
-                        valid_depth, \
-                        model.valid.loss = sess.run([model.valid.tf_image_resized,
-                                                     model.valid.tf_image_resized_uint8,
-                                                     model.valid.tf_pred,
-                                                     model.valid.tf_depth_resized,
-                                                     model.valid.tf_loss],
-                                                    feed_dict=feed_valid)
-
-                        if args.show_valid_progress:
-                            model.valid.plot.show_train_results(raw=valid_image_uint8,
-                                                                label=valid_depth[:, :, 0],
-                                                                pred=valid_pred[0, :, :, 0])
-
-                        valid_loss_sum += model.valid.loss
-
-                        timer3 += time.time()
-                        print("%d/%d | valid_loss_sum: %f | valid_loss: %f | t: %4f" % (
-                            i + 1, data.num_test_samples, valid_loss_sum, model.valid.loss, timer3))
-
-                    # Calculate mean value of 'valid_loss'
-                    model.valid.loss = valid_loss_sum / data.num_test_samples  # Updates 'Valid_loss' value
-                    print("mean(valid_loss): %f\n" % model.valid.loss)
-
-                    if ENABLE_EARLY_STOP and model.train.stop.check(step, model.valid.loss):  # TODO: Validar
-                        break
-
-                    # Write information to TensorBoard
-                    if ENABLE_TENSORBOARD:
-                        summary_str = sess.run(model.summary_op, feed_valid)
-                        model.summary_writer.add_summary(summary_str, step)
-                        model.summary_writer.flush()  # Don't forget this command! It makes sure Python writes the summaries to the log-file
-
-                epoch = int(np.floor((step * args.batch_size) / data.num_train_samples))
-            else:
-                print("[KeyEvent] 'F8' Pressed! Training process aborted!")
-                break
+            epoch = int(np.floor((step * args.batch_size) / data.num_train_samples))
 
         # End of Training!
         coord.request_stop()
@@ -560,9 +541,6 @@ def main():
     else:
         print("[ModeError] Selected mode doesn't exist! Select one of the following: 'train', 'test', or 'pred'.")
         raise SystemExit
-
-    # Close the listener when we are done
-    # hookman.cancel()
 
     print("\n[%s] Done." % settings.appName)
     sys.exit()
