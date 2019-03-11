@@ -172,11 +172,16 @@ def predict():
         net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1,
                              is_training=False)
         tf_pred = net.get_output()
+        tf_pred_up = tf.image.resize_images(tf_pred, img.shape[:2], tf.image.ResizeMethod.BILINEAR,
+                                                 align_corners=True)
+        tf_imask_80 = tf.where(tf_pred_up < 80.0, tf.ones_like(tf_pred_up), tf.zeros_like(tf_pred_up))
+        tf_pred_up_80 = tf.multiply(tf_pred_up, tf_imask_80)
+
         # for var in tf.trainable_variables():
         #     print(var)
 
     # Merge Ops
-    pred_op = [tf_image, tf_image_resized_uint8, tf_pred]
+    pred_op = [tf_image, tf_image_resized_uint8, tf_pred, tf_pred_up, tf_pred_up_80]
 
     # Print Variables
     # print(img)
@@ -205,7 +210,7 @@ def predict():
         #  Run  #
         # ----- #
         # Evalute the network for the given image
-        image, image_resized_uint8, pred = sess.run(pred_op, feed_dict={tf_image: img})
+        image, image_resized_uint8, pred, pred_up, pred_up_80 = sess.run(pred_op, feed_dict={tf_image: img})
 
         # --------- #
         #  Results  #
@@ -230,6 +235,13 @@ def predict():
         cax = divider.append_axes("right", size="5%", pad=0.15)
         fig.colorbar(img2, cax=cax)
 
+        plt.figure(2)
+        plt.imshow(pred_up[0,:,:,0])
+        plt.imsave(settings.output_dir + 'pred_up.png', pred_up[0,:,:,0])
+
+        plt.figure(3)
+        plt.imshow(pred_up_80[0, -264:, :, 0])
+        plt.imsave(settings.output_dir + 'pred_up_80.png', pred_up_80[0, -264:, :, 0])
         plt.show()
 
         return pred
