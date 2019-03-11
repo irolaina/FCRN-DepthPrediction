@@ -34,16 +34,20 @@ class FilenamesHandler(object):
         try:
             data = np.genfromtxt(filename, dtype='str', delimiter='\t')
             # print(data.shape)
+
+            # Parsing Data
+            image_filenames = list(data[:, 0])
+            depth_filenames = list(data[:, 1])
+
+            timer = -time.time()
+            image_filenames = [dataset_path + filename for filename in image_filenames]
+            depth_filenames = [dataset_path + filename for filename in depth_filenames]
+            timer += time.time()
+            print('time:', timer, 's\n')
+
         except OSError:
             print("[OSError] Could not find the '%s' file." % filename)
-            sys.exit()
-
-        # Parsing Data
-        image_filenames = list(data[:, 0])
-        depth_filenames = list(data[:, 1])
-
-        image_filenames = join_dataset_path(image_filenames, dataset_path)
-        depth_filenames = join_dataset_path(depth_filenames, dataset_path)
+            raise SystemExit
 
         return image_filenames, depth_filenames
 
@@ -101,24 +105,14 @@ class FilenamesHandler(object):
         depth_filenames_dump = [depth.replace(dataset_path, '') for depth in depth_filenames]
 
         # Column-Concatenation of Lists of Strings
-        filenames = list(zip(image_filenames_dump, depth_filenames_dump))
-        filenames = np.array(filenames)
+        filenames_dump = np.array(list(zip(image_filenames_dump, depth_filenames_dump)))
 
         # Saving the 'filenames' variable to *.txt
-        root_path = os.path.abspath(os.path.join(__file__, "../.."))  # This line may cause 'FileNotFindError'
+        root_path = os.path.abspath(os.path.join(__file__, "../.."))  # This line may cause 'FileNotFoundError'
         relative_path = 'data/' + name + '_' + mode + '.txt'
         save_file_path = os.path.join(root_path, relative_path)
 
         # noinspection PyTypeChecker
-        np.savetxt(save_file_path, filenames, fmt='%s', delimiter='\t')
+        np.savetxt(save_file_path, filenames_dump, fmt='%s', delimiter='\t')
 
         print("\n[Dataset] '%s' file saved." % save_file_path)
-
-
-def join_dataset_path(filenames, dataset_path):
-    timer = -time.time()
-    filenames = [dataset_path + filename for filename in filenames]
-    timer += time.time()
-    print('time:', timer, 's\n')
-
-    return filenames

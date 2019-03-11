@@ -10,14 +10,14 @@ from ..args import args
 #  Class Declaration
 # ===================
 class Dataset(FilenamesHandler):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.dataset_path = kwargs.pop('dataset_path')
         self.name = kwargs.pop('name')
         height = kwargs.pop('height')
         width = kwargs.pop('width')
         self.max_depth = kwargs.pop('max_depth')  # Max Depth to limit predictions
 
-        super(Dataset, self).__init__(*args, **kwargs)
+        super(Dataset, self).__init__(**kwargs)
 
         self.image_size = Size(height, width, 3)
         self.depth_size = Size(height, width, 1)
@@ -27,7 +27,7 @@ class Dataset(FilenamesHandler):
 
         print("[Dataloader] %s object created." % self.name)
 
-    # FIXME: Isto esta função está correta?
+    # FIXME: Esta função está correta?
     # Acredito que ainda seja necessário arrumar a combinação dos eval_tool e os test_splits. Ou indepente qual eval tool está sendo usado quando não se especifica o test_split?
     def get_file_path(self, mode, test_split, test_file_path):
         # KITTI Stereo 2015: 200 Test Images

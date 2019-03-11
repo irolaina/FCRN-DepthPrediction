@@ -72,7 +72,7 @@ class Dataloader:
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "
                   "Check the list of supported datasets." % args.dataset)
-            sys.exit()
+            raise SystemExit
 
         # Searches dataset image/depth filenames lists
         self.train_image_filenames, self.train_depth_filenames, self.num_train_samples = None, None, -1

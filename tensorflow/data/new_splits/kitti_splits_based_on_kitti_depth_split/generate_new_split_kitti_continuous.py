@@ -83,7 +83,7 @@ class KittiContinuous:
             # print(data.shape)
         except OSError:
             print("[OSError] Could not find the '%s' file." % filename)
-            sys.exit()
+            raise SystemExit
 
         # # Parsing Data
         # image_filenames = list(data[:, 0])

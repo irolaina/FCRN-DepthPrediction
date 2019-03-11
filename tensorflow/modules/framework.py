@@ -106,7 +106,7 @@ class Model(object):
                                                               gamma=0.5)
             else:
                 print("[Network/Loss] Invalid Loss Function Selected!")
-                sys.exit()
+                raise SystemExit
 
             if args.l2norm:
                 self.train.tf_loss += loss.calculateL2norm()

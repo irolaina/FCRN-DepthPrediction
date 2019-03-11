@@ -28,8 +28,8 @@ from .dataset import Dataset
 #  Class Declaration
 # ===================
 class KittiDepth(Dataset):
-    def __init__(self, *args, **kwargs):
-        super(KittiDepth, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(KittiDepth, self).__init__(**kwargs)
 
     def get_filenames_lists(self, mode, test_split='', test_file_path=''):
         # Workaround # FIXME: Temporary

@@ -50,8 +50,8 @@ from .dataset import Dataset
 #  Class Declaration
 # ===================
 class NyuDepth(Dataset):
-    def __init__(self, *args, **kwargs):
-        super(NyuDepth, self).__init__(*args, **kwargs)
+    def __init__(self,**kwargs):
+        super(NyuDepth, self).__init__(**kwargs)
 
     def get_filenames_lists(self, mode, test_split='', test_file_path=''):
         file_path = self.get_file_path(mode, test_split, test_file_path)
