@@ -88,6 +88,7 @@ def argument_handler():
     parser.add_argument('-i', '--image_path', help='Sets the path to the image to be predicted', default='')
 
     parser.add_argument('--debug', action='store_true', help="Enables the Debug Mode", default=False)
+    parser.add_argument('--retrain', action='store_true', help="Enables the Retrain Mode", default=False)
 
     return parser.parse_args()
 

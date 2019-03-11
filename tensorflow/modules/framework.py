@@ -2,7 +2,6 @@
 #  Libraries
 # ===========
 import os
-import sys
 
 import numpy as np
 import tensorflow as tf
@@ -11,7 +10,7 @@ import modules.loss as loss
 from modules.args import args
 from modules.size import Size
 from modules.train import Train
-from modules.utils import settings
+from modules.utils import settings, detect_available_models
 from modules.validation import Validation
 
 

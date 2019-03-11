@@ -103,6 +103,16 @@ class SessionWithExitSave(tf.Session):
                 print('Output saved to: "{}./*"'.format(self.exit_save_path))
         super().__exit__(exc_type, exc_value, exc_tb)
 
+# TODO: Mover
+def load_model(saver, sess):
+    """ Loads model from *.ckpt file """
+    try:
+        args.model_path = detect_available_models()
+        saver.restore(sess, args.model_path)
+    except tf.errors.NotFoundError:
+        print("[NotFoundError] '{}' model not found!".format(args.model_path))
+        # noinspection PyProtectedMember
+        os._exit(1)
 
 # ===================== #
 #  Training/Validation  #
@@ -138,8 +148,13 @@ def train():
     with SessionWithExitSave(saver=model.train_saver, exit_save_path='output/tf-saves/lastest.ckpt',
                              graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
-        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-        sess.run(init_op)
+
+        if args.retrain:
+            print('\n[network/Training] Loading the model to retrain it...')
+            load_model(saver=model.train_saver, sess=sess)
+        else:
+           init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+           sess.run(init_op)
 
         # ===============
         #  Training Loop
@@ -296,8 +311,6 @@ def test():
     # Local Variables
     num_test_images = None
 
-    args.model_path = detect_available_models()
-
     # -----------------------------------------
     #  Network Testing Model - Importing Graph
     # -----------------------------------------
@@ -314,15 +327,7 @@ def test():
 
     with tf.Session() as sess:
         print('\n[network/Testing] Loading the model...')
-
-        # Use to load from *.ckpt file
-        saver = tf.train.Saver()
-        try:
-            saver.restore(sess, args.model_path)
-        except tf.errors.NotFoundError:
-            print("[NotFoundError] '{}' model not found!".format(args.model_path))
-            # noinspection PyProtectedMember
-            os._exit(1)
+        load_model(saver=tf.train.Saver(), sess=sess)
 
         # ==============
         #  Testing Loop
@@ -427,7 +432,6 @@ def test():
 #  Predict  #
 # ========= #
 def predict():
-    args.model_path = detect_available_models()
 
     # Default input size
     batch_size, height, width = 1, 228, 304
@@ -472,20 +476,11 @@ def predict():
     print(tf_pred)
 
     with tf.Session() as sess:
-        # Load the converted parameters
-        print('\n[network/Predict] Loading the model')
-
         # --------- #
         #  Restore  #
         # --------- #
-        # Use to load from ckpt file
-        saver = tf.train.Saver()
-        try:
-            saver.restore(sess, args.model_path)
-        except tf.errors.NotFoundError:
-            print("[NotFoundError] '{}' model not found!".format(args.model_path))
-            # noinspection PyProtectedMember
-            os._exit(1)
+        print('\n[network/Predicting] Loading the model...')
+        load_model(saver=tf.train.Saver(), sess=sess)
 
         # ----- #
         #  Run  #
