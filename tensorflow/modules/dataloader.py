@@ -38,10 +38,7 @@ class Dataloader:
         dataset_root = None
 
         if args.machine == 'nicolas':
-            if args.dataset == 'lrmjose':
-                dataset_root = "/home/nicolas/Downloads/"  # TODO: Mudar de Folder
-            else:
-                dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
+            dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
 
