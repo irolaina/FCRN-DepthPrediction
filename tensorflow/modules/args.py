@@ -61,7 +61,7 @@ def argument_handler():
                         default='')
 
     parser.add_argument('--eval_tool', type=str, help="Selects the evaluation tool for computing metrics: 'monodepth' or 'kitti_depth'",
-                        default='kitti_depth')
+                        default='')
 
     parser.add_argument('--test_file_path', type=str, help="Evaluates the Model for the images speficied by test_file.txt file",
                         default='')

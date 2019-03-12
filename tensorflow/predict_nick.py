@@ -396,7 +396,7 @@ def test():
             elif args.eval_tool == 'kitti_depth':
                 metrics.evaluation_tool_kitti_depth(num_test_images)
             else:
-                raise SystemError
+                raise SystemError("Invalid 'eval_tool' selected. Choose one of the options: 'monodepth' or 'kitti_depth'.")
 
         else:
             print(

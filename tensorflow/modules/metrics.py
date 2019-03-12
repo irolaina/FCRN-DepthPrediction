@@ -28,34 +28,39 @@ def generate_depth_maps_kitti_split(pred_array, args_gt_path):
 
     for t_id in tqdm(range(num_test_images)):
         # Show the Disparity/Depth ground truths and the corresponding predictions for the evaluation images.
-        if args.show_test_results:
-            print("gt_disp:", gt_disparities[t_id])
-            print(np.min(gt_disparities[t_id]), np.max(gt_disparities[t_id]))
-            print()
-            print("gt_depth:", gt_depths[t_id])
-            print(np.min(gt_depths[t_id]), np.max(gt_depths[t_id]))
-            print()
-            print("pred:", pred_array[t_id])
-            print(np.min(pred_array[t_id]), np.max(pred_array[t_id]))
-            print()
+        try:
+            if args.show_test_results:
+                print("gt_disp:", gt_disparities[t_id])
+                print(np.min(gt_disparities[t_id]), np.max(gt_disparities[t_id]))
+                print()
+                print("gt_depth:", gt_depths[t_id])
+                print(np.min(gt_depths[t_id]), np.max(gt_depths[t_id]))
+                print()
+                print("pred:", pred_array[t_id])
+                print(np.min(pred_array[t_id]), np.max(pred_array[t_id]))
+                print()
 
-            # TODO: Create Subplot
-            plt.figure(100)
-            plt.imshow(gt_disparities[t_id])
-            plt.title('gt_disp')
-            plt.draw()
+                # TODO: Create Subplot
+                plt.figure(100)
+                plt.imshow(gt_disparities[t_id])
+                plt.title('gt_disp')
+                plt.draw()
 
-            plt.figure(101)
-            plt.imshow(gt_depths[t_id].astype(np.uint8))
-            plt.title('gt_depth')
-            plt.draw()
+                plt.figure(101)
+                plt.imshow(gt_depths[t_id].astype(np.uint8))
+                plt.title('gt_depth')
+                plt.draw()
 
-            plt.figure(102)
-            plt.imshow(pred_array[t_id])
-            plt.title('pred')
-            plt.draw()
+                plt.figure(102)
+                plt.imshow(pred_array[t_id])
+                plt.title('pred')
+                plt.draw()
 
-            plt.pause(0.001)
+                plt.pause(0.001)
+
+        except IndexError:
+            break
+
 
     return gt_depths
 

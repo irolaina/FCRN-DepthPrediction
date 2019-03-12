@@ -42,11 +42,15 @@ class Dataset(FilenamesHandler):
         # KITTI Stereo 2015: 200 Test Images
         # Eigen Split: 697 Test Images
         # Eigen Split & KITTI Depth: 652 Test Images
+        file_path = None
 
         # ------------------------------------------------------------- #
         #  Evaluation based on Disparity Images (Eval Tool: MonoDepth)  #
         # ------------------------------------------------------------- #
-        if args.eval_tool == 'monodepth':
+        if (args.mode == 'train' or args.mode == 'test') and test_split == '':  # Default
+            file_path = 'data/' + self.name + '_' + mode + '.txt' if test_file_path == '' else test_file_path
+
+        elif args.mode == 'test' and args.eval_tool == 'monodepth':
             if test_split == 'kitti_stereo':
                 file_path = 'data/kitti_stereo_2015_test_files.txt'
 
@@ -64,11 +68,13 @@ class Dataset(FilenamesHandler):
 
                 # Overwrite the 'dataset_path' specified by the dataset
                 self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
+            else:
+                raise ValueError('')
 
         # --------------------------------------------------------------------------------- #
         #  Evaluation based on Ground Truth/Velodyne Scans Images (Eval Tool: KITTI Depth)  #
         # --------------------------------------------------------------------------------- #
-        elif args.eval_tool == 'kitti_depth':
+        elif args.mode == 'test' and args.eval_tool == 'kitti_depth':
             if test_split == 'kitti_stereo' or test_split == 'eigen':  # FIXME:
                 raise NotImplementedError("Não deveria rodar! Terminar Implementação. Devo gerar os mapas de profundidade para que possa ser avaliado.")
 
@@ -77,9 +83,6 @@ class Dataset(FilenamesHandler):
 
                 # Overwrite the 'dataset_path' specified by the dataset
                 self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
-
-        else:  # Default
-            file_path = 'data/' + self.name + '_' + mode + '.txt' if test_file_path == '' else test_file_path
 
         args.test_file_path = file_path
 
