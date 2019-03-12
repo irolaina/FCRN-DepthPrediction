@@ -32,12 +32,10 @@ def tf_mask_out_invalid_pixels(tf_pred, tf_labels):
 #  Mean Squared Error  #
 # -------------------- #
 def np_mse(y, y_):
-    # numPixels = y_.size
-
     return np.square(y_ - y)
 
 
-def tf_L_MSE(tf_y, tf_y_, valid_pixels=True):
+def tf_mse_loss(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'MSE'
 
     # Mask Out
@@ -57,7 +55,7 @@ def tf_L_MSE(tf_y, tf_y_, valid_pixels=True):
 # ------- #
 #  BerHu  #
 # ------- #
-def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
+def tf_berhu_loss(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
@@ -78,31 +76,13 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 
     tf_loss = tf.reduce_sum(tf_berhu_loss)
 
-    # Debug
-    # c, abs_error, berHu_loss, loss = sess.run([tf_c, tf_abs_error, tf_berhu_loss, tf_loss])
-    # print()
-    # print(tf_c)
-    # print("c:", c)
-    # print()
-    # print(tf_abs_error)
-    # print("abs_error:", abs_error)
-    # print(len(abs_error))
-    # print()
-    # print(tf_berhu_loss)
-    # print("berHu_loss:", berHu_loss)
-    # print()
-    # print(tf_loss)
-    # print("loss:", loss)
-    # print()
-    # input("remover")
-
     return loss_name, tf_loss
 
 
 # ---------------------------------------------------- #
 #  Eigen's Scale-invariant Mean Squared Error (L_eigen) #
 # ---------------------------------------------------- #
-def tf_L_eigen(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+def tf_eigen_loss(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Scale Invariant Logarithmic Error"
 
     tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
@@ -135,24 +115,16 @@ def tf_L_eigen(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
 def gradient_x(img):
     gx = img[:, :, :-1] - img[:, :, 1:]
 
-    # Debug
-    # print("img:", img.shape)
-    # print("gx:",gx.shape)
-
     return gx
 
 
 def gradient_y(img):
     gy = img[:, :-1, :] - img[:, 1:, :]
 
-    # Debug
-    # print("img:", img.shape)
-    # print("gy:",gy.shape)
-
     return gy
 
 
-def tf_L_eigen_grads(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+def tf_eigen_grads_loss(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Scale Invariant Logarithmic Error with Gradients"
 
     tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
@@ -200,7 +172,7 @@ def get_trainable_vars(scope):
     return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
 
 
-def calculateL2norm():
+def calculate_l2norm():
     # Gets All Trainable Variables
     var_list = get_trainable_vars('')
 

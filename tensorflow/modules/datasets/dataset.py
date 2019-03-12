@@ -36,8 +36,6 @@ class Dataset(FilenamesHandler):
 
         return dataset_root
 
-    # FIXME: Esta função está correta?
-    # Acredito que ainda seja necessário arrumar a combinação dos eval_tool e os test_splits. Ou indepente qual eval tool está sendo usado quando não se especifica o test_split?
     def get_file_path(self, mode, test_split, test_file_path):
         # KITTI Stereo 2015: 200 Test Images
         # Eigen Split: 697 Test Images

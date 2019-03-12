@@ -502,8 +502,8 @@ def predict():
 #  Main
 # ======
 def main():
-    print('\n[{}] Selected Params: \n\n{}\n'.format(settings.appName, args))
-    print('[{}] Selected mode: {}'.format(settings.appName, args.mode.capitalize()))
+    print('\n[{}] Selected Params: \n\n{}\n'.format(settings.app_name, args))
+    print('[{}] Selected mode: {}'.format(settings.app_name, args.mode.capitalize()))
 
     if args.mode == 'train':
         train()
@@ -514,7 +514,7 @@ def main():
     else:
         raise SystemError("The selected mode doesn't exist! Select one of the following: 'train', 'test', or 'pred'.")
 
-    print("\n[%s] Done." % settings.appName)
+    print("\n[%s] Done." % settings.app_name)
     sys.exit()
 
 

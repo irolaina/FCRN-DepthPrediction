@@ -15,7 +15,7 @@ import modules.loss as loss
 # ===========
 #  Functions
 # ===========
-def updateColorBar(cbar, img):
+def update_colorbar(cbar, img):
     vmin, vmax = np.min(img), np.max(img)
     cbar.set_clim(vmin, vmax)
 
@@ -117,9 +117,9 @@ class Plot(object):
             self.is_first_time = False
         else:
             # Updates Colorbars
-            updateColorBar(self.cbar[1], label)
-            updateColorBar(self.cbar[2], pred)
-            updateColorBar(self.cbar[3], pred_mse)
+            update_colorbar(self.cbar[1], label)
+            update_colorbar(self.cbar[2], pred)
+            update_colorbar(self.cbar[3], pred_mse)
 
             # Updates Images
             self.cax[0].set_data(raw)
@@ -154,12 +154,12 @@ class Plot(object):
             self.is_first_time = False
         else:
             # Updates Colorbars
-            updateColorBar(self.cbar[1], depth)
-            updateColorBar(self.cbar[3], depth_resized)
-            updateColorBar(self.cbar[4], pred)
-            updateColorBar(self.cbar[5], pred_up)
-            updateColorBar(self.cbar[6], pred_50)
-            updateColorBar(self.cbar[7], pred_80)
+            update_colorbar(self.cbar[1], depth)
+            update_colorbar(self.cbar[3], depth_resized)
+            update_colorbar(self.cbar[4], pred)
+            update_colorbar(self.cbar[5], pred_up)
+            update_colorbar(self.cbar[6], pred_50)
+            update_colorbar(self.cbar[7], pred_80)
 
             # Updates Images
             self.cax[0].set_data(image)

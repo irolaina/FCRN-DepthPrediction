@@ -15,13 +15,13 @@ from modules.args import args
 #  Classes  #
 # ========= #
 class Settings:
-    def __init__(self, appName, output_dir, output_tmp_dir, output_log_file):
-        self.appName = appName
+    def __init__(self, app_name, output_dir, output_tmp_dir, output_log_file):
+        self.app_name = app_name
         self.datetime = time.strftime("%Y-%m-%d") + '_' + time.strftime("%H-%M-%S")
 
         # Defines folders paths for saving the model variables to disk.
         px_str = args.px + '_px'
-        relative_save_path = output_dir + self.appName + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + self.datetime + '/'
+        relative_save_path = output_dir + self.app_name + '/' + args.dataset + '/' + px_str + '/' + args.loss + '/' + self.datetime + '/'
         self.save_path = os.path.join(os.getcwd(), relative_save_path)
         self.save_restore_path = os.path.join(self.save_path, 'restore/')
 
