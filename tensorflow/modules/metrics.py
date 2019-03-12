@@ -70,33 +70,37 @@ def generate_depth_maps_eigen_split(pred_array, args_gt_path):
     print('\n[Metrics] Generating depth maps...')
 
     for t_id in tqdm(range(num_test_images)):
-        camera_id = cams[t_id]  # 2 is left, 3 is right
-        gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
+        try:
+            camera_id = cams[t_id]  # 2 is left, 3 is right
+            gt_depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
 
-        gt_depths.append(gt_depth.astype(np.float32))
+            gt_depths.append(gt_depth.astype(np.float32))
 
-        # Show the corresponding generated Depth Map from the Stereo Pair.
-        if args.show_test_results:
-            # print("depth:\n", gt_depth)
-            # print("pred:\n", pred_array[t_id])
+            # Show the corresponding generated Depth Map from the Stereo Pair.
+            if args.show_test_results:
+                # print("depth:\n", gt_depth)
+                # print("pred:\n", pred_array[t_id])
 
-            # TODO: Create Subplot
-            plt.figure(100)
-            plt.imshow(imageio.imread(im_files[t_id]))
-            plt.title('image')
-            plt.draw()
+                # TODO: Create Subplot
+                plt.figure(100)
+                plt.imshow(imageio.imread(im_files[t_id]))
+                plt.title('image')
+                plt.draw()
 
-            plt.figure(101)
-            plt.imshow(gt_depth.astype(np.uint8))
-            plt.title('gt_depth')
-            plt.draw()
+                plt.figure(101)
+                plt.imshow(gt_depth.astype(np.uint8))
+                plt.title('gt_depth')
+                plt.draw()
 
-            plt.figure(102)
-            plt.imshow(pred_array[t_id])
-            plt.title('pred')
-            plt.draw()
+                plt.figure(102)
+                plt.imshow(pred_array[t_id])
+                plt.title('pred')
+                plt.draw()
 
-            plt.pause(0.001)
+                plt.pause(0.001)
+
+        except IndexError:
+            break
 
     return gt_depths
 
@@ -245,7 +249,7 @@ def stats_depth_txt2csv(num_evaluated_pairs):
 @deprecated(version='1.0',
             reason="You shouldn't use this function. It's not recommended to evaluate the trained methods on ground truth images generated from LIDAR measurements.")
 def evaluation_tool_monodepth(pred_depths, gt_depths):
-    num_test_images = len(gt_depths)
+    num_test_images = len(pred_depths)
 
     rms = np.zeros(num_test_images, np.float32)
     log_rms = np.zeros(num_test_images, np.float32)
@@ -258,59 +262,62 @@ def evaluation_tool_monodepth(pred_depths, gt_depths):
 
     print('[Metrics] Computing metrics...')
     for i in tqdm(range(num_test_images)):
+        try:
+            if args.test_split == 'eigen_continuous':  # FIXME: Remove everything related to eigen_continuous
+                gt_depth = gt_depths_continuous[i]
 
-        if args.test_split == 'eigen_continuous':  # FIXME: Remove everything related to eigen_continuous
-            gt_depth = gt_depths_continuous[i]
+                if i in invalid_idx:
+                    print("invalid")
+                    continue  # Skips the rest of the code
+            else:
+                gt_depth = gt_depths[i]
 
-            if i in invalid_idx:
-                print("invalid")
-                continue  # Skips the rest of the code
-        else:
-            gt_depth = gt_depths[i]
+            pred_depth = pred_depths[i]
 
-        pred_depth = pred_depths[i]
+            pred_depth[pred_depth < args.min_depth] = args.min_depth
+            pred_depth[pred_depth > args.max_depth] = args.max_depth
 
-        pred_depth[pred_depth < args.min_depth] = args.min_depth
-        pred_depth[pred_depth > args.max_depth] = args.max_depth
+            if args.test_split == 'eigen' or args.test_split == 'eigen_continuous':
+                mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
 
-        if args.test_split == 'eigen' or args.test_split == 'eigen_continuous':
-            mask = np.logical_and(gt_depth > args.min_depth, gt_depth < args.max_depth)
+                if args.garg_crop or args.eigen_crop:
+                    gt_height, gt_width = gt_depth.shape
 
-            if args.garg_crop or args.eigen_crop:
-                gt_height, gt_width = gt_depth.shape
+                    # Crop used by Garg ECCV16
+                    # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
+                    if args.garg_crop:
+                        crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
+                                         0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+                    # Crop we found by trial and error to reproduce Eigen NIPS14 results
+                    elif args.eigen_crop:
+                        crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
+                                         0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
 
-                # Crop used by Garg ECCV16
-                # if used on gt_size 370x1224 produces a crop of [-218, -3, 44, 1180]
-                if args.garg_crop:
-                    crop = np.array([0.40810811 * gt_height, 0.99189189 * gt_height,
-                                     0.03594771 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
-                # Crop we found by trial and error to reproduce Eigen NIPS14 results
-                elif args.eigen_crop:
-                    crop = np.array([0.3324324 * gt_height, 0.91351351 * gt_height,
-                                     0.0359477 * gt_width, 0.96405229 * gt_width]).astype(np.int32)
+                    crop_mask = np.zeros(mask.shape)
+                    crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
+                    mask = np.logical_and(mask, crop_mask)
 
-                crop_mask = np.zeros(mask.shape)
-                crop_mask[crop[0]:crop[1], crop[2]:crop[3]] = 1
-                mask = np.logical_and(mask, crop_mask)
+            mask = gt_depth > 0
 
-        mask = gt_depth > 0
+            abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
+                                                                                            pred_depth[mask])
 
-        abs_rel[i], sq_rel[i], rms[i], log_rms[i], a1[i], a2[i], a3[i] = compute_errors(gt_depth[mask],
-                                                                                        pred_depth[mask])
+            # Show gt/pred Images
+            if False:  # TODO: Remover?
+                # TODO: Create Subplot
+                plt.figure(102)
+                plt.title('pred')
+                plt.imshow(pred_depth)
 
-        # Show gt/pred Images
-        if False:  # TODO: Remover?
-            # TODO: Create Subplot
-            plt.figure(102)
-            plt.title('pred')
-            plt.imshow(pred_depth)
+                plt.figure(103)
+                plt.imshow(gt_depth)
+                plt.title('left')
 
-            plt.figure(103)
-            plt.imshow(gt_depth)
-            plt.title('left')
+                plt.draw()
+                plt.pause(1)
 
-            plt.draw()
-            plt.pause(1)
+        except IndexError:
+            break
 
     # --------- #
     #  Results  #

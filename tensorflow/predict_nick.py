@@ -400,7 +400,7 @@ def test():
 
         else:
             print(
-                "[Network/Testing] It's not possible to calculate Metrics. There are no corresponding labels for Testing Predictions!")
+                "[Network/Testing] It's not possible to calculate metrics. There are no corresponding labels for generated predictions!")
 
 
 # ========= #
