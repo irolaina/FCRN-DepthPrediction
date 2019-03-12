@@ -34,40 +34,27 @@ def get_filenames_tensors(image_filenames, depth_filenames):
 # ===================
 class Dataloader:
     def __init__(self):
-        # Defines dataset_root path depending on which machine is used.
-        dataset_root = None
-
-        if args.machine == 'nicolas':
-            dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
-        elif args.machine == 'olorin':
-            dataset_root = "/media/olorin/Documentos/datasets/"
 
         # Detects which dataset was selected and creates the 'dataset'.
         # print(args.dataset)
 
         if args.dataset == 'apolloscape':
-            dataset_path = dataset_root + "apolloscape/data/"
-            self.dataset = Apolloscape(dataset_path=dataset_path, name=args.dataset, height=2710, width=3384, max_depth=None)
+            self.dataset = Apolloscape(dataset_rel_path="apolloscape/data/", name=args.dataset, height=2710, width=3384, max_depth=None)
 
         elif args.dataset == 'kitti_depth':
-            dataset_path = dataset_root + "kitti/"
-            self.dataset = KittiDepth(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=80.0)
+            self.dataset = KittiDepth(dataset_rel_path="kitti/", name=args.dataset, height=375, width=1242, max_depth=80.0)
 
         elif '_'.join(args.dataset.split('_')[:2]) == 'kitti_discrete':
-            dataset_path = dataset_root + "kitti/raw_data/"
-            self.dataset = KittiDiscrete(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=None)
+            self.dataset = KittiDiscrete(dataset_rel_path="kitti/raw_data/", name=args.dataset, height=375, width=1242, max_depth=None)
 
         elif '_'.join(args.dataset.split('_')[:2]) == 'kitti_continuous':
-            dataset_path = dataset_root + "kitti/raw_data/"
-            self.dataset = KittiContinuous(dataset_path=dataset_path, name=args.dataset, height=375, width=1242, max_depth=85.0)
+            self.dataset = KittiContinuous(dataset_rel_path="kitti/raw_data/", name=args.dataset, height=375, width=1242, max_depth=85.0)
 
         elif args.dataset == 'nyudepth':
-            dataset_path = dataset_root + "nyu-depth-v2/data/images/"
-            self.dataset = NyuDepth(dataset_path=dataset_path, name=args.dataset, height=480, width=640, max_depth=None)
+            self.dataset = NyuDepth(dataset_rel_path="nyu-depth-v2/data/images/", name=args.dataset, height=480, width=640, max_depth=None)
 
         elif args.dataset == 'lrmjose':
-            dataset_path = dataset_root + "lrmjose/"
-            self.dataset = LRMJose(dataset_path=dataset_path, name=args.dataset, height=256, width=455, max_depth=None)
+            self.dataset = LRMJose(dataset_rel_path="lrmjose/", name=args.dataset, height=256, width=455, max_depth=None)
 
         else:
             print("[Dataloader] The typed dataset '%s' is invalid. "
