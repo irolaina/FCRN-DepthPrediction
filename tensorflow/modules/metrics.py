@@ -118,7 +118,7 @@ def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
         depth_split = gt_files[t_id].split('/')
         new_depth_filename = depth_split[8] + '_' + depth_split[-1].replace('.bin', '.png')
         depth_replace = gt_files[t_id].replace('velodyne_points/data/', 'proc_kitti_nick/disp2/')
-        depth_head, depth_tail = os.path.split(depth_replace)
+        depth_head, _ = os.path.split(depth_replace)
         gt_depth_continuous_path = os.path.join(depth_head, new_depth_filename)
 
         # print(gt_calib[t_id])

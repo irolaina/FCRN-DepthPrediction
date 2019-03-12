@@ -333,7 +333,9 @@ def test():
         #  Testing Loop
         # ==============
         pred_list, gt_list = [], []
-        # num_test_images = 5  # Only for testing! # TODO: Desativar!!!!!!!
+
+        if args.debug:
+            num_test_images = 5  # Only for testing!
 
         # TODO: Criar uma classe de test assim como fiz para train e valid, e declarar este objeto dentro dela
         if args.show_test_results:

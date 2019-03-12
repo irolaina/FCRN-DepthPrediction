@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 
 # ----------------------------------------------------------------------------------
-# Commonly used layers and operations based on ethereon's implementation 
+# Commonly used layers and operations based on ethereon's implementation
 # https://github.com/ethereon/caffe-tensorflow
-# Slight modifications may apply. FCRN-specific operations have also been appended. 
+# Slight modifications may apply. FCRN-specific operations have also been appended.
 # ----------------------------------------------------------------------------------
 # Thanks to *Helisa Dhamo* for the model conversion and integration into TensorFlow.
 # ----------------------------------------------------------------------------------
