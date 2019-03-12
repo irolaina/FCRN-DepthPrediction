@@ -126,8 +126,8 @@ def train():
             print('\n[network/Training] Loading the model to retrain it...')
             load_model(saver=model.train_saver, sess=sess)
         else:
-           init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-           sess.run(init_op)
+            init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+            sess.run(init_op)
 
         # ===============
         #  Training Loop
@@ -396,7 +396,8 @@ def test():
             elif args.eval_tool == 'kitti_depth':
                 metrics.evaluation_tool_kitti_depth(num_test_images)
             else:
-                raise SystemError("Invalid 'eval_tool' selected. Choose one of the options: 'monodepth' or 'kitti_depth'.")
+                raise SystemError(
+                    "Invalid 'eval_tool' selected. Choose one of the options: 'monodepth' or 'kitti_depth'.")
 
         else:
             print(
@@ -407,7 +408,6 @@ def test():
 #  Predict  #
 # ========= #
 def predict():
-
     # Default input size
     batch_size, height, width = 1, 228, 304
 

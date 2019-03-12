@@ -50,7 +50,7 @@ from .dataset import Dataset
 #  Class Declaration
 # ===================
 class NyuDepth(Dataset):
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super(NyuDepth, self).__init__(**kwargs)
 
     def get_filenames_lists(self, mode, test_split='', test_file_path=''):
@@ -67,7 +67,7 @@ class NyuDepth(Dataset):
             depth_filenames_tmp = glob.glob(self.dataset_path + mode + "ing/*/*_depth.png")  # ...Depth/Record*/Camera */*.png
 
             image_filenames_aux = [os.path.split(image)[1].replace('_colors.png', '') for image in image_filenames_tmp]
-            depth_filenames_aux = [os.path.split(depth)[1].replace('_depth.png',  '') for depth in depth_filenames_tmp]
+            depth_filenames_aux = [os.path.split(depth)[1].replace('_depth.png', '') for depth in depth_filenames_tmp]
 
             # TODO: Add Comment
             image_filenames, depth_filenames, _, _ = self.search_pairs(image_filenames_tmp, depth_filenames_tmp,

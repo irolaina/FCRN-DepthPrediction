@@ -15,8 +15,9 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
+from modules.framework import load_model
 from modules.third_party.laina.fcrn import ResNet50UpProj
-from modules.utils import settings, detect_available_models
+from modules.utils import settings
 
 # ==================
 #  Global Variables
@@ -77,6 +78,7 @@ class CvTimer:
     def avg_fps(self):
         return sum(self.l_fps_history) / float(self.fps_len)
 
+
 def apply_overlay(frame, pred_jet_resized):
     alpha = 0.5
     background = frame.copy()
@@ -84,6 +86,7 @@ def apply_overlay(frame, pred_jet_resized):
     overlay = cv2.addWeighted(background, alpha, overlay, 1 - alpha, 0)
 
     return overlay
+
 
 def process_images(frame, pred, timer):
     # Change Data Scale from meters to uint8
@@ -192,8 +195,6 @@ def process_images_remove_sky(frame, pred, timer):
 #  Main
 # ======
 def main():
-    args.model_path = detect_available_models()
-
     timer = CvTimer()
 
     print(args.model_path)
@@ -244,13 +245,8 @@ def main():
         # --------- #
         #  Restore  #
         # --------- #
-        # Use to load from ckpt file
-        saver = tf.train.Saver()
-        try:
-            saver.restore(sess, args.model_path)
-        except tf.errors.NotFoundError:
-            print("[NotFoundError] '{}' model not found!".format(args.model_path))
-            os._exit(1)
+        print('\n[network/Predicting] Loading the model...')
+        load_model(saver=tf.train.Saver(), sess=sess)
 
         # Use to load from npy file
         # net.load(args.model_path, sess)

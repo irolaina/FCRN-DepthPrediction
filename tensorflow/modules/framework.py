@@ -37,9 +37,7 @@ def load_model(saver, sess):
         args.model_path = detect_available_models()
         saver.restore(sess, args.model_path)
     except tf.errors.NotFoundError:
-        print("[NotFoundError] '{}' model not found!".format(args.model_path))
-        # noinspection PyProtectedMember
-        os._exit(1)
+        raise FileNotFoundError("'{}' model not found!".format(args.model_path))
 
 
 # ===================

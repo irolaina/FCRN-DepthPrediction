@@ -51,12 +51,12 @@ class Settings:
         if not os.path.exists(self.save_restore_path):
             os.makedirs(self.save_restore_path)
 
-
     def get_save_path(self):
         return self.save_path
 
     def get_save_restore_path(self):
         return self.save_restore_path
+
 
 # ===========
 #  Functions

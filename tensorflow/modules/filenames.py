@@ -2,22 +2,11 @@
 #  Libraries
 # ===========
 import os
-import sys
 import time
 
 import numpy as np
 
 from modules.args import args
-
-
-# ==================
-#  Global Variables
-# ==================
-
-
-# ===========
-#  Functions
-# ===========
 
 
 # ===================

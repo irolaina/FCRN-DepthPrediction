@@ -1,8 +1,6 @@
 # ===========
 #  Libraries
 # ===========
-import sys
-
 import tensorflow as tf
 
 from modules.args import args

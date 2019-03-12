@@ -10,7 +10,8 @@ from tqdm import tqdm
 from modules.args import args
 from modules.third_party.monodepth.utils.evaluation_utils import compute_errors
 from modules.utils import settings
-from modules.third_party.monodepth.utils.evaluation_utils import load_gt_disp_kitti, convert_gt_disps_to_depths_kitti, read_text_lines, read_file_data, \
+from modules.third_party.monodepth.utils.evaluation_utils import load_gt_disp_kitti, convert_gt_disps_to_depths_kitti, \
+    read_text_lines, read_file_data, \
     generate_depth_map
 
 
@@ -60,7 +61,6 @@ def generate_depth_maps_kitti_split(pred_array, args_gt_path):
 
         except IndexError:
             break
-
 
     return gt_depths
 

@@ -2,8 +2,8 @@ import collections
 import glob
 import os
 import time
+
 import numpy as np
-import sys
 
 
 # pylint: disable=line-too-long
