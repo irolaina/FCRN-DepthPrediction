@@ -132,8 +132,7 @@ class Model(object):
                                                               valid_pixels,
                                                               gamma=0.5)
             else:
-                print("[Network/Loss] Invalid Loss Function Selected!")
-                raise SystemExit
+                raise SystemError("Invalid Loss Function Selected!")
 
             if args.l2norm:
                 self.train.tf_loss += loss.calculateL2norm()

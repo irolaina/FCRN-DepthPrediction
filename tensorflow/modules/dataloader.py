@@ -57,15 +57,14 @@ class Dataloader:
             self.dataset = LRMJose(dataset_rel_path="lrmjose/", name=args.dataset, height=256, width=455, max_depth=None)
 
         else:
-            print("[Dataloader] The typed dataset '%s' is invalid. "
-                  "Check the list of supported datasets." % args.dataset)
-            raise SystemExit
+            raise SystemError("[Dataloader] The typed dataset '%s' is invalid. "
+                              "Check the list of supported datasets." % args.dataset)
 
         # Searches dataset image/depth filenames lists
         self.train_image_filenames, self.train_depth_filenames, self.num_train_samples = None, None, -1
-        self.tf_train_image_filenames, self.tf_train_depth_filenames = None, None
-
         self.test_image_filenames, self.test_depth_filenames, self.num_test_samples = None, None, -1
+
+        self.tf_train_image_filenames, self.tf_train_depth_filenames = None, None
         self.tf_test_image_filenames, self.tf_test_depth_filenames = None, None
 
         if args.mode == 'train':
@@ -73,16 +72,16 @@ class Dataloader:
             self.get_test_data()
 
             self.tf_train_image_key = None
-            self.tf_train_image = None
-
             self.tf_train_depth_key = None
+
+            self.tf_train_image = None
             self.tf_train_depth = None
 
         elif args.mode == 'test':
             self.tf_test_image_key = None
-            self.tf_test_image = None
-
             self.tf_test_depth_key = None
+
+            self.tf_test_image = None
             self.tf_test_depth = None
 
         print("[Dataloader] dataloader object created.")

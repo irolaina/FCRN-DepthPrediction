@@ -46,48 +46,40 @@ class Dataset(FilenamesHandler):
         # ------------------------------------------------------------- #
         #  Evaluation based on Disparity Images (Eval Tool: MonoDepth)  #
         # ------------------------------------------------------------- #
-        if args.eval_tool == 'monodepth' and (test_split == 'eigen' or test_split == 'eigen_continuous'):
-            file_path = 'modules/third_party/monodepth/utils/filenames/eigen_test_files.txt'
+        if args.eval_tool == 'monodepth':
+            if test_split == 'kitti_stereo':
+                file_path = 'data/kitti_stereo_2015_test_files.txt'
 
-            # Overwrite the 'dataset_path' specified by the dataset
-            self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/'
+                # Overwrite the 'dataset_path' specified by the dataset
+                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/stereo/stereo2015/data_scene_flow/'
 
-        elif args.eval_tool == 'monodepth' and test_split == 'kitti_stereo':
-            file_path = 'modules/third_party/monodepth/utils/filenames/kitti_stereo_2015_test_files.txt'
+            elif test_split == 'eigen':
+                file_path = 'data/eigen_test_files.txt'
 
-            # Overwrite the 'dataset_path' specified by the dataset
-            self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/stereo/stereo2015/data_scene_flow/'
+                # Overwrite the 'dataset_path' specified by the dataset
+                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/'
 
-        elif args.eval_tool == 'monodepth' and test_split == 'eigen_kitti_depth':
-            file_path = 'data/new_splits/eigen_split_based_on_kitti_depth/eigen_test_kitti_depth_files.txt'
+            elif test_split == 'eigen_kitti_depth':
+                file_path = 'data/eigen_test_kitti_depth_files.txt'
 
-            # Overwrite the 'dataset_path' specified by the dataset
-            self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
+                # Overwrite the 'dataset_path' specified by the dataset
+                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
 
         # --------------------------------------------------------------------------------- #
         #  Evaluation based on Ground Truth/Velodyne Scans Images (Eval Tool: KITTI Depth)  #
         # --------------------------------------------------------------------------------- #
-        # FIXME:
-        elif args.eval_tool == 'kitti_depth' and (test_split == 'eigen' or test_split == 'eigen_continuous'):
-            print("Não deveria rodar! Terminar Implementação. Devo gerar os mapas de profundidade para que possa ser avaliado.")
-            raise SystemError
+        elif args.eval_tool == 'kitti_depth':
+            if test_split == 'kitti_stereo' or test_split == 'eigen':  # FIXME:
+                raise NotImplementedError("Não deveria rodar! Terminar Implementação. Devo gerar os mapas de profundidade para que possa ser avaliado.")
 
-        # FIXME:
-        elif args.eval_tool == 'kitti_depth' and test_split == 'kitti_stereo':
-            print("Não deveria rodar! Terminar Implementação. Devo gerar os mapas de profundidade para que possa ser avaliado.")
-            raise SystemError
+            elif test_split == 'eigen_kitti_depth':
+                file_path = 'data/new_splits/eigen_split_based_on_kitti_depth/eigen_test_kitti_depth_files.txt'
 
-        elif args.eval_tool == 'kitti_depth' and test_split == 'eigen_kitti_depth':
-            file_path = 'data/new_splits/eigen_split_based_on_kitti_depth/eigen_test_kitti_depth_files.txt'
+                # Overwrite the 'dataset_path' specified by the dataset
+                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
 
-            # Overwrite the 'dataset_path' specified by the dataset
-            self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
-
-        else:
-            if test_file_path == '':
-                file_path = 'data/' + self.name + '_' + mode + '.txt'
-            else:
-                file_path = test_file_path
+        else:  # Default
+            file_path = 'data/' + self.name + '_' + mode + '.txt' if test_file_path == '' else test_file_path
 
         args.test_file_path = file_path
 

@@ -512,8 +512,7 @@ def main():
     elif args.mode == 'pred':
         predict()
     else:
-        print("[ModeError] Selected mode doesn't exist! Select one of the following: 'train', 'test', or 'pred'.")
-        raise SystemExit
+        raise SystemError("The selected mode doesn't exist! Select one of the following: 'train', 'test', or 'pred'.")
 
     print("\n[%s] Done." % settings.appName)
     sys.exit()

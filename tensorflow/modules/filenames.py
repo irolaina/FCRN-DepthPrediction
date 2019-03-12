@@ -46,8 +46,7 @@ class FilenamesHandler(object):
             print('time:', timer, 's\n')
 
         except OSError:
-            print("[OSError] Could not find the '%s' file." % filename)
-            raise SystemExit
+            raise OSError("Could not find the '%s' file." % filename)
 
         return image_filenames, depth_filenames
 
@@ -87,8 +86,7 @@ class FilenamesHandler(object):
 
         n2, m2 = len(image_filenames), len(depth_filenames)
         if n2 != m2:
-            print("[AssertionError] Length must be equal!")
-            raise AssertionError()
+            raise AssertionError("[AssertionError] Length must be equal!")
         print("time: %f s" % (time.time() - start))
 
         # Shuffles
