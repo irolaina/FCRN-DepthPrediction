@@ -39,6 +39,7 @@ def generate_depth_maps_kitti_split(pred_array, args_gt_path):
             print(np.min(pred_array[t_id]), np.max(pred_array[t_id]))
             print()
 
+            # TODO: Create Subplot
             plt.figure(100)
             plt.imshow(gt_disparities[t_id])
             plt.title('gt_disp')
@@ -79,6 +80,7 @@ def generate_depth_maps_eigen_split(pred_array, args_gt_path):
             # print("depth:\n", gt_depth)
             # print("pred:\n", pred_array[t_id])
 
+            # TODO: Create Subplot
             plt.figure(100)
             plt.imshow(imageio.imread(im_files[t_id]))
             plt.title('image')
@@ -147,6 +149,7 @@ def generate_depth_maps_eigen_continuous_split(pred_array, args_gt_path):
             # print(pred_array[t_id])
             # input("pred")
 
+            # TODO: Create Subplot
             plt.figure(100)
             plt.imshow(imageio.imread(im_files[t_id]))
             plt.title('image')
@@ -297,6 +300,7 @@ def evaluation_tool_monodepth(pred_depths, gt_depths):
 
         # Show gt/pred Images
         if False:  # TODO: Remover?
+            # TODO: Create Subplot
             plt.figure(102)
             plt.title('pred')
             plt.imshow(pred_depth)

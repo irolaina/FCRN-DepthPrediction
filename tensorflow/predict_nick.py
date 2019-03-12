@@ -54,14 +54,14 @@ from skimage import exposure, img_as_uint
 from tqdm import tqdm
 
 # Custom Libraries
+from modules import metrics
 from modules.args import args
 from modules.dataloader import Dataloader
-from modules.framework import Model
+from modules.framework import load_model, SessionWithExitSave, Model
 from modules.plot import Plot
 from modules.test import Test
 from modules.third_party.laina.fcrn import ResNet50UpProj
-from modules import metrics
-from modules.utils import settings, detect_available_models
+from modules.utils import settings
 
 # ==========================
 #  [Train] Framework Config
@@ -82,37 +82,10 @@ SAVE_TEST_DISPARITIES = True  # Default: True
 # ==================
 #  Global Variables
 # ==================
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu  # Limits Tensorflow to see only the specified GPU.
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")  # Suppress Warnings
 
-
-# ===========
-#  Functions
-# ===========
-# TODO: Mover
-class SessionWithExitSave(tf.Session):
-    def __init__(self, *args, saver=None, exit_save_path=None, **kwargs):
-        self.saver = saver
-        self.exit_save_path = exit_save_path
-        super().__init__(*args, **kwargs)
-
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        if exc_type is KeyboardInterrupt:
-            if self.saver:
-                self.saver.save(self, self.exit_save_path)
-                print('Output saved to: "{}./*"'.format(self.exit_save_path))
-        super().__exit__(exc_type, exc_value, exc_tb)
-
-# TODO: Mover
-def load_model(saver, sess):
-    """ Loads model from *.ckpt file """
-    try:
-        args.model_path = detect_available_models()
-        saver.restore(sess, args.model_path)
-    except tf.errors.NotFoundError:
-        print("[NotFoundError] '{}' model not found!".format(args.model_path))
-        # noinspection PyProtectedMember
-        os._exit(1)
 
 # ===================== #
 #  Training/Validation  #
@@ -125,7 +98,7 @@ def train():
     with graph.as_default():
         data = Dataloader()
 
-        # If enabled, the framework will train the network for only one image!!!
+        # If enabled, the framework will train the network on only one image!!!
         if TRAIN_ON_SINGLE_IMAGE:
             data.train_image_filenames = np.expand_dims(data.train_image_filenames[0], axis=0)
             data.train_depth_filenames = np.expand_dims(data.train_depth_filenames[0], axis=0)
@@ -417,7 +390,7 @@ def test():
             print()
 
             # Invokes Evaluation Tools
-            if args.eval_tool == 'monodepth':  # FIXME: After major changes, possibly this function is broken!
+            if args.eval_tool == 'monodepth':
                 pred_depths, gt_depths = metrics.generate_depth_maps(pred_list, gt_list, data.dataset.dataset_path)
                 metrics.evaluation_tool_monodepth(pred_depths, gt_depths)
             elif args.eval_tool == 'kitti_depth':
@@ -547,7 +520,4 @@ def main():
 
 
 if __name__ == '__main__':
-    # Limits Tensorflow to see only the specified GPU.
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-
     tf.app.run(main=main())

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# TODO: Precisei excluir o .meta do path
+# Precisa excluir a extensão '.meta' do path!
 #python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/kitti_continuous/all_px/berhu/2018-06-29_17-59-58/restore/model.fcrn
 #python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/kitti_continuous/all_px/berhu/2018-07-11_13-16-54/restore/model.fcrn
 #python3 predict_nick.py -m test -s kitti_depth --test_split eigen_continuous -r output/fcrn/kitti_continuous/all_px/berhu/2018-07-22_22-22-01/restore/model.fcrn

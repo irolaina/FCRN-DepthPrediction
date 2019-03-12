@@ -14,6 +14,34 @@ from modules.utils import settings, detect_available_models
 from modules.validation import Validation
 
 
+# ===========
+#  Functions
+# ===========
+class SessionWithExitSave(tf.Session):
+    def __init__(self, *args, saver=None, exit_save_path=None, **kwargs):
+        self.saver = saver
+        self.exit_save_path = exit_save_path
+        super().__init__(*args, **kwargs)
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        if exc_type is KeyboardInterrupt:
+            if self.saver:
+                self.saver.save(self, self.exit_save_path)
+                print('Output saved to: "{}./*"'.format(self.exit_save_path))
+        super().__exit__(exc_type, exc_value, exc_tb)
+
+
+def load_model(saver, sess):
+    """ Loads model from *.ckpt file """
+    try:
+        args.model_path = detect_available_models()
+        saver.restore(sess, args.model_path)
+    except tf.errors.NotFoundError:
+        print("[NotFoundError] '{}' model not found!".format(args.model_path))
+        # noinspection PyProtectedMember
+        os._exit(1)
+
+
 # ===================
 #  Class Declaration
 # ===================
@@ -150,12 +178,17 @@ class Model(object):
         with tf.name_scope("Valid"):
             tf.summary.scalar('loss', self.valid.tf_loss, collections=self.model_collection)
 
-            tf.summary.image('input/image', tf.expand_dims(self.valid.tf_image, axis=0), max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/depth', tf.expand_dims(self.valid.tf_depth, axis=0), max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/image_resized', tf.expand_dims(self.valid.tf_image_resized, axis=0), max_outputs=1, collections=self.model_collection)
-            tf.summary.image('input/depth_resized', tf.expand_dims(self.valid.tf_depth_resized, axis=0), max_outputs=1, collections=self.model_collection)
+            tf.summary.image('input/image', tf.expand_dims(self.valid.tf_image, axis=0), max_outputs=1,
+                             collections=self.model_collection)
+            tf.summary.image('input/depth', tf.expand_dims(self.valid.tf_depth, axis=0), max_outputs=1,
+                             collections=self.model_collection)
+            tf.summary.image('input/image_resized', tf.expand_dims(self.valid.tf_image_resized, axis=0), max_outputs=1,
+                             collections=self.model_collection)
+            tf.summary.image('input/depth_resized', tf.expand_dims(self.valid.tf_depth_resized, axis=0), max_outputs=1,
+                             collections=self.model_collection)
 
-            tf.summary.image('output/pred', self.valid.fcrn.get_output(), max_outputs=1, collections=self.model_collection)
+            tf.summary.image('output/pred', self.valid.fcrn.get_output(), max_outputs=1,
+                             collections=self.model_collection)
 
     @staticmethod
     def count_params():
