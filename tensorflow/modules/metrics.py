@@ -358,7 +358,7 @@ def evaluation_tool_kitti_depth(num_test_images):
 
     print("[KITTI Depth Evaluation Tool] Invoking 'evaluate_depth' executable...")
     subprocess.call(
-        [r"evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth",
+        [r"modules/evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth",
          "{}".format(settings.output_tmp_gt_dir),
          "{}".format(settings.output_tmp_pred_dir)])
 
