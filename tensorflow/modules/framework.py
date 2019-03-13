@@ -215,10 +215,11 @@ class Model(object):
         print("\n[Results] Model saved in file: %s" % file_path)
 
     # TODO: Acho que não preciso das variaveis root_path blabla
+    # TODO: Não salvar como txt, e sim como .csv usando pandas.
     def save_results(self, datetime, epoch, max_epochs, step, max_steps, sim_train):
         """Logs the obtained simulation results."""
         root_path = os.path.abspath(os.path.join(__file__, "../.."))
-        relative_path = 'results.txt'
+        relative_path = settings.output_dir + 'results_train.txt'
         save_file_path = os.path.join(root_path, relative_path)
 
         print("[Results] Logging simulation info to '%s' file..." % relative_path)

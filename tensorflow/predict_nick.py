@@ -44,13 +44,11 @@ import sys
 import time
 import warnings
 
-import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from PIL import Image
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from skimage import exposure, img_as_uint
 from tqdm import tqdm
 
 # Custom Libraries
@@ -61,7 +59,7 @@ from modules.framework import load_model, SessionWithExitSave, Model
 from modules.plot import Plot
 from modules.test import Test
 from modules.third_party.laina.fcrn import ResNet50UpProj
-from modules.utils import settings
+from modules.utils import settings, imsave_as_uint16_png
 
 # ==========================
 #  [Train] Framework Config
@@ -118,7 +116,8 @@ def train():
     max_epochs = int(np.floor(args.batch_size * args.max_steps / data.num_train_samples))
     print('\nTrain with approximately %d epochs' % max_epochs)
 
-    with SessionWithExitSave(saver=model.train_saver, exit_save_path='output/tf-saves/lastest.ckpt',
+    with SessionWithExitSave(saver=model.train_saver,
+                             exit_save_path='output/tf-saves/lastest.ckpt',
                              graph=graph) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
 
@@ -344,15 +343,12 @@ def test():
                 pred_list.append(pred_up[0, :, :, 0])
                 gt_list.append(depth[:, :, 0])
 
-            # Saves the Test Predictions as uint16 PNG Images
-            if SAVE_TEST_DISPARITIES:
+            # Saves the predictions and ground truth depth images as uint16 PNG Images
+            if SAVE_TEST_DISPARITIES or args.eval_tool == 'monodepth':
                 # Convert the Predictions Images from float32 to uint16
-                pred_up_uint16 = img_as_uint(exposure.rescale_intensity(pred_up[0], out_range='float'))
-                depth_uint16 = img_as_uint(exposure.rescale_intensity(depth, out_range='float'))
 
-                # Save PNG Images
-                imageio.imsave(settings.output_tmp_pred_dir + 'pred' + str(i) + '.png', pred_up_uint16)
-                imageio.imsave(settings.output_tmp_gt_dir + 'gt' + str(i) + '.png', depth_uint16)
+                imsave_as_uint16_png(settings.output_tmp_pred_dir + 'pred' + str(i) + '.png', pred_up[0])
+                imsave_as_uint16_png(settings.output_tmp_gt_dir + 'gt' + str(i) + '.png', depth)
 
             # Prints Testing Progress
             timer2 += time.time()

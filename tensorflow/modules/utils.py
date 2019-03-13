@@ -8,6 +8,9 @@ from collections import deque
 from itertools import chain
 from sys import getsizeof, stderr
 
+import imageio
+from skimage import exposure, img_as_uint
+
 from modules.args import args
 
 
@@ -61,6 +64,7 @@ class Settings:
 # ===========
 #  Functions
 # ===========
+
 def detect_available_models():
     if args.model_path == '':
         found_models = glob.glob(settings.output_dir + "fcrn/*/*/*/*/restore/*.meta")
@@ -76,6 +80,13 @@ def detect_available_models():
         selected_model_path = args.model_path
 
     return selected_model_path
+
+
+def imsave_as_uint16_png(filename, image_float32):
+    """ Converts the predictions from float32 to uint16 and saves them as PNG images """
+
+    image_uint16 = img_as_uint(exposure.rescale_intensity(image_float32, out_range='float'))
+    imageio.imsave(filename, image_uint16)
 
 
 def total_size(o, handlers=None, verbose=False):
