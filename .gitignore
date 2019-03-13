@@ -21,4 +21,3 @@ tensorflow_tmp/*
 
 # Exclude Files
 matlab/predictions_NYUval.mat
-tensorflow/results.txt
