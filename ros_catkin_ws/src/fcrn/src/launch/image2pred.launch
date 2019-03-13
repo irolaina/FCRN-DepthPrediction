@@ -6,7 +6,7 @@
     <arg     if="$(arg respawn)" name="bond" value="" />
     <arg unless="$(arg respawn)" name="bond" value="--no-bond" />
 
-    <!-- Play Kitti ROSBag -->
+    <!-- Play KITTI ROSBag -->
     <node pkg="rosbag" type="play" name="kitti_rosbag" output="screen" args="--l /home/nicolas/MEGA/workspace/kitti2bag/kitti_2011_09_26_drive_0001_synced.bag"/>
 
     <!-- Init image2pred Node -->

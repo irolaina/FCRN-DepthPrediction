@@ -356,7 +356,7 @@ def evaluation_tool_monodepth(pred_depths, gt_depths):
 def evaluation_tool_kitti_depth(num_test_images):
     import subprocess
 
-    print("[KittiDepth Evaluation Tool] Invoking 'evaluate_depth' executable...")
+    print("[KITTI Depth Evaluation Tool] Invoking 'evaluate_depth' executable...")
     subprocess.call(
         [r"evaluation/kitti_depth_prediction_devkit/cpp/evaluate_depth",
          "{}".format(settings.output_tmp_gt_dir),

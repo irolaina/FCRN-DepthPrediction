@@ -1,7 +1,7 @@
 # ========
 #  README
 # ========
-# Kitti Depth Prediction
+# KITTI Depth Prediction
 # Uses Depth Maps: measures distances [close - LOW values, far - HIGH values]
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint16

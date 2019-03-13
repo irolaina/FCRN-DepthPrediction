@@ -13,8 +13,8 @@ def argument_handler():
         "Train the FCRN (Fully Convolution Residual Network) Tensorflow implementation taking image files as input.")
 
     # Input
-    parser.add_argument('--gpu', type=str, help="Selects which gpu to run the code", default='0')
     parser.add_argument('-m', '--mode', type=str, help="Selects 'train' or 'test' mode", default='train')
+    parser.add_argument('--gpu', type=str, help="Selects which gpu to run the code", default='0')
 
     # ========== #
     #  Training  #
@@ -26,24 +26,24 @@ def argument_handler():
                         default='fcrn')
 
     parser.add_argument('-s', '--dataset', action='store',
-                        help="Selects the dataset ['apolloscape', 'kittidepth', 'kitti_discrete', 'kitti_continuous', 'kitti_continuous_residential', 'nyudepth']",
+                        help="Selects the dataset: 'apolloscape', 'kitti_depth', 'kitti_discrete', 'kitti_continuous', 'nyudepth', or 'lrmjose'",
                         default='')
 
     parser.add_argument('--px', action='store',
-                        help="Selects which pixels to minimize ['all' or 'valid']", default='all')
+                        help="Selects which pixels to optimize: 'all' or 'valid'", default='valid')
 
-    parser.add_argument('--data_aug', action='store_true', help="Enables Data Augmentation", default=True)
-
-    parser.add_argument('--loss', type=str, help="Selects the desired loss function: 'mse', 'berhu', 'eigen', 'eigen_grads' etc",
+    parser.add_argument('--loss', type=str, help="Selects the desired loss function: 'mse', 'berhu', 'eigen', 'eigen_grads', etc",
                         default='berhu')
+    parser.add_argument('--batch_size', type=int, help="Defines the training batch size", default=4)
+    parser.add_argument('--max_steps', type=int, help="Defines the max number of training steps", default=300000)
+    parser.add_argument('-l', '--learning_rate', type=float, help="Defines the initial value of the learning rate", default=1e-4)
 
-    parser.add_argument('--batch_size', type=int, help="Defines the Training batch size", default=4)
-    parser.add_argument('--max_steps', type=int, help="Defines the number of max Steps", default=1000)
-    parser.add_argument('-l', '--learning_rate', type=float, help="Defines the initial learning rate", default=1e-4)
     parser.add_argument('-d', '--dropout', type=float, help="Enables dropout in the model during training", default=0.5)
     parser.add_argument('--ldecay', action='store_true', help="Enables learning decay", default=False)
     parser.add_argument('-n', '--l2norm', action='store_true', help="Enables L2 Normalization", default=False)
-    parser.add_argument('--remove_sky', action='store_true', help="Removes Sky for Kitti Datasets", default=False)
+    parser.add_argument('--data_aug', action='store_true', help="Enables Data Augmentation", default=True)
+
+    parser.add_argument('--remove_sky', action='store_true', help="Removes sky for KITTI Datasets", default=False)
 
     parser.add_argument('--full_summary', action='store_true',
                         help="If set, it will keep more data for each summary. Warning: the file can become very large")
