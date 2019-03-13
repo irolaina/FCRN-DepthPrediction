@@ -1,20 +1,8 @@
-# Train/Test Framework 
-Run Single Prediction: 
+# Train/Test/Pred Framework 
+Train:
 
 ```shell
-python predict.py ../models/NYU_FCRN-checkpoint/NYU_FCRN.ckpt ../misc/nyu_example.png --gpu 1
-```
-
-Train on XPS:
-
-```shell
-python3 predict_nick.py -m train --machine nicolas --gpu 0 -s kitti_continuous --px all --loss berhu --max_steps 75000 --ldecay --l2norm --remove_sky -t -v
-```
-
-Train on Olorin:
-
-```shell
-python3 predict_nick.py -m train --machine olorin --gpu 0 -s kitti_discrete --px all --loss berhu --max_steps 10 --ldecay --l2norm --remove_sky 
+python3 predict_nick.py -m train --machine <'nicolas' or 'olorin'> --gpu 0 -s kitti_continuous --px all --loss berhu --max_steps 75000 --ldecay --l2norm --remove_sky --dataaug -t -v
 ```
 
 Test:
@@ -49,17 +37,17 @@ tensorboard --logdir=MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/
 
 # Predictions Evaluation
 
-Kitti Depth Prediction:
+Using official evaluation tool from KITTI Depth Prediction Dataset:
 
 ```shell
-cd /media/nicolas/nicolas_seagate/datasets/kitti/depth/depth_prediction/data/devkit/cpp
+python3 predict_nick.py -m test -s kitti_depth --gpu 0 -u --eval_tool kitti_depth --test_split eigen_kitti_depth
 ```
+
+Using Monodepth's evaluation code:
 
 ```shell
-./evaluate_depth \
-~/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/tmp/gt_imgs \ ~/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/tmp/pred_imgs
+python3 predict_nick.py -m test -s kitti_depth --gpu 0 -u --eval_tool monodepth --test_split eigen_kitti_depth
 ```
-
 # Real-Time Prediction using OpenCV:
 
 Runs the specified model:
