@@ -31,7 +31,6 @@ def argument_handler():
 
     parser.add_argument('--retrain', action='store_true', help="Enables the Retrain Mode", default=False)
 
-
     parser.add_argument('-s', '--dataset', action='store',
                         help="Selects the dataset: 'apolloscape', 'kitti_depth', 'kitti_discrete', 'kitti_continuous', 'nyudepth', or 'lrmjose'",
                         default='')
@@ -39,11 +38,13 @@ def argument_handler():
     parser.add_argument('--px', action='store',
                         help="Selects which pixels to optimize: 'all' or 'valid'", default='valid')
 
-    parser.add_argument('--loss', type=str, help="Selects the desired loss function: 'mse', 'berhu', 'eigen', 'eigen_grads', etc",
+    parser.add_argument('--loss', type=str,
+                        help="Selects the desired loss function: 'mse', 'berhu', 'eigen', 'eigen_grads', etc",
                         default='berhu')
     parser.add_argument('--batch_size', type=int, help="Defines the training batch size", default=4)
     parser.add_argument('--max_steps', type=int, help="Defines the max number of training steps", default=300000)
-    parser.add_argument('-l', '--learning_rate', type=float, help="Defines the initial value of the learning rate", default=1e-4)
+    parser.add_argument('-l', '--learning_rate', type=float, help="Defines the initial value of the learning rate",
+                        default=1e-4)
 
     parser.add_argument('-d', '--dropout', type=float, help="Enables dropout in the model during training", default=0.5)
     parser.add_argument('--ldecay', action='store_true', help="Enables learning decay", default=False)
@@ -94,7 +95,8 @@ def argument_handler():
     # ============ #
     #  Prediction  #
     # ============ #
-    parser.add_argument('-r', '--model_path', type=str, help="Sets the path to a specific model to be restored", default='')
+    parser.add_argument('-r', '--model_path', type=str, help="Sets the path to a specific model to be restored",
+                        default='')
     parser.add_argument('-i', '--image_path', help='Sets the path to the image to be predicted', default='')
 
     return parser.parse_args()

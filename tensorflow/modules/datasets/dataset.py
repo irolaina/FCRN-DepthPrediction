@@ -53,19 +53,19 @@ class Dataset(FilenamesHandler):
                 file_path = 'data/kitti_stereo_2015_test_files.txt'
 
                 # Overwrite the 'dataset_path' specified by the dataset
-                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/stereo/stereo2015/data_scene_flow/'
+                self.dataset_path = self.get_dataset_root() + 'kitti/stereo/stereo2015/data_scene_flow/'
 
             elif test_split == 'eigen':
                 file_path = 'data/eigen_test_files.txt'
 
                 # Overwrite the 'dataset_path' specified by the dataset
-                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/'
+                self.dataset_path = self.get_dataset_root() + 'kitti/raw_data/'
 
             elif test_split == 'eigen_kitti_depth':
                 file_path = 'data/eigen_test_kitti_depth_files.txt'
 
                 # Overwrite the 'dataset_path' specified by the dataset
-                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
+                self.dataset_path = self.get_dataset_root() + 'kitti/'
             else:
                 raise ValueError('')
 
@@ -80,7 +80,7 @@ class Dataset(FilenamesHandler):
                 file_path = 'data/new_splits/eigen_split_based_on_kitti_depth/eigen_test_kitti_depth_files.txt'
 
                 # Overwrite the 'dataset_path' specified by the dataset
-                self.dataset_path = '/media/nicolas/nicolas_seagate/datasets/kitti/'
+                self.dataset_path = self.get_dataset_root() + 'kitti/'
 
         args.test_file_path = file_path
 
