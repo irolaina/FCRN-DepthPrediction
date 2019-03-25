@@ -23,8 +23,6 @@ from modules.utils import settings
 # =========================
 SAVE_TEST_DISPARITIES = True  # Default: True
 showImages = False
-# eval_tool = 'monodepth'
-eval_tool = 'kitti_depth'
 
 # ==================
 #  Global Variables
@@ -102,16 +100,16 @@ def evaluate_hilbert_maps_on_kitti_depth():
             plt.pause(0.001)
 
         # Saves the Test Predictions as uint16 PNG Images
-        if SAVE_TEST_DISPARITIES or eval_tool == 'monodepth':
+        if SAVE_TEST_DISPARITIES or args.eval_tool == 'monodepth':
             imsave_as_uint16_png(settings.output_tmp_pred_dir + 'pred' + str(i) + '.png', hilbert_maps_depth)
             imsave_as_uint16_png(settings.output_tmp_gt_dir + 'gt' + str(i) + '.png', kitti_depth_depth)
 
         print('{}/{}'.format(i, num_test_images))
 
     # Invokes Evaluation Tools
-    if eval_tool == 'monodepth':
+    if args.eval_tool == 'monodepth':
         metrics.evaluation_tool_monodepth(hilbert_maps_depths, kitti_depth_depths)
-    elif eval_tool == 'kitti_depth':
+    elif args.eval_tool == 'kitti_depth':
         metrics.evaluation_tool_kitti_depth(num_test_images)
     else:
         raise SystemError("Invalid 'eval_tool' selected. Choose one of the options: 'monodepth' or 'kitti_depth'.")
