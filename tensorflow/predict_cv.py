@@ -15,6 +15,8 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
+from matplotlib import pyplot as plt
+
 from modules.framework import load_model
 from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.utils import settings
@@ -51,15 +53,30 @@ def circular_counter(max_value):
         x += 1
         yield x
 
+class maxDepth:
+    def __init__(self):
+        self.counter_len = 1000
+        self.l_fps_history = [10 for _ in range(self.counter_len)]
+        self.max_depth_counter = circular_counter(self.counter_len)
+
+    def update(self, src):
+        max_depth = np.max(src)
+        self.l_fps_history[next(self.max_depth_counter) - 1] = max_depth
+        return max_depth
+
+    @property
+    def avg_max_depth(self):
+        return sum(self.l_fps_history) / float(self.counter_len)
+
 
 class CvTimer:
     def __init__(self):
         self.tick_frequency = cv2.getTickFrequency()
         self.tick_at_init = cv2.getTickCount()
         self.last_tick = self.tick_at_init
-        self.fps_len = 100
-        self.l_fps_history = [10 for _ in range(self.fps_len)]
-        self.fps_counter = circular_counter(self.fps_len)
+        self.counter_len = 100
+        self.l_fps_history = [10 for _ in range(self.counter_len)]
+        self.fps_counter = circular_counter(self.counter_len)
 
     def reset(self):
         self.last_tick = cv2.getTickCount()
@@ -76,7 +93,7 @@ class CvTimer:
 
     @property
     def avg_fps(self):
-        return sum(self.l_fps_history) / float(self.fps_len)
+        return sum(self.l_fps_history) / float(self.counter_len)
 
 
 def apply_overlay(frame, pred_jet_resized):
@@ -87,15 +104,31 @@ def apply_overlay(frame, pred_jet_resized):
 
     return overlay
 
+global max_depth
+global timer
 
-def process_images(frame, pred, timer):
+timer = CvTimer()
+max_depth = maxDepth()
+
+def convertScaleAbs(src):
+    global max_depth
+
+    # print(max_depth.fps(src), max_depth.avg_fps)
+    max_depth.update(src)
+
+    # return cv2.convertScaleAbs(src * (255 / np.max(src)))
+    return cv2.convertScaleAbs(src * (255 / max_depth.avg_max_depth))
+
+def process_images(frame, pred):
+    global timer
+
     # Change Data Scale from meters to uint8
     pred_uint8 = cv2.convertScaleAbs(pred[0])
-    pred_scaled_uint8 = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+    pred_scaled_uint8 = convertScaleAbs(pred[0])
 
     # Apply Median Filter
     pred_median = cv2.medianBlur(pred[0], 3)
-    pred_median_scaled_uint8 = cv2.convertScaleAbs(pred_median * (255 / np.max(pred_median)))
+    pred_median_scaled_uint8 = convertScaleAbs(pred_median)
     pred_jet = cv2.applyColorMap(255 - pred_median_scaled_uint8, cv2.COLORMAP_JET)
     pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
 
@@ -125,17 +158,19 @@ def process_images(frame, pred, timer):
     # cv2.imshow('frame', frame)
     # cv2.imshow('pred', pred_uint8)
     # cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
-    # cv2.imshow('pred (scaled)', pred_scaled_uint8)
+    # cv2.imshow('pred(scaled)', pred_scaled_uint8)
     # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
-    # cv2.imshow('pred (scaled, median)', pred_median_scaled_uint8)
+    # cv2.imshow('pred(scaled, median)', pred_median_scaled_uint8)
     # cv2.imshow('overlay', overlay)
-    cv2.imshow('pred, pred(scaled), pred (scaled, median)', conc)
+    cv2.imshow('pred, pred(scaled), pred(scaled, median)', conc)
     cv2.imshow('frame, pred_jet, pred_hsv, overlay', conc2)
 
     return timer
 
 
-def process_images_remove_sky(frame, pred, timer):
+def process_images_remove_sky(frame, pred):
+    global timer
+
     # Remove Sky
     crop_height_perc = 0.3
     frame_new_height = int(crop_height_perc * frame.shape[0])
@@ -145,11 +180,11 @@ def process_images_remove_sky(frame, pred, timer):
 
     # Change Data Scale from meters to uint8
     pred_uint8 = cv2.convertScaleAbs(pred[0])
-    pred_scaled_uint8 = cv2.convertScaleAbs(pred[0] * (255 / np.max(pred[0])))
+    pred_scaled_uint8 = convertScaleAbs(pred[0])
 
     # Apply Median Filter
     pred_median = cv2.medianBlur(pred[0], 3)
-    pred_median_scaled_uint8 = cv2.convertScaleAbs(pred_median * (255 / np.max(pred_median)))
+    pred_median_scaled_uint8 = convertScaleAbs(pred_median)
     pred_jet = cv2.applyColorMap(255 - pred_median_scaled_uint8, cv2.COLORMAP_JET)
     pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
 
@@ -181,22 +216,17 @@ def process_images_remove_sky(frame, pred, timer):
     # cv2.imshow('frame', frame)
     # cv2.imshow('pred', pred_uint8)
     # cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
-    # cv2.imshow('pred (scaled)', pred_scaled_uint8)
+    # cv2.imshow('pred(scaled)', pred_scaled_uint8)
     # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
-    # cv2.imshow('pred (scaled, median)', pred_median_scaled_uint8)
+    # cv2.imshow('pred(scaled, median)', pred_median_scaled_uint8)
     # cv2.imshow('overlay', overlay)
-    cv2.imshow('pred, pred(scaled), pred (scaled, median) (without sky)', conc)
+    cv2.imshow('pred, pred(scaled), pred(scaled, median) (without sky)', conc)
     cv2.imshow('frame, pred_jet, pred_hsv, overlay (without sky)', conc2)
-
-    return timer
-
 
 # ======
 #  Main
 # ======
 def main():
-    timer = CvTimer()
-
     print(args.model_path)
     print(args.video_path)
 
@@ -260,12 +290,18 @@ def main():
             # Evalute the network for the given image
             try:
                 pred, pred_50, pred_80 = sess.run([tf_pred, tf_pred_50, tf_pred_80], feed_dict={input_node: frame})
-                pred_50_uint8_scaled = cv2.convertScaleAbs(pred_50[0] * (255 / np.max(pred[0])))
-                pred_80_uint8_scaled = cv2.convertScaleAbs(pred_80[0] * (255 / np.max(pred[0])))
+                pred_50_uint8_scaled = convertScaleAbs(pred_50[0])
+                pred_80_uint8_scaled = convertScaleAbs(pred_80[0])
                 cv2.imshow('pred_50 (scaled)', pred_50_uint8_scaled)
                 cv2.imshow('pred_80 (scaled)', pred_80_uint8_scaled)
             except UnboundLocalError:
                 pred = sess.run(tf_pred, feed_dict={input_node: frame})
+
+            # Matplotlib
+            plt.figure(1)
+            plt.imshow(pred[0,:,:,0])
+            # plt.pause(0.000001)
+            plt.draw()
 
             # Debug
             if args.debug:
@@ -280,8 +316,8 @@ def main():
             #  Image Processing  #
             # ------------------ #
             # Convert Predicted Depth to uint8 Image
-            timer = process_images(frame, pred, timer)
-            timer = process_images_remove_sky(frame, pred, timer)
+            process_images(frame, pred)
+            process_images_remove_sky(frame, pred)
 
             # Save Images
             if SAVE_IMAGES:
