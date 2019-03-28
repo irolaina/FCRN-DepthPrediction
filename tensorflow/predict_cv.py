@@ -15,8 +15,6 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from matplotlib import pyplot as plt
-
 from modules.framework import load_model
 from modules.third_party.laina.fcrn import ResNet50UpProj
 from modules.utils import settings
@@ -25,6 +23,9 @@ from modules.utils import settings
 #  Global Variables
 # ==================
 SAVE_IMAGES = False
+
+global max_depth
+global timer
 
 
 # ===========
@@ -41,9 +42,6 @@ def argument_handler():
     return parser.parse_args()
 
 
-args = argument_handler()
-
-
 def circular_counter(max_value):
     """helper function that creates an eternal counter till a max value"""
     x = 0
@@ -52,6 +50,7 @@ def circular_counter(max_value):
             x = 0
         x += 1
         yield x
+
 
 class maxDepth:
     def __init__(self):
@@ -104,11 +103,6 @@ def apply_overlay(frame, pred_jet_resized):
 
     return overlay
 
-global max_depth
-global timer
-
-timer = CvTimer()
-max_depth = maxDepth()
 
 def convertScaleAbs(src):
     global max_depth
@@ -119,8 +113,21 @@ def convertScaleAbs(src):
     # return cv2.convertScaleAbs(src * (255 / np.max(src)))
     return cv2.convertScaleAbs(src * (255 / max_depth.avg_max_depth))
 
-def process_images(frame, pred):
+
+def process_images(frame, pred, remove_sky=False):
     global timer
+    suffix = ''
+
+    if remove_sky:
+        # Remove Sky
+        crop_height_perc = 0.3
+        frame = frame[int(crop_height_perc * frame.shape[0]):, :, :]
+        pred = pred[:, int(crop_height_perc * pred.shape[1]):, :, :]
+
+        # print(frame.shape)
+        # print(pred.shape)
+
+        suffix = ' (without sky)'
 
     # Change Data Scale from meters to uint8
     pred_uint8 = cv2.convertScaleAbs(pred[0])
@@ -133,11 +140,11 @@ def process_images(frame, pred):
     pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
 
     # Change Colormap
-    pred_jet_resized = cv2.resize(pred_jet, (304, 228), interpolation=cv2.INTER_CUBIC)
+    pred_jet_resized = cv2.resize(pred_jet, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_CUBIC)
     cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
 
-    pred_hsv_resized = cv2.resize(pred_hsv, (304, 228), interpolation=cv2.INTER_CUBIC)
+    pred_hsv_resized = cv2.resize(pred_hsv, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_CUBIC)
 
     # Apply the overlay
     overlay = apply_overlay(frame, pred_jet_resized)
@@ -162,66 +169,14 @@ def process_images(frame, pred):
     # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
     # cv2.imshow('pred(scaled, median)', pred_median_scaled_uint8)
     # cv2.imshow('overlay', overlay)
-    cv2.imshow('pred, pred(scaled), pred(scaled, median)', conc)
-    cv2.imshow('frame, pred_jet, pred_hsv, overlay', conc2)
-
-    return timer
+    cv2.imshow('pred, pred(scaled), pred(scaled, median)' + suffix, conc)
+    cv2.imshow('frame, pred_jet, pred_hsv, overlay' + suffix, conc2)
 
 
-def process_images_remove_sky(frame, pred):
-    global timer
+timer = CvTimer()
+max_depth = maxDepth()
+args = argument_handler()
 
-    # Remove Sky
-    crop_height_perc = 0.3
-    frame_new_height = int(crop_height_perc * frame.shape[0])
-    pred_new_height = int(crop_height_perc * pred.shape[1])
-    frame = frame[frame_new_height:, :, :]
-    pred = pred[:, pred_new_height:, :, :]
-
-    # Change Data Scale from meters to uint8
-    pred_uint8 = cv2.convertScaleAbs(pred[0])
-    pred_scaled_uint8 = convertScaleAbs(pred[0])
-
-    # Apply Median Filter
-    pred_median = cv2.medianBlur(pred[0], 3)
-    pred_median_scaled_uint8 = convertScaleAbs(pred_median)
-    pred_jet = cv2.applyColorMap(255 - pred_median_scaled_uint8, cv2.COLORMAP_JET)
-    pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
-
-    # Change Colormap
-    # TODO: definir o valor de 160 em funcao de frame_new_height e frame.height
-    pred_jet_resized = cv2.resize(pred_jet, (304, 160), interpolation=cv2.INTER_CUBIC)
-    cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
-
-    pred_hsv_resized = cv2.resize(pred_hsv, (304, 160), interpolation=cv2.INTER_CUBIC)
-
-    # Apply the overlay
-    overlay = apply_overlay(frame, pred_jet_resized)
-
-    # Concatenates Images
-    conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
-    conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
-
-    # Debug
-    if args.debug:
-        print(pred.shape, pred.dtype)
-        print(pred_uint8.shape, pred_uint8.dtype)
-        print(pred_jet_resized.shape, pred_jet_resized.dtype)
-        print(pred_hsv_resized.shape, pred_hsv_resized.dtype)
-        print(overlay.shape, overlay.dtype)
-        input("Continue...")
-
-    # Display the resulting frame - OpenCV
-    # cv2.imshow('frame', frame)
-    # cv2.imshow('pred', pred_uint8)
-    # cv2.imshow('pred_jet (scaled, median, resized)', pred_jet_resized)
-    # cv2.imshow('pred(scaled)', pred_scaled_uint8)
-    # cv2.imshow('pred_hsv (scaled, median, resized)', pred_hsv_resized)
-    # cv2.imshow('pred(scaled, median)', pred_median_scaled_uint8)
-    # cv2.imshow('overlay', overlay)
-    cv2.imshow('pred, pred(scaled), pred(scaled, median) (without sky)', conc)
-    cv2.imshow('frame, pred_jet, pred_hsv, overlay (without sky)', conc2)
 
 # ======
 #  Main
@@ -287,7 +242,7 @@ def main():
             _, frame = cap.read()
             frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
 
-            # Evalute the network for the given image
+            # Evaluate the network for the given image
             try:
                 pred, pred_50, pred_80 = sess.run([tf_pred, tf_pred_50, tf_pred_80], feed_dict={input_node: frame})
                 pred_50_uint8_scaled = convertScaleAbs(pred_50[0])
@@ -296,12 +251,6 @@ def main():
                 cv2.imshow('pred_80 (scaled)', pred_80_uint8_scaled)
             except UnboundLocalError:
                 pred = sess.run(tf_pred, feed_dict={input_node: frame})
-
-            # Matplotlib
-            plt.figure(1)
-            plt.imshow(pred[0,:,:,0])
-            # plt.pause(0.000001)
-            plt.draw()
 
             # Debug
             if args.debug:
@@ -317,7 +266,7 @@ def main():
             # ------------------ #
             # Convert Predicted Depth to uint8 Image
             process_images(frame, pred)
-            process_images_remove_sky(frame, pred)
+            process_images(frame, pred, remove_sky=True)
 
             # Save Images
             if SAVE_IMAGES:
