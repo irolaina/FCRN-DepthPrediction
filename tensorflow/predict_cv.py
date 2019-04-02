@@ -136,18 +136,23 @@ def process_images(frame, pred, remove_sky=False):
     # Apply Median Filter
     pred_median = cv2.medianBlur(pred[0], 3)
     pred_median_scaled_uint8 = convertScaleAbs(pred_median)
+
+    # Change Colormap
     pred_jet = cv2.applyColorMap(255 - pred_median_scaled_uint8, cv2.COLORMAP_JET)
     pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
 
-    # Change Colormap
+    # Resize
     pred_jet_resized = cv2.resize(pred_jet, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_CUBIC)
-    cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
-
     pred_hsv_resized = cv2.resize(pred_hsv, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_CUBIC)
 
     # Apply the overlay
     overlay = apply_overlay(frame, pred_jet_resized)
+
+    # Write text on Image
+    cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (255, 255, 255))
+    cv2.putText(pred_hsv_resized, "avg=%0.2f" % (max_depth.avg_max_depth), (1, 15), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (255, 255, 255))
 
     # Concatenates Images
     conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
@@ -264,7 +269,6 @@ def main():
             # ------------------ #
             #  Image Processing  #
             # ------------------ #
-            # Convert Predicted Depth to uint8 Image
             process_images(frame, pred)
             process_images(frame, pred, remove_sky=True)
 
@@ -275,10 +279,10 @@ def main():
                 cv2.imwrite(settings.output_dir + "fcrn_cv/jet%06d.png" % count, pred_jet_resized)
                 count += 1
 
+            timer.reset()
+
             if cv2.waitKey(1) & 0xFF == ord('q'):  # without waitKey() the images are not shown.
                 break
-
-            timer.reset()
 
     # When everything done, release the capture
     cap.release()
