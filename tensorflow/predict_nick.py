@@ -424,7 +424,7 @@ def predict():
 
     with tf.variable_scope('model'):
         # Construct the network
-        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1,
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=batch_size, keep_prob=1.0,
                              is_training=False)
         tf_pred = net.get_output()
         tf_pred_up = tf.image.resize_images(tf_pred, img.shape[:2], tf.image.ResizeMethod.BILINEAR,

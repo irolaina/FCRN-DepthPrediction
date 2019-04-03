@@ -64,7 +64,7 @@ class maxDepth:
         return max_depth
 
     @property
-    def avg_max_depth(self):
+    def get_avg(self):
         return sum(self.l_fps_history) / float(self.counter_len)
 
 
@@ -91,7 +91,7 @@ class CvTimer:
         return fps
 
     @property
-    def avg_fps(self):
+    def get_avg(self):
         return sum(self.l_fps_history) / float(self.counter_len)
 
 
@@ -107,11 +107,33 @@ def apply_overlay(frame, pred_jet_resized):
 def convertScaleAbs(src):
     global max_depth
 
-    # print(max_depth.fps(src), max_depth.avg_fps)
+    # print(max_depth.fps(src), max_depth.get_avg)
     max_depth.update(src)
 
     # return cv2.convertScaleAbs(src * (255 / np.max(src)))
-    return cv2.convertScaleAbs(src * (255 / max_depth.avg_max_depth))
+    return cv2.convertScaleAbs(src * (255 / max_depth.get_avg))
+
+
+def generate_colorbar(height, colormap, inv=False):
+    colorbar = np.zeros(shape=(height, 45), dtype=np.uint8)
+
+    for row in range(colorbar.shape[0]):
+        for col in range(colorbar.shape[1]):
+            # print(row, col)
+            colorbar[row, col] = int((row / colorbar.shape[0]) * 255)
+
+    if inv:
+        colorbar = 255 - colorbar
+
+    colorbar = cv2.applyColorMap(colorbar, colormap)
+
+    cv2.putText(colorbar, "%0.2f-" % max_depth.get_avg, (1, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4,
+                (255, 255, 255))
+    cv2.putText(colorbar, "%0.2f-" % (max_depth.get_avg / 2), (1, height // 2), cv2.FONT_HERSHEY_SIMPLEX, 0.4,
+                (255, 255, 255))
+    cv2.putText(colorbar, "%0.2f-" % 0.0, (10, height - 3), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255))
+
+    return colorbar
 
 
 def process_images(frame, pred, remove_sky=False):
@@ -149,14 +171,16 @@ def process_images(frame, pred, remove_sky=False):
     overlay = apply_overlay(frame, pred_jet_resized)
 
     # Write text on Image
-    cv2.putText(pred_jet_resized, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.avg_fps), (1, 15), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (255, 255, 255))
-    cv2.putText(pred_hsv_resized, "avg=%0.2f" % (max_depth.avg_max_depth), (1, 15), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (255, 255, 255))
+    cv2.putText(frame, "fps=%0.2f avg=%0.2f" % (timer.fps, timer.get_avg), (1, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                (255, 255, 255))
+
+    # Generate Colorbar
+    colorbar_jet = generate_colorbar(height=pred_jet_resized.shape[0], colormap=cv2.COLORMAP_JET)
+    colorbar_hsv = generate_colorbar(height=pred_jet_resized.shape[0], colormap=cv2.COLORMAP_HSV, inv=True)
 
     # Concatenates Images
     conc = cv2.hconcat([pred_uint8, pred_scaled_uint8, pred_median_scaled_uint8])
-    conc2 = cv2.hconcat([frame, pred_jet_resized, pred_hsv_resized, overlay])
+    conc2 = cv2.hconcat([frame, pred_jet_resized, colorbar_jet, pred_hsv_resized, colorbar_hsv, overlay])
 
     # Debug
     if args.debug:
@@ -213,7 +237,7 @@ def main():
 
     with tf.variable_scope('model'):  # Disable for running original models!!!
         # Construct the network
-        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1,
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1.0,
                              is_training=False)
 
     tf_pred = net.get_output()
@@ -269,7 +293,7 @@ def main():
             # ------------------ #
             #  Image Processing  #
             # ------------------ #
-            process_images(frame, pred)
+            # process_images(frame, pred) # FIXME: Para redes que não consideram o ceu, os valores da predição sujam o valor de max_depth
             process_images(frame, pred, remove_sky=True)
 
             # Save Images

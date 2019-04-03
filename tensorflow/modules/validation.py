@@ -44,7 +44,7 @@ class Validation:
 
         self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
 
-        self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1, is_training=False)
+        self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1.0, is_training=False)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.

@@ -53,7 +53,7 @@ class Test:
             # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
             tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
-            net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=self.batch_size, keep_prob=1, is_training=False)
+            net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=self.batch_size, keep_prob=1.0, is_training=False)
             tf_pred = net.get_output()
 
             tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)

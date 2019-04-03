@@ -46,7 +46,7 @@ def argument_handler():
     parser.add_argument('-l', '--learning_rate', type=float, help="Defines the initial value of the learning rate",
                         default=1e-4)
 
-    parser.add_argument('-d', '--dropout', type=float, help="Enables dropout in the model during training", default=0.5)
+    parser.add_argument('-d', '--dropout', type=float, help="Enables dropout in the model during training", default=1.0)
     parser.add_argument('--ldecay', action='store_true', help="Enables learning decay", default=False)
     parser.add_argument('-n', '--l2norm', action='store_true', help="Enables L2 Normalization", default=False)
     parser.add_argument('--data_aug', action='store_true', help="Enables Data Augmentation", default=True)
