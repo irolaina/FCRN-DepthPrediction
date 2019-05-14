@@ -204,7 +204,9 @@ class Train:
         depth_aug = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth), lambda: depth)
 
         # randomly distort the colors.
-        image_aug = apply_with_random_selector(image_aug, lambda image, ordering: distort_color(image, ordering), num_distort_cases=4)
+        do_distortion = tf.random_uniform([], 0, 1)
+        # image_aug = apply_with_random_selector(image_aug, lambda image, ordering: distort_color(image, ordering), num_distort_cases=4)
+        image_aug = tf.cond(do_flip > 0.5, lambda: apply_with_random_selector(image_aug, lambda image, ordering: distort_color(image, ordering), num_distort_cases=4), lambda: image_aug)
 
         return image_aug, depth_aug
 
