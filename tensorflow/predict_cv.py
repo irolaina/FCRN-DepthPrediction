@@ -164,8 +164,8 @@ def process_images(frame, pred, remove_sky=False):
     pred_hsv = cv2.applyColorMap(pred_median_scaled_uint8, cv2.COLORMAP_HSV)
 
     # Resize
-    pred_jet_resized = cv2.resize(pred_jet, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_CUBIC)
-    pred_hsv_resized = cv2.resize(pred_hsv, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_CUBIC)
+    pred_jet_resized = cv2.resize(pred_jet, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_AREA)
+    pred_hsv_resized = cv2.resize(pred_hsv, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_AREA)
 
     # Apply the overlay
     overlay = apply_overlay(frame, pred_jet_resized)

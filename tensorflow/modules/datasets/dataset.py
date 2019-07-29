@@ -33,6 +33,8 @@ class Dataset(FilenamesHandler):
             dataset_root = "/media/nicolas/nicolas_seagate/datasets/"
         elif args.machine == 'olorin':
             dataset_root = "/media/olorin/Documentos/datasets/"
+        elif args.machine == 'olorin_from_nicolas':
+            dataset_root = "/home/nicolas/remote/olorin_root/media/olorin/Documentos/datasets/"
 
         return dataset_root
 

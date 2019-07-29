@@ -6,6 +6,7 @@ import tensorflow as tf
 from modules.args import args
 from modules.datasets.apolloscape import Apolloscape
 from modules.datasets.kitti_continuous import KittiContinuous
+from modules.datasets.kitti_completion import KittiCompletion
 from modules.datasets.kitti_depth import KittiDepth
 from modules.datasets.kitti_discrete import KittiDiscrete
 from modules.datasets.lrmjose import LRMJose
@@ -47,6 +48,9 @@ class Dataloader:
 
         elif '_'.join(args.dataset.split('_')[:2]) == 'kitti_continuous':
             self.dataset = KittiContinuous(dataset_rel_path="kitti/raw_data/", name=args.dataset, height=375, width=1242, max_depth=85.0)
+
+        elif '_'.join(args.dataset.split('_')[:2]) == 'kitti_completion':
+            self.dataset = KittiCompletion(dataset_rel_path="kitti/", name=args.dataset, height=375, width=1242, max_depth=85.0)
 
         elif args.dataset == 'nyudepth':
             self.dataset = NyuDepth(dataset_rel_path="nyu-depth-v2/data/images/", name=args.dataset, height=480, width=640, max_depth=None)
@@ -136,7 +140,7 @@ class Dataloader:
             tf_depth = tf_depth * tf_imask
 
             tf_depth = tf_depth / 200.0
-        elif dataset_name == 'kitti_depth':
+        elif dataset_name == 'kitti_depth' or dataset_name=='kitti_completion':
             tf_depth = (tf.cast(tf_depth, tf.float32)) / 256.0
         elif '_'.join(dataset_name.split('_')[:2]) == 'kitti_discrete' or \
              '_'.join(dataset_name.split('_')[:2]) == 'kitti_continuous':

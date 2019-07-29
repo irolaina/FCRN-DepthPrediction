@@ -58,6 +58,7 @@ class Test:
 
             tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)
 
+            # TODO: Os valores que são maiores que 50 e 80 estão sendo truncados ou estão virando zero?
             if data.dataset.name[0:5] == 'kitti':
                 tf_imask_50 = tf.where(tf_pred < 50.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
                 tf_imask_80 = tf.where(tf_pred < 80.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
