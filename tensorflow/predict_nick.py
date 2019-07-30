@@ -116,9 +116,13 @@ def train():
     max_epochs = int(np.floor(args.batch_size * args.max_steps / data.num_train_samples))
     print('\nTrain with approximately %d epochs' % max_epochs)
 
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+
     with SessionWithExitSave(saver=model.train_saver,
                              exit_save_path='output/tf-saves/lastest.ckpt',
-                             graph=graph) as sess:
+                             graph=graph,
+                             config=config) as sess:
         print("\n[Network/Training] Initializing graph's variables...")
 
         if args.retrain:
