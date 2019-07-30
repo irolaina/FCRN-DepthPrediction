@@ -21,7 +21,7 @@
 
 `--loss`, argument selects the desired loss function: `mse`,  `berhu`, `eigen`, `eigen_grads`, etc. Default= `berhu`
 
-`--batch-size`, argument specifies the training batch size. Default= `4`
+`--batch_size`, argument specifies the training batch size. Default= `4`
 
 `--max_steps`, argument specifies the max number of training steps. Default= `300000`
 
@@ -45,7 +45,7 @@
 **Command line:**
 
 ```shell
-python3 predict_nick.py --machine nicolas -m train --gpu 0 -s kitti_continuous --px valid --loss berhu --max_steps 300000 -l 1e-4 -d 0.5 --ldecay --l2norm --dataaug --remove_sky -t -v
+python3 predict_nick.py --machine nicolas -m train --gpu 0 -s kitti_continuous --px valid --loss berhu --max_steps 300000 -l 1e-4 -d 0.5 --ldecay --l2norm --data_aug --remove_sky -t -v
 ```
 
 ## 2. Testing/Evaluation
