@@ -42,6 +42,8 @@ class KittiGuideNet(Dataset):
         if os.path.exists(file_path):
             image_filenames, depth_filenames = self.read_text_file(file_path, self.dataset_path)
         else:
+            input("Implementar!")
+
             print("[Dataloader] '%s' doesn't exist..." % file_path)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
