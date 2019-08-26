@@ -34,7 +34,6 @@ warnings.filterwarnings("ignore")  # Suppress Warnings
 
 
 def read_text_file(filename, dataset_path='/media/nicolas/nicolas_seagate/datasets/kitti/'):
-
     print("\n[Dataloader] Loading '%s'..." % filename)
     try:
         data = np.genfromtxt(filename, dtype='str', delimiter='\t')
@@ -69,8 +68,8 @@ def imsave_as_uint16_png(filename, image_float32):
 def evaluate_densification():
     # Loads split file containing Input and Output filenames
     # input_filenames, output_filenames = read_text_file('data/new_splits/eigen_split_based_on_kitti_depth/eigen_test_kitti_depth_aligned_with_kitti_continuous_files.txt')
-    input_filenames = ['/home/nicolas/Downloads/depth_interpolation/close/0000000005_close_k_2.png']
-    output_filenames = ['/home/nicolas/Downloads/depth_interpolation/close/0000000005.png']
+    input_filenames = ['/home/nicolas/Downloads/depth_interpolation/close_k_analysis/0000000005_close_k_19.png']
+    output_filenames = ['/home/nicolas/Downloads/depth_interpolation/close_k_analysis/0000000005.png']
 
     assert len(input_filenames) == len(output_filenames)
     print(len(input_filenames), len(output_filenames))
@@ -85,15 +84,9 @@ def evaluate_densification():
         kitti_depth_depth = read_depth_image(output_filename, 256.0)
 
         # Fix Data shift caused by close operation
-        # TODO: Esta correção só precisa ser feita se o kernel utilizado no close é par.
-        rows, cols = close_depth.shape
-        tx, ty = -1, -1 # Offsets
-        M = np.float32([[1, 0, tx], [0, 1, ty]])
-        close_depth = cv2.warpAffine(close_depth, M, (cols, rows))
-
         artefacts = close_depth - kitti_depth_depth
         real_proof = kitti_depth_depth+artefacts
-        real_proof2 = (close_depth - real_proof)*1000
+        real_proof2 = (close_depth - real_proof)
         print(real_proof2)
 
         print(close_depth[close_depth > 0.0].size,
