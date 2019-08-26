@@ -31,7 +31,7 @@ def argumentHandler():
     # parser.add_argument('__log', type=str, help="ROS Node Log path", default='')
     parser.add_argument('--gpu', type=str, help="Select which gpu to run the code", default='0')
     parser.add_argument('-r', '--model_path', help='Converted parameters for the model',
-                        default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitti_continuous/all_px/mse/2018-06-29_13-52-58/restore/model.fcrn')
+                        default='/home/nicolas/MEGA/workspace/FCRN-DepthPrediction/tensorflow/output/fcrn/kitti_continuous/all_px/berhu/2019-03-18_10-02-45/restore/model.fcrn')
     parser.add_argument('-i', '--video_path', help='Directory of images to predict')
     return parser.parse_args()
 
@@ -74,7 +74,7 @@ class Network(object):
 
             with tf.variable_scope('model'):  # Disable for running original models!!!
                 # Construct the network
-                net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1,
+                net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1.0,
                                      is_training=False)
 
             self.tf_pred = net.get_output()

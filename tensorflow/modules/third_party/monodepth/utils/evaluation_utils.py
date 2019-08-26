@@ -40,6 +40,7 @@ def load_gt_disp_kitti(path):
         disp = cv2.imread(path + "/training/disp_noc_0/" + str(i).zfill(6) + "_10.png", -1)
         disp = disp.astype(np.float32) / 256
         gt_disparities.append(disp)
+
     return gt_disparities
 
 
@@ -48,35 +49,29 @@ def convert_disps_to_depths_kitti(gt_disparities, pred_disparities):
     pred_depths = []
     pred_disparities_resized = []
 
-    for i in range(len(gt_disparities)):
-        gt_disp = gt_disparities[i]
+    for i, (gt_disp, pred_disp) in enumerate(list(zip(gt_disparities, pred_disparities))):
         height, width = gt_disp.shape
 
-        pred_disp = pred_disparities[i]
-        pred_disp = width * cv2.resize(pred_disp, (width, height), interpolation=cv2.INTER_LINEAR)
-
-        pred_disparities_resized.append(pred_disp)
+        pred_disp_resized = width * cv2.resize(pred_disp, (width, height), interpolation=cv2.INTER_LINEAR)
+        pred_disparities_resized.append(pred_disp_resized)
 
         mask = gt_disp > 0
-
         gt_depth = width_to_focal[width] * 0.54 / (gt_disp + (1.0 - mask))
-        pred_depth = width_to_focal[width] * 0.54 / pred_disp
+        pred_depth = width_to_focal[width] * 0.54 / pred_disp_resized
 
         gt_depths.append(gt_depth)
         pred_depths.append(pred_depth)
+
     return gt_depths, pred_depths, pred_disparities_resized
 
 
-# TODO: Acredito que esta função possa ser aprimorada
 def convert_gt_disps_to_depths_kitti(gt_disparities):
     gt_depths = []
 
-    for i in range(len(gt_disparities)):
-        gt_disp = gt_disparities[i]
+    for i, gt_disp in enumerate(gt_disparities):
         height, width = gt_disp.shape
 
-        mask = gt_disp > 0
-
+        mask = gt_disp > 0.0
         gt_depth = width_to_focal[width] * 0.54 / (gt_disp + (1.0 - mask))
 
         # Workaround by Nick
@@ -84,11 +79,12 @@ def convert_gt_disps_to_depths_kitti(gt_disparities):
         gt_depth = gt_depth * mask
 
         gt_depths.append(gt_depth)
+
     return gt_depths
 
 
 # ------- #
-#  EIGEN  #
+#  Eigen  #
 # ------- #
 def read_text_lines(file_path):
     f = open(file_path, 'r')
@@ -160,7 +156,6 @@ def read_calib_file(path):
             if float_chars.issuperset(value):
                 # try to cast to float array
                 try:
-                    # data[key] = np.array(map(float, value.split(' '))) # Python2
                     data[key] = np.array([float(elem) for elem in value.split(' ')])  # Python3
                 except ValueError:
                     # casting error: data[key] already eq. value, so pass
@@ -180,6 +175,7 @@ def get_focal_length_baseline(calib_dir, cam):
     b3 = P3_rect[0, 3] / -P3_rect[0, 0]
     baseline = b3 - b2
 
+    focal_length = None
     if cam == 2:
         focal_length = P2_rect[0, 0]
     elif cam == 3:
@@ -188,9 +184,9 @@ def get_focal_length_baseline(calib_dir, cam):
     return focal_length, baseline
 
 
-def sub2ind(matrixSize, rowSub, colSub):
-    m, n = matrixSize
-    return rowSub * (n - 1) + colSub - 1
+def sub2ind(matrix_size, row_sub, col_sub):
+    m, n = matrix_size
+    return row_sub * (n - 1) + col_sub - 1
 
 
 def generate_depth_map(calib_dir, velo_file_name, im_shape, cam=2, interp=False, vel_depth=False):
@@ -234,6 +230,7 @@ def generate_depth_map(calib_dir, velo_file_name, im_shape, cam=2, interp=False,
     inds = sub2ind(depth.shape, velo_pts_im[:, 1], velo_pts_im[:, 0])
     dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
 
+    # TODO: use args.debug variable
     # print(cam2cam)
     # print(velo2cam)
     # print('inds:', inds)

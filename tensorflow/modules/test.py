@@ -3,9 +3,10 @@
 # ===========
 import tensorflow as tf
 
+from modules.args import args
 from .dataloader import Dataloader
-from .third_party.laina.fcrn import ResNet50UpProj
 from .size import Size
+from .third_party.laina.fcrn import ResNet50UpProj
 
 
 # ==================
@@ -17,7 +18,7 @@ from .size import Size
 #  Class Declaration
 # ===================
 class Test:
-    def __init__(self, args, data):
+    def __init__(self, data):
         # Construct the network
         with tf.variable_scope('model'):
             self.input_size = Size(228, 304, 3)
@@ -27,14 +28,14 @@ class Test:
             self.tf_image_key = tf.placeholder(tf.string)
             self.tf_depth_key = tf.placeholder(tf.string)
 
-            tf_image, tf_depth = Dataloader.decodeImages(self.tf_image_key, self.tf_depth_key, data.dataset.name)
+            tf_image, tf_depth = Dataloader.decode_images(self.tf_image_key, self.tf_depth_key, data.dataset.name)
 
             # True Depth Value Calculation. May vary from dataset to dataset.
             tf_depth = data.rawdepth2meters(tf_depth, data.dataset.name)
 
             # Crops Input and Depth Images (Removes Sky)
             if args.remove_sky:
-                tf_image, tf_depth = Dataloader.removeSky(tf_image, tf_depth, args.dataset)
+                tf_image, tf_depth = Dataloader.remove_sky(tf_image, tf_depth, args.dataset)
 
             # Network Input/Output. Overwrite Tensors!
             # tf_image = tf.cast(tf_image, tf.float32)  # uint8 -> float32 [0.0, 255.0]
@@ -52,11 +53,12 @@ class Test:
             # tf_image_resized_uint8 = tf.cast(tf_image_resized, tf.uint8)  # Visual purpose
             tf_image_resized_uint8 = tf.image.convert_image_dtype(tf_image_resized, tf.uint8)  # Visual purpose
 
-            net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=self.batch_size, keep_prob=1, is_training=False)
+            net = ResNet50UpProj({'data': tf.expand_dims(tf_image_resized, axis=0)}, batch=self.batch_size, keep_prob=1.0, is_training=False)
             tf_pred = net.get_output()
 
             tf_pred_up = tf.image.resize_images(tf_pred, tf.shape(tf_depth)[:2], tf.image.ResizeMethod.BILINEAR, align_corners=True)
 
+            # TODO: Os valores que são maiores que 50 e 80 estão sendo truncados ou estão virando zero?
             if data.dataset.name[0:5] == 'kitti':
                 tf_imask_50 = tf.where(tf_pred < 50.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))
                 tf_imask_80 = tf.where(tf_pred < 80.0, tf.ones_like(tf_pred), tf.zeros_like(tf_pred))

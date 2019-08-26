@@ -32,16 +32,16 @@ from .dataset import Dataset
 #  Class Declaration
 # ===================
 class LRMJose(Dataset):
-    def __init__(self, *args, **kwargs):
-        super(LRMJose, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(LRMJose, self).__init__(**kwargs)
 
-    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
-        file = self.get_file_path(mode, test_split, test_file_path)
+    def get_filenames_lists(self, mode, test_split='', test_file_path=''):
+        file_path = self.get_file_path(mode, test_split, test_file_path)
 
-        if os.path.exists(file):
-            image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
+        if os.path.exists(file_path):
+            image_filenames, depth_filenames = self.read_text_file(file_path, self.dataset_path)
         else:
-            print("[Dataloader] '%s' doesn't exist..." % file)
+            print("[Dataloader] '%s' doesn't exist..." % file_path)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside the list of folders.
@@ -82,6 +82,6 @@ class LRMJose(Dataset):
             # input("enter")
 
             # TODO: Acredito que dê pra mover a chamada dessa função para fora
-            self.saveList(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
+            self.save_list(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
 
-        return image_filenames, depth_filenames, file
+        return image_filenames, depth_filenames

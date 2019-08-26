@@ -1,7 +1,7 @@
 # ========
 #  README
 # ========
-# Kitti Depth Prediction
+# KITTI Depth Prediction
 # Uses Depth Maps: measures distances [close - LOW values, far - HIGH values]
 # Image: (375, 1242, 3) uint8
 # Depth: (375, 1242)    uint16
@@ -28,20 +28,20 @@ from .dataset import Dataset
 #  Class Declaration
 # ===================
 class KittiDepth(Dataset):
-    def __init__(self, *args, **kwargs):
-        super(KittiDepth, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(KittiDepth, self).__init__(**kwargs)
 
-    def getFilenamesLists(self, mode, test_split='', test_file_path=''):
+    def get_filenames_lists(self, mode, test_split='', test_file_path=''):
         # Workaround # FIXME: Temporary
         if mode == 'test':
             mode = 'val'
 
-        file = self.get_file_path(mode, test_split, test_file_path)
+        file_path = self.get_file_path(mode, test_split, test_file_path)
 
-        if os.path.exists(file):
-            image_filenames, depth_filenames = self.read_text_file(file, self.dataset_path)
+        if os.path.exists(file_path):
+            image_filenames, depth_filenames = self.read_text_file(file_path, self.dataset_path)
         else:
-            print("[Dataloader] '%s' doesn't exist..." % file)
+            print("[Dataloader] '%s' doesn't exist..." % file_path)
             print("[Dataloader] Searching files using glob (This may take a while)...")
 
             # Finds input images and labels inside the list of folders.
@@ -68,6 +68,6 @@ class KittiDepth(Dataset):
             # input("enter")
 
             # TODO: Acredito que dê pra mover a chamada dessa função para fora
-            self.saveList(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
+            self.save_list(image_filenames, depth_filenames, self.name, mode, self.dataset_path)
 
-        return image_filenames, depth_filenames, file
+        return image_filenames, depth_filenames

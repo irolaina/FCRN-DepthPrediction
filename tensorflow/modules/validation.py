@@ -3,9 +3,11 @@
 # ===========
 import tensorflow as tf
 
+from modules.args import args
 from .dataloader import Dataloader
-from .third_party.laina.fcrn import ResNet50UpProj
 from .plot import Plot
+from .third_party.laina.fcrn import ResNet50UpProj
+
 
 # ==================
 #  Global Variables
@@ -16,12 +18,12 @@ from .plot import Plot
 #  Class Declaration
 # ===================
 class Validation:
-    def __init__(self, args, input_size, output_size, max_depth, dataset_name):
+    def __init__(self, input_size, output_size, max_depth, dataset_name):
         # Raw Input/Output
         self.tf_image_key = tf.placeholder(tf.string)
         self.tf_depth_key = tf.placeholder(tf.string)
 
-        self.tf_image_raw, self.tf_depth_raw  = Dataloader.decodeImages(self.tf_image_key, self.tf_depth_key, dataset_name)
+        self.tf_image_raw, self.tf_depth_raw  = Dataloader.decode_images(self.tf_image_key, self.tf_depth_key, dataset_name)
 
         # True Depth Value Calculation. May vary from dataset to dataset.
         tf_depth = Dataloader.rawdepth2meters(self.tf_depth_raw, args.dataset)
@@ -34,16 +36,15 @@ class Validation:
 
         # Crops Input and Depth Images (Removes Sky)
         if args.remove_sky:
-            self.tf_image, self.tf_depth = Dataloader.removeSky(tf_image, tf_depth, dataset_name)
+            self.tf_image, self.tf_depth = Dataloader.remove_sky(tf_image, tf_depth, dataset_name)
 
         # Downsizes Input and Depth Images
         self.tf_image_resized = tf.image.resize_images(self.tf_image, [input_size.height, input_size.width], method=tf.image.ResizeMethod.AREA, align_corners=True)
         self.tf_depth_resized = tf.image.resize_images(self.tf_depth, [output_size.height, output_size.width], method=tf.image.ResizeMethod.AREA, align_corners=True)
 
-        # self.tf_image_resized_uint8 = tf.cast(self.tf_image_resized, tf.uint8)  # Visual Purpose
         self.tf_image_resized_uint8 = tf.image.convert_image_dtype(self.tf_image_resized, tf.uint8)  # Visual Purpose
 
-        self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1, is_training=False)
+        self.fcrn = ResNet50UpProj({'data': tf.expand_dims(self.tf_image_resized, axis=0)}, batch=args.batch_size, keep_prob=1.0, is_training=False)
         self.tf_pred = self.fcrn.get_output()
 
         # Clips predictions above a certain distance in meters. Inspired from Monodepth's article.

@@ -14,7 +14,7 @@ LOG_INITIAL_VALUE = 1
 # ===========
 #  Functions
 # ===========
-def tf_maskOutInvalidPixels(tf_pred, tf_labels):
+def tf_mask_out_invalid_pixels(tf_pred, tf_labels):
     # Identify Pixels to be masked out.
     tf_idx = tf.where(tf_labels > 0)  # Tensor 'idx' of Valid Pixel values (batchID, idx)
 
@@ -31,18 +31,16 @@ def tf_maskOutInvalidPixels(tf_pred, tf_labels):
 # -------------------- #
 #  Mean Squared Error  #
 # -------------------- #
-def np_MSE(y, y_):
-    # numPixels = y_.size
-
+def np_mse(y, y_):
     return np.square(y_ - y)
 
 
-def tf_L_MSE(tf_y, tf_y_, valid_pixels=True):
+def tf_mse_loss(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'MSE'
 
     # Mask Out
     if valid_pixels:
-        tf_y, tf_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+        tf_y, tf_y_ = tf_mask_out_invalid_pixels(tf_y, tf_y_)
 
     # npixels value depends on valid_pixels flag:
     # npixels = (batchSize*height*width) OR npixels = number of valid pixels
@@ -57,7 +55,7 @@ def tf_L_MSE(tf_y, tf_y_, valid_pixels=True):
 # ------- #
 #  BerHu  #
 # ------- #
-def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
+def tf_berhu_loss(tf_y, tf_y_, valid_pixels=True):
     loss_name = 'BerHu'
 
     # C Constant Calculation
@@ -67,34 +65,16 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
     # Mask Out
     if valid_pixels:
         # Overwrites the 'y' and 'y_' tensors!
-        tf_y, tf_y_ = tf_maskOutInvalidPixels(tf_y, tf_y_)
+        tf_y, tf_y_ = tf_mask_out_invalid_pixels(tf_y, tf_y_)
 
         # Overwrites the previous tensor, so now considers only the Valid Pixels!
         tf_abs_error = tf.abs(tf_y - tf_y_, name='abs_error')
 
     # Loss
-    tf_berHu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
+    tf_berhu_loss = tf.where(tf_abs_error <= tf_c, tf_abs_error,
                              tf.div((tf.square(tf_abs_error) + tf.square(tf_c)), tf.multiply(tf.constant(2.0), tf_c)))
 
-    tf_loss = tf.reduce_sum(tf_berHu_loss)
-
-    # Debug
-    # c, abs_error, berHu_loss, loss = sess.run([tf_c, tf_abs_error, tf_berHu_loss, tf_loss])
-    # print()
-    # print(tf_c)
-    # print("c:", c)
-    # print()
-    # print(tf_abs_error)
-    # print("abs_error:", abs_error)
-    # print(len(abs_error))
-    # print()
-    # print(tf_berHu_loss)
-    # print("berHu_loss:", berHu_loss)
-    # print()
-    # print(tf_loss)
-    # print("loss:", loss)
-    # print()
-    # input("remover")
+    tf_loss = tf.reduce_sum(tf_berhu_loss)
 
     return loss_name, tf_loss
 
@@ -102,7 +82,7 @@ def tf_BerHu(tf_y, tf_y_, valid_pixels=True):
 # ---------------------------------------------------- #
 #  Eigen's Scale-invariant Mean Squared Error (L_eigen) #
 # ---------------------------------------------------- #
-def tf_L_eigen(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+def tf_eigen_loss(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Scale Invariant Logarithmic Error"
 
     tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
@@ -135,24 +115,16 @@ def tf_L_eigen(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
 def gradient_x(img):
     gx = img[:, :, :-1] - img[:, :, 1:]
 
-    # Debug
-    # print("img:", img.shape)
-    # print("gx:",gx.shape)
-
     return gx
 
 
 def gradient_y(img):
     gy = img[:, :-1, :] - img[:, 1:, :]
 
-    # Debug
-    # print("img:", img.shape)
-    # print("gy:",gy.shape)
-
     return gy
 
 
-def tf_L_eigen_grads(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
+def tf_eigen_grads_loss(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
     loss_name = "Scale Invariant Logarithmic Error with Gradients"
 
     tf_log_y  = tf.log(tf_y  + LOG_INITIAL_VALUE)
@@ -192,21 +164,21 @@ def tf_L_eigen_grads(tf_y, tf_y_, valid_pixels=True, gamma=0.5):
 # ------------------ #
 #  L2 Normalization  #
 # ------------------ #
-def getGlobalVars(scope):
+def get_global_vars(scope):
     return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope)
 
 
-def getTrainableVars(scope):
+def get_trainable_vars(scope):
     return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
 
 
-def calculateL2norm():
+def calculate_l2norm():
     # Gets All Trainable Variables
-    var_list = getTrainableVars('')
+    var_list = get_trainable_vars('')
 
-    totalSum = 0
+    total_sum = 0
     for var in var_list:
         # print(var)
-        totalSum += tf.nn.l2_loss(var)
+        total_sum += tf.nn.l2_loss(var)
 
-    return TRAINING_L2NORM_BETA * totalSum
+    return TRAINING_L2NORM_BETA * total_sum

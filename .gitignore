@@ -6,6 +6,7 @@ catkin_ws/*
 tensorflow/output/*
 tensorflow/tmp/*
 tensorflow/htmlcov/*
+tensorflow_tmp/*
 
 # Exceptions
 !catkin_ws/src/
@@ -20,4 +21,3 @@ tensorflow/htmlcov/*
 
 # Exclude Files
 matlab/predictions_NYUval.mat
-tensorflow/results.txt

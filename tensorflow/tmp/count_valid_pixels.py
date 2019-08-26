@@ -18,7 +18,7 @@ def read_text_file(filename, dataset_path):
         # print(data.shape)
     except OSError:
         print("[OSError] Could not find the '%s' file." % filename)
-        sys.exit()
+        raise SystemExit
 
 
     # Parsing Data
@@ -30,9 +30,9 @@ def read_text_file(filename, dataset_path):
 
     return image_filenames, depth_filenames
 
-image_filenames, depth_filenames = read_text_file('tmp/kittidepth_train.txt'     , '/media/nicolas/nicolas_seagate/datasets/kitti/'         )  # KittiDepth
-# image_filenames, depth_filenames = read_text_file('tmp/kitti_discrete_train.txt'  , '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/')  # KittiDiscrete
-# image_filenames, depth_filenames = read_text_file('tmp/kitticontinuous_train.txt', '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/')  # KittiContinuous
+image_filenames, depth_filenames = read_text_file('tmp/kitti_depth_train.txt'     , '/media/nicolas/nicolas_seagate/datasets/kitti/'         )  # KITTI Depth
+# image_filenames, depth_filenames = read_text_file('tmp/kitti_discrete_train.txt'  , '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/')  # KITTI Discrete
+# image_filenames, depth_filenames = read_text_file('tmp/kitticontinuous_train.txt', '/media/nicolas/nicolas_seagate/datasets/kitti/raw_data/')  # KITTI Continuous
 
 # Print Arrays Content
 # for image in image_filenames:

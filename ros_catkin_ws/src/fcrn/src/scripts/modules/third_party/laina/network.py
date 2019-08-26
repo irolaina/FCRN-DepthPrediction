@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 
 # ----------------------------------------------------------------------------------
-# Commonly used layers and operations based on ethereon's implementation 
+# Commonly used layers and operations based on ethereon's implementation
 # https://github.com/ethereon/caffe-tensorflow
-# Slight modifications may apply. FCRN-specific operations have also been appended. 
+# Slight modifications may apply. FCRN-specific operations have also been appended.
 # ----------------------------------------------------------------------------------
 # Thanks to *Helisa Dhamo* for the model conversion and integration into TensorFlow.
 # ----------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ def get_incoming_shape(incoming):
     """Returns the incoming data shape."""
     if isinstance(incoming, tf.Tensor):
         return incoming.get_shape().as_list()
-    elif type(incoming) in [np.array, list, tuple]:
+    elif isinstance(incoming) in [np.array, list, tuple]:
         return np.shape(incoming)
     else:
         raise Exception("Invalid incoming layer.")
@@ -37,7 +37,7 @@ def layer(op):
         name = kwargs.setdefault('name', self.get_unique_name(op.__name__))
 
         # Figure out the layer inputs.
-        if len(self.terminals) == 0:
+        if self.terminals == 0:
             raise RuntimeError('No input variables found for layer %s.' % name)
         elif len(self.terminals) == 1:
             layer_input = self.terminals[0]
@@ -98,7 +98,7 @@ class Network(object):
     def feed(self, *args):
         """Set the input(s) for the next operation by replacing the terminal nodes.
         The arguments can be either layer names or the actual layers."""
-        assert len(args) != 0
+        assert args != 0
         self.terminals = []
         for fed_layer in args:
             if isinstance(fed_layer, str):

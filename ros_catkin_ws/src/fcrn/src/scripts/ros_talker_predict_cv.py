@@ -96,7 +96,7 @@ def talker():
 
     with tf.variable_scope('model'):  # Disable for running original models!!!
         # Construct the network
-        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1,
+        net = ResNet50UpProj({'data': tf.expand_dims(tf_image_float32, axis=0)}, batch=batch_size, keep_prob=1.0,
                              is_training=False)
 
     tf_pred = net.get_output()

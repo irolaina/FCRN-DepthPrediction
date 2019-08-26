@@ -2,20 +2,11 @@
 #  Libraries
 # ===========
 import os
-import sys
 import time
 
 import numpy as np
 
-
-# ==================
-#  Global Variables
-# ==================
-
-
-# ===========
-#  Functions
-# ===========
+from modules.args import args
 
 
 # ===================
@@ -32,16 +23,19 @@ class FilenamesHandler(object):
         try:
             data = np.genfromtxt(filename, dtype='str', delimiter='\t')
             # print(data.shape)
+
+            # Parsing Data
+            image_filenames = list(data[:, 0])
+            depth_filenames = list(data[:, 1])
+
+            timer = -time.time()
+            image_filenames = [dataset_path + filename for filename in image_filenames]
+            depth_filenames = [dataset_path + filename for filename in depth_filenames]
+            timer += time.time()
+            print('time:', timer, 's\n')
+
         except OSError:
-            print("[OSError] Could not find the '%s' file." % filename)
-            sys.exit()
-
-        # Parsing Data
-        image_filenames = list(data[:, 0])
-        depth_filenames = list(data[:, 1])
-
-        image_filenames = join_dataset_path(image_filenames, dataset_path)
-        depth_filenames = join_dataset_path(depth_filenames, dataset_path)
+            raise OSError("Could not find the '%s' file." % filename)
 
         return image_filenames, depth_filenames
 
@@ -51,19 +45,20 @@ class FilenamesHandler(object):
         image_filenames = []
         depth_filenames = []
 
-        # print(image_filenames_tmp)
-        # print(len(image_filenames_tmp))
-        # input("image_filenames_tmp")
-        # print(depth_filenames_tmp)
-        # print(len(depth_filenames_tmp))
-        # input("depth_filenames_tmp")
+        if args.debug:
+            print(image_filenames_tmp)
+            print(len(image_filenames_tmp))
+            input("image_filenames_tmp")
+            print(depth_filenames_tmp)
+            print(len(depth_filenames_tmp))
+            input("depth_filenames_tmp")
 
-        # print(image_filenames_aux)
-        # print(len(image_filenames_aux))
-        # input("image_filenames_aux")
-        # print(depth_filenames_aux)
-        # print(len(depth_filenames_aux))
-        # input("depth_filenames_aux")
+            print(image_filenames_aux)
+            print(len(image_filenames_aux))
+            input("image_filenames_aux")
+            print(depth_filenames_aux)
+            print(len(depth_filenames_aux))
+            input("depth_filenames_aux")
 
         _, m = len(image_filenames_aux), len(depth_filenames_aux)
 
@@ -79,9 +74,8 @@ class FilenamesHandler(object):
                     depth_filenames.append(depth_filenames_tmp[j])
 
         n2, m2 = len(image_filenames), len(depth_filenames)
-        if not n2 == m2:
-            print("[AssertionError] Length must be equal!")
-            raise AssertionError()
+        if n2 != m2:
+            raise AssertionError("[AssertionError] Length must be equal!")
         print("time: %f s" % (time.time() - start))
 
         # Shuffles
@@ -92,30 +86,20 @@ class FilenamesHandler(object):
         return image_filenames, depth_filenames, n2, m2
 
     @staticmethod
-    def saveList(image_filenames, depth_filenames, name, mode, dataset_path):
+    def save_list(image_filenames, depth_filenames, name, mode, dataset_path):
         # TODO: add comemnt
         image_filenames_dump = [image.replace(dataset_path, '') for image in image_filenames]
         depth_filenames_dump = [depth.replace(dataset_path, '') for depth in depth_filenames]
 
         # Column-Concatenation of Lists of Strings
-        filenames = list(zip(image_filenames_dump, depth_filenames_dump))
-        filenames = np.array(filenames)
+        filenames_dump = np.array(list(zip(image_filenames_dump, depth_filenames_dump)))
 
         # Saving the 'filenames' variable to *.txt
-        root_path = os.path.abspath(os.path.join(__file__, "../.."))  # This line may cause 'FileNotFindError'
+        root_path = os.path.abspath(os.path.join(__file__, "../.."))  # This line may cause 'FileNotFoundError'
         relative_path = 'data/' + name + '_' + mode + '.txt'
         save_file_path = os.path.join(root_path, relative_path)
 
         # noinspection PyTypeChecker
-        np.savetxt(save_file_path, filenames, fmt='%s', delimiter='\t')
+        np.savetxt(save_file_path, filenames_dump, fmt='%s', delimiter='\t')
 
         print("\n[Dataset] '%s' file saved." % save_file_path)
-
-
-def join_dataset_path(filenames, dataset_path):
-    timer = -time.time()
-    filenames = [dataset_path + filename for filename in filenames]
-    timer += time.time()
-    print('time:', timer, 's\n')
-
-    return filenames

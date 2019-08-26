@@ -15,7 +15,7 @@ import modules.loss as loss
 # ===========
 #  Functions
 # ===========
-def updateColorBar(cbar, img):
+def update_colorbar(cbar, img):
     vmin, vmax = np.min(img), np.max(img)
     cbar.set_clim(vmin, vmax)
 
@@ -34,19 +34,20 @@ def updateColorBar(cbar, img):
 class Plot(object):
     def __init__(self, mode, title):
         self.fig, self.axes = None, None
+        self.cax, self.cbar = [], []
 
         if mode == 'train':  # and Validation
             self.fig, self.axes = plt.subplots(7, 1, figsize=(10, 5))
             self.axes[0] = plt.subplot(221)
             self.axes[1] = plt.subplot(222)
-            self.axes[3] = plt.subplot(223)
-            self.axes[4] = plt.subplot(224)
+            self.axes[2] = plt.subplot(223)
+            self.axes[3] = plt.subplot(224)
 
             # Sets Titles
             self.axes[0].set_title("Image")
             self.axes[1].set_title("Label")
-            self.axes[3].set_title("Pred")
-            self.axes[4].set_title("MSE(Pred)")
+            self.axes[2].set_title("Pred")
+            self.axes[3].set_title("MSE(Pred)")
 
         elif mode == 'test':
             self.fig = plt.figure()
@@ -96,92 +97,79 @@ class Plot(object):
         # self.cax6_div = self.divider6.append_axes("right", size="5%", pad=0.15)
         # self.cax7_div = self.divider7.append_axes("right", size="5%", pad=0.15)
 
-        self.isFirstTime = True
+        self.is_first_time = True
 
-    def showResults(self, raw, label, pred):
-        predMSE = loss.np_MSE(y=pred, y_=label)
+    def show_train_results(self, raw, label, pred):
+        pred_mse = loss.np_mse(y=pred, y_=label)
 
-        if self.isFirstTime:
-            self.cax1 = self.axes[0].imshow(raw)
-            self.cax2 = self.axes[1].imshow(label)
-            self.cax4 = self.axes[3].imshow(pred)
-            self.cax5 = self.axes[4].imshow(predMSE, cmap='jet')
+        if self.is_first_time:
+            self.cax.append(self.axes[0].imshow(raw))
+            self.cax.append(self.axes[1].imshow(label))
+            self.cax.append(self.axes[2].imshow(pred))
+            self.cax.append(self.axes[3].imshow(pred_mse, cmap='jet'))
 
             # Creates ColorBars
-            self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[1])
-            self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[3])
-            self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[4])
+            self.cbar.append(None)
+            self.cbar.append(self.fig.colorbar(self.cax[1], ax=self.axes[1]))
+            self.cbar.append(self.fig.colorbar(self.cax[2], ax=self.axes[2]))
+            self.cbar.append(self.fig.colorbar(self.cax[3], ax=self.axes[3]))
 
-            self.isFirstTime = False
+            self.is_first_time = False
         else:
             # Updates Colorbars
-            updateColorBar(self.cbar2, label)
-            updateColorBar(self.cbar4, pred)
-            updateColorBar(self.cbar5, predMSE)
+            update_colorbar(self.cbar[1], label)
+            update_colorbar(self.cbar[2], pred)
+            update_colorbar(self.cbar[3], pred_mse)
 
             # Updates Images
-            self.cax1.set_data(raw)
-            self.cax2.set_data(label)
-            self.cax4.set_data(pred)
-            self.cax5.set_data(predMSE)
+            self.cax[0].set_data(raw)
+            self.cax[1].set_data(label)
+            self.cax[2].set_data(pred)
+            self.cax[3].set_data(pred_mse)
             plt.draw()
 
         plt.pause(0.001)
 
-    def showTestResults(self, image, depth, image_resized, depth_resized, pred, pred_up, pred_50, pred_80, i):
-        # predMSE = loss.np_MSE(y=pred, y_=log_label)
-
-        if self.isFirstTime:
-            self.cax0 = self.axes[0].imshow(image)
-            self.cax1 = self.axes[1].imshow(depth)
-            self.cax2 = self.axes[2].imshow(image_resized)
-            self.cax3 = self.axes[3].imshow(depth_resized)
-            self.cax4 = self.axes[4].imshow(pred)
-            self.cax5 = self.axes[5].imshow(pred_up)
-            self.cax6 = self.axes[6].imshow(pred_50)
-            self.cax7 = self.axes[7].imshow(pred_80)
-
-            # self.cax7 = self.axes[6].imshow(predMSE, cmap='jet')
+    def show_test_results(self, image, depth, image_resized, depth_resized, pred, pred_up, pred_50, pred_80, i):
+        if self.is_first_time:
+            self.cax.append(self.axes[0].imshow(image))
+            self.cax.append(self.axes[1].imshow(depth))
+            self.cax.append(self.axes[2].imshow(image_resized))
+            self.cax.append(self.axes[3].imshow(depth_resized))
+            self.cax.append(self.axes[4].imshow(pred))
+            self.cax.append(self.axes[5].imshow(pred_up))
+            self.cax.append(self.axes[6].imshow(pred_50))
+            self.cax.append(self.axes[7].imshow(pred_80))
 
             # Creates ColorBars
-            # self.cbar0 = self.fig.colorbar(self.cax0, ax=self.axes[0])
-            self.cbar1 = self.fig.colorbar(self.cax1, ax=self.axes[1])
-            # self.cbar2 = self.fig.colorbar(self.cax2, ax=self.axes[2])
-            self.cbar3 = self.fig.colorbar(self.cax3, ax=self.axes[3])
-            self.cbar4 = self.fig.colorbar(self.cax4, ax=self.axes[4])
-            self.cbar5 = self.fig.colorbar(self.cax5, ax=self.axes[5])
-            self.cbar6 = self.fig.colorbar(self.cax6, ax=self.axes[6])
-            self.cbar7 = self.fig.colorbar(self.cax7, ax=self.axes[7])
+            self.cbar.append(None)
+            self.cbar.append(self.fig.colorbar(self.cax[1], ax=self.axes[1]))
+            self.cbar.append(None)
+            self.cbar.append(self.fig.colorbar(self.cax[3], ax=self.axes[3]))
+            self.cbar.append(self.fig.colorbar(self.cax[4], ax=self.axes[4]))
+            self.cbar.append(self.fig.colorbar(self.cax[5], ax=self.axes[5]))
+            self.cbar.append(self.fig.colorbar(self.cax[6], ax=self.axes[6]))
+            self.cbar.append(self.fig.colorbar(self.cax[7], ax=self.axes[7]))
 
-            # # self.cbar0 = self.fig.colorbar(self.cax0, ax=self.cax0_div)
-            # self.cbar1 = self.fig.colorbar(self.cax1, ax=self.cax1_div)
-            # # self.cbar2 = self.fig.colorbar(self.cax2, ax=self.cax2_div)
-            # self.cbar3 = self.fig.colorbar(self.cax3, ax=self.cax3_div)
-            # self.cbar4 = self.fig.colorbar(self.cax4, cax=self.cax4_div)
-            # self.cbar5 = self.fig.colorbar(self.cax5, ax=self.cax5_div)
-            # self.cbar6 = self.fig.colorbar(self.cax6, ax=self.cax6_div)
-            # self.cbar7 = self.fig.colorbar(self.cax7, ax=self.cax7_div)
-
-            self.isFirstTime = False
+            self.is_first_time = False
         else:
             # Updates Colorbars
-            updateColorBar(self.cbar1, depth)
-            updateColorBar(self.cbar3, depth_resized)
-            updateColorBar(self.cbar4, pred)
-            updateColorBar(self.cbar5, pred_up)
-            updateColorBar(self.cbar6, pred_50)
-            updateColorBar(self.cbar7, pred_80)
+            update_colorbar(self.cbar[1], depth)
+            update_colorbar(self.cbar[3], depth_resized)
+            update_colorbar(self.cbar[4], pred)
+            update_colorbar(self.cbar[5], pred_up)
+            update_colorbar(self.cbar[6], pred_50)
+            update_colorbar(self.cbar[7], pred_80)
 
             # Updates Images
-            self.cax0.set_data(image)
-            self.cax1.set_data(depth)
-            self.cax2.set_data(image_resized)
-            self.cax3.set_data(depth_resized)
-            self.cax4.set_data(pred)
-            self.cax5.set_data(pred_up)
-            self.cax6.set_data(pred_50)
-            self.cax7.set_data(pred_80)
-            # self.cax7.set_data(predMSE)
+            self.cax[0].set_data(image)
+            self.cax[1].set_data(depth)
+            self.cax[2].set_data(image_resized)
+            self.cax[3].set_data(depth_resized)
+            self.cax[4].set_data(pred)
+            self.cax[5].set_data(pred_up)
+            self.cax[6].set_data(pred_50)
+            self.cax[7].set_data(pred_80)
 
             plt.draw()
 

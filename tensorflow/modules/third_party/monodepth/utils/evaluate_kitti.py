@@ -1,6 +1,10 @@
-import numpy as np
 import argparse
-from .evaluation_utils import *
+
+import cv2
+import numpy as np
+
+from .evaluation_utils import load_gt_disp_kitti, convert_disps_to_depths_kitti, read_text_lines, read_file_data, \
+    generate_depth_map, get_focal_length_baseline, compute_errors
 
 parser = argparse.ArgumentParser(description='Evaluation on the KITTI dataset')
 parser.add_argument('--split',               type=str,   help='data split, kitti or eigen',         required=True)
@@ -33,7 +37,7 @@ if __name__ == '__main__':
         pred_depths = []
         for t_id in range(num_samples):
             camera_id = cams[t_id]  # 2 is left, 3 is right
-            depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, True)
+            depth = generate_depth_map(gt_calib[t_id], gt_files[t_id], im_sizes[t_id], camera_id, False, False)
             gt_depths.append(depth.astype(np.float32))
 
             disp_pred = cv2.resize(pred_disparities[t_id], (im_sizes[t_id][1], im_sizes[t_id][0]), interpolation=cv2.INTER_LINEAR)
